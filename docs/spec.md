@@ -21,6 +21,7 @@ Play Store release later must stay possible, so Play-policy-forbidden permission
 | Trash retention (phone and Drive) | 30 days |
 | Backup network / power | Wi-Fi and charging for large backlogs; Wi-Fi for daily items |
 | Folders backed up | Camera; others opt-in (Screenshots off) |
+| Folders shown in the timeline | All |
 
 ## Requirements
 
@@ -39,6 +40,8 @@ Play Store release later must stay possible, so Play-policy-forbidden permission
 
 ### Timeline and status
 - R10. One timeline shows every item, on the phone or only in the cloud, ordered by date taken.
+- R10a. Every folder shows in the timeline by default. A folder can be hidden from the timeline and
+  stays browsable under Folders.
 - R11. Every item shows exactly one status: waiting, queued, uploading, backed up, cloud only, in trash, or needs attention.
 
 ### Deletion and trash
@@ -49,6 +52,13 @@ Play Store release later must stay possible, so Play-policy-forbidden permission
 ### Library survival
 - R15. After a phone reset or reinstall, signing in restores items, albums, folders, favourites and pins from Drive.
 - R16. Settle's own data is excluded from Android backup and device transfer; Drive is the only source for restore.
+
+### Local library
+- R19. Settle needs full photo and video access. With a partial selection it explains why and offers
+  "Allow all"; it never treats unseen files as deleted (ADR-012).
+- R20. While Settle is open, new, changed and deleted media appear without user action.
+- R21. A favourite set in Settle is visible to other apps through MediaStore, and one set elsewhere
+  shows in Settle.
 
 ### Experience
 - R17. UI in English and Turkish, switchable in the app and in system settings.

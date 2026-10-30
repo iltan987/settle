@@ -31,8 +31,11 @@ harmless "user 150" SecurityException.
 - `:domain` is pure Kotlin JVM and must never depend on Android (ADR-007). All sync, verification,
   eviction and deletion rules live here as pure functions and policies behind ports (interfaces for
   Drive, MediaStore, storage, clock), so they are tested with fakes on the JVM.
-- `:app` is the Android app: Compose UI under `ui/`, later Room, the Drive REST client, the
-  MediaStore adapter and background jobs. Dependencies are wired by hand, no DI framework.
+- `:app` is the Android app: Compose UI under `ui/`, Room 3 under `data/db/`, the MediaStore
+  adapter and `LibrarySync` under `data/media/`, and later the Drive REST client and background
+  jobs. Dependencies are wired by hand in `AppGraph`, reached through `Context.appGraph`.
+- The local index follows MediaStore by generation with ID-diff deletions, only with full media
+  access (ADR-012). `reconcileScan()` in `:domain` decides inserts, updates, moves and forgets.
 - An item's state is independent sub-states (`LocalState`, `CloudState`, trash, grace timer);
   `deriveStatus()` turns them into the one status the UI shows (ADR-002). Safety rules are
   invariants over these states and are checked in tests.
@@ -49,6 +52,9 @@ Build specifics that aren't obvious:
 - `material3` is pinned to a 1.5 beta over the Compose BOM for Material 3 Expressive (ADR-009).
 - Local Compose tests need the Robolectric JDK `--add-opens` list in `app/build.gradle.kts` and
   Espresso 3.7.0 pinned (the 3.5.0 from `ui-test-junit4` breaks on API 37).
+- Room 3 runs on the framework `AndroidSQLiteDriver`, which also works under Robolectric for DAO
+  tests. Exported schemas in `app/schemas/` are committed.
+- Media3's Compose UI is unstable/experimental API; keep its use inside `ui/viewer/MediaPlayer.kt`.
 - ktfmt is applied per module (kotlinlang style), as the plugin requires.
 
 ## Working rules (from the owner)
