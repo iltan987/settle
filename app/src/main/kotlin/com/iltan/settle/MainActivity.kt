@@ -15,4 +15,10 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent { SettleTheme { SettleApp() } }
     }
+
+    override fun onResume() {
+        super.onResume()
+        // Catches changes made while Settle was in the background, and a just-granted permission.
+        (application as SettleApplication).graph.librarySync.requestScan()
+    }
 }

@@ -3,6 +3,7 @@
 
     <!-- No Android backup or device transfer: the library is rebuilt from Drive (ADR-003). -->
     <application
+        android:name=".SettleApplication"
         android:allowBackup="false"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:icon="@mipmap/ic_launcher"
