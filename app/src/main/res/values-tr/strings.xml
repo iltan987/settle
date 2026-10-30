@@ -47,4 +47,13 @@
     <string name="viewer_dimensions">%1$d × %2$d</string>
     <string name="viewer_folder">Klasör</string>
     <string name="viewer_open_map">Haritada aç</string>
+
+    <string name="folders_title">Klasörler</string>
+    <string name="favorites_title">Favoriler</string>
+    <string name="favorites_empty">Buraya eklemek için bir fotoğraf ya da videodaki kalbe dokun.</string>
+    <string name="folder_empty">Bu klasörde fotoğraf ya da video yok.</string>
+    <string name="folder_root">Telefon hafızası</string>
+    <string name="folder_show_in_photos">Fotoğraflar\'da göster</string>
+    <string name="folder_hidden">Fotoğraflar\'da gizli</string>
+    <string name="folder_options">%s seçenekleri</string>
 </resources>

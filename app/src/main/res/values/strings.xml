@@ -52,4 +52,13 @@
     <string name="viewer_dimensions">%1$d × %2$d</string>
     <string name="viewer_folder">Folder</string>
     <string name="viewer_open_map">Open in maps</string>
+
+    <string name="folders_title">Folders</string>
+    <string name="favorites_title">Favorites</string>
+    <string name="favorites_empty">Tap the heart on a photo or video to add it here.</string>
+    <string name="folder_empty">This folder has no photos or videos.</string>
+    <string name="folder_root">Phone storage</string>
+    <string name="folder_show_in_photos">Show in Photos</string>
+    <string name="folder_hidden">Hidden from Photos</string>
+    <string name="folder_options">Options for %s</string>
 </resources>

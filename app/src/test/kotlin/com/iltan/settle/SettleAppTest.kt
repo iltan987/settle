@@ -50,7 +50,20 @@ class SettleAppTest {
         grantFullAccess()
         compose.setContent { SettleTheme { SettleApp() } }
 
-        compose.onNodeWithText("Photos").assertIsDisplayed()
+        // The timeline's top bar is the only place with the settings action.
+        compose.onNodeWithContentDescription("Settings").assertIsDisplayed()
+    }
+
+    @Test
+    fun bottomBarSwitchesBetweenPhotosAndFolders() {
+        grantFullAccess()
+        compose.setContent { SettleTheme { SettleApp() } }
+
+        compose.onNodeWithText("Folders").performClick()
+        compose.onNodeWithText("Favorites").assertIsDisplayed()
+
+        compose.onNodeWithText("Photos").performClick()
+        compose.onNodeWithContentDescription("Settings").assertIsDisplayed()
     }
 
     @Test
@@ -65,6 +78,6 @@ class SettleAppTest {
         compose.onNodeWithText("Türkçe").assertIsDisplayed()
 
         compose.onNodeWithContentDescription("Back").performClick()
-        compose.onNodeWithText("Photos").assertIsDisplayed()
+        compose.onNodeWithContentDescription("Settings").assertIsDisplayed()
     }
 }
