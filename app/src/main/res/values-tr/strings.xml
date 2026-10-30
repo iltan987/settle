@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="timeline_title">Fotoğraflar</string>
+    <string name="timeline_empty_title">Henüz bir şey yok</string>
+    <string name="timeline_empty_body">Fotoğrafların ve videoların burada görünecek.</string>
+
+    <string name="settings_title">Ayarlar</string>
+    <string name="settings_open">Ayarlar</string>
+    <string name="navigate_back">Geri</string>
+    <string name="settings_language">Dil</string>
+    <string name="language_system">Sistem varsayılanı</string>
+    <string name="settings_version">Sürüm %1$s</string>
+</resources>

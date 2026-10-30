@@ -22,4 +22,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "settle"
 
-include(":domain")
+include(":domain", ":app")

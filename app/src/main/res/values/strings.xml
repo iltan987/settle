@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name" translatable="false">Settle</string>
+
+    <string name="timeline_title">Photos</string>
+    <string name="timeline_empty_title">Nothing here yet</string>
+    <string name="timeline_empty_body">Your photos and videos will appear here.</string>
+
+    <string name="settings_title">Settings</string>
+    <string name="settings_open">Settings</string>
+    <string name="navigate_back">Back</string>
+    <string name="settings_language">Language</string>
+    <string name="language_system">System default</string>
+    <!-- Each language is shown in its own name, so these are not translated. -->
+    <string name="language_english" translatable="false">English</string>
+    <string name="language_turkish" translatable="false">Türkçe</string>
+    <string name="settings_version">Version %1$s</string>
+</resources>
