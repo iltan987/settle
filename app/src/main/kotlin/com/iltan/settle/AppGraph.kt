@@ -1,6 +1,7 @@
 package com.iltan.settle
 
 import android.content.Context
+import com.iltan.settle.data.Library
 import com.iltan.settle.data.db.SettleDatabase
 import com.iltan.settle.data.media.LibrarySync
 import com.iltan.settle.data.media.MediaAccess
@@ -18,6 +19,8 @@ class AppGraph(context: Context) {
     val appScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     val database: SettleDatabase = SettleDatabase.create(appContext)
+
+    val library = Library(database.libraryDao())
 
     val librarySync =
         LibrarySync(

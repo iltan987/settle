@@ -8,9 +8,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LargeTopAppBar
+import androidx.compose.material3.LargeFlexibleTopAppBar
+import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -21,20 +23,38 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.iltan.settle.R
+import com.iltan.settle.data.db.MediaEntry
+import com.iltan.settle.ui.grid.MediaGrid
+import com.iltan.settle.ui.grid.MediaGridState
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun TimelineScreen(onOpenSettings: () -> Unit) {
+fun TimelineScreen(
+    state: MediaGridState,
+    onOpen: (MediaEntry) -> Unit,
+    onOpenSettings: () -> Unit,
+) {
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
-            LargeTopAppBar(
+            LargeFlexibleTopAppBar(
                 title = { Text(stringResource(R.string.timeline_title)) },
+                subtitle =
+                    if (state.count > 0) {
+                        {
+                            Text(
+                                pluralStringResource(R.plurals.item_count, state.count, state.count)
+                            )
+                        }
+                    } else {
+                        null
+                    },
                 actions = {
                     IconButton(onClick = onOpenSettings) {
                         Icon(
@@ -47,8 +67,22 @@ fun TimelineScreen(onOpenSettings: () -> Unit) {
             )
         },
     ) { padding ->
-        Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
-            EmptyLibrary()
+        when {
+            state.sections.isNotEmpty() ->
+                MediaGrid(
+                    sections = state.sections,
+                    onOpen = onOpen,
+                    contentPadding = padding,
+                    modifier = Modifier.fillMaxSize(),
+                )
+            state.loading ->
+                Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
+                    LoadingIndicator()
+                }
+            else ->
+                Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
+                    EmptyLibrary()
+                }
         }
     }
 }

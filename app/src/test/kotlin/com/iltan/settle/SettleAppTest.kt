@@ -46,12 +46,11 @@ class SettleAppTest {
     }
 
     @Test
-    fun withFullAccessStartsOnEmptyTimeline() {
+    fun withFullAccessStartsOnTimeline() {
         grantFullAccess()
         compose.setContent { SettleTheme { SettleApp() } }
 
         compose.onNodeWithText("Photos").assertIsDisplayed()
-        compose.onNodeWithText("Nothing here yet").assertIsDisplayed()
     }
 
     @Test
@@ -66,6 +65,6 @@ class SettleAppTest {
         compose.onNodeWithText("Türkçe").assertIsDisplayed()
 
         compose.onNodeWithContentDescription("Back").performClick()
-        compose.onNodeWithText("Nothing here yet").assertIsDisplayed()
+        compose.onNodeWithText("Photos").assertIsDisplayed()
     }
 }

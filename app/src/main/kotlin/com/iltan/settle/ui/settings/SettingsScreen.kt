@@ -1,5 +1,6 @@
 package com.iltan.settle.ui.settings
 
+import android.text.format.DateUtils
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
@@ -22,9 +23,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.iltan.settle.R
+import com.iltan.settle.appGraph
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -51,12 +55,9 @@ fun SettingsScreen(onBack: () -> Unit) {
         }
     ) { padding ->
         Column(Modifier.padding(padding).verticalScroll(rememberScrollState())) {
-            Text(
-                stringResource(R.string.settings_language),
-                style = MaterialTheme.typography.titleSmall,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 8.dp),
-            )
+            SectionTitle(R.string.settings_library)
+            LibrarySection()
+            SectionTitle(R.string.settings_language)
             Column(Modifier.selectableGroup()) {
                 AppLanguage.entries.forEach { option ->
                     ListItem(
@@ -80,6 +81,46 @@ fun SettingsScreen(onBack: () -> Unit) {
             )
         }
     }
+}
+
+@Composable
+private fun SectionTitle(title: Int) {
+    Text(
+        stringResource(title),
+        style = MaterialTheme.typography.titleSmall,
+        color = MaterialTheme.colorScheme.primary,
+        modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 8.dp),
+    )
+}
+
+@Composable
+private fun LibrarySection() {
+    val graph = LocalContext.current.appGraph
+    val count by remember {
+        graph.library.onPhoneCount()
+    }
+        .collectAsStateWithLifecycle(initialValue = 0)
+    val lastScan by remember { graph.library.lastScanAt() }.collectAsStateWithLifecycle(null)
+    val sync by graph.librarySync.state.collectAsStateWithLifecycle()
+
+    ListItem(
+        content = { Text(pluralStringResource(R.plurals.settings_library_count, count, count)) },
+        supportingContent = {
+            Text(
+                lastScan?.let {
+                    stringResource(
+                        R.string.settings_last_scan,
+                        DateUtils.getRelativeTimeSpanString(it).toString(),
+                    )
+                } ?: stringResource(R.string.settings_never_scanned)
+            )
+        },
+    )
+    ListItem(
+        onClick = { graph.librarySync.requestScan(full = true) },
+        enabled = !sync.scanning,
+        content = { Text(stringResource(R.string.settings_rescan)) },
+    )
 }
 
 private val AppLanguage.label: Int

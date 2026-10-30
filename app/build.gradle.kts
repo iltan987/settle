@@ -83,10 +83,13 @@ dependencies {
     implementation(libs.androidx.compose.ui.tooling.preview)
     debugImplementation(libs.androidx.compose.ui.tooling)
     implementation(libs.androidx.lifecycle.runtime.compose)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.androidx.lifecycle.viewmodel.navigation3)
     implementation(libs.androidx.navigation3.runtime)
     implementation(libs.androidx.navigation3.ui)
     implementation(libs.kotlinx.serialization.core)
     implementation(libs.androidx.room3.runtime)
+    implementation(libs.coil.compose)
     ksp(libs.androidx.room3.compiler)
 
     // Local UI tests: Compose test rules (JUnit 4) on Robolectric. The test manifest declares the

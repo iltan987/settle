@@ -19,4 +19,23 @@
     <string name="onboarding_allow_all">Tümüne izin ver</string>
     <string name="onboarding_blocked_body">Erişim kapalı. Settle\'ın uygulama ayarlarında İzinler, Fotoğraflar ve videolar bölümünden açabilirsin.</string>
     <string name="onboarding_open_settings">Ayarları aç</string>
+
+    <string name="day_today">Bugün</string>
+    <string name="day_yesterday">Dün</string>
+    <plurals name="item_count">
+        <item quantity="one">%d öğe</item>
+        <item quantity="other">%d öğe</item>
+    </plurals>
+    <string name="media_video">Video</string>
+    <string name="media_motion_photo">Hareketli fotoğraf</string>
+    <string name="media_favorite">Favori</string>
+
+    <string name="settings_library">Kitaplık</string>
+    <plurals name="settings_library_count">
+        <item quantity="one">Bu telefonda %d fotoğraf veya video</item>
+        <item quantity="other">Bu telefonda %d fotoğraf ve video</item>
+    </plurals>
+    <string name="settings_last_scan">Son kontrol: %s</string>
+    <string name="settings_never_scanned">Henüz kontrol edilmedi</string>
+    <string name="settings_rescan">Kitaplığı yeniden tara</string>
 </resources>

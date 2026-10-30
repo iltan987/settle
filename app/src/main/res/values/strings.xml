@@ -24,4 +24,23 @@
     <string name="onboarding_allow_all">Allow all</string>
     <string name="onboarding_blocked_body">Access is turned off. You can turn it on in Settle\'s app settings, under Permissions, Photos and videos.</string>
     <string name="onboarding_open_settings">Open settings</string>
+
+    <string name="day_today">Today</string>
+    <string name="day_yesterday">Yesterday</string>
+    <plurals name="item_count">
+        <item quantity="one">%d item</item>
+        <item quantity="other">%d items</item>
+    </plurals>
+    <string name="media_video">Video</string>
+    <string name="media_motion_photo">Motion photo</string>
+    <string name="media_favorite">Favorite</string>
+
+    <string name="settings_library">Library</string>
+    <plurals name="settings_library_count">
+        <item quantity="one">%d photo or video on this phone</item>
+        <item quantity="other">%d photos and videos on this phone</item>
+    </plurals>
+    <string name="settings_last_scan">Last checked %s</string>
+    <string name="settings_never_scanned">Not checked yet</string>
+    <string name="settings_rescan">Rescan library</string>
 </resources>
