@@ -3,7 +3,7 @@
 Each phase ends with something that runs on the phone, a build, tests, and a check-in before the
 next phase. Newest first.
 
-## Phase 1 — Local gallery (2026-10-30, on-device verification incomplete)
+## Phase 1 — Local gallery (2026-10-30)
 
 Delivered:
 - `:domain`:
@@ -19,7 +19,7 @@ Delivered:
 - Viewer:
   - Telephoto zoom;
   - Media3 video with Material 3 controls;
-  - motion-photo playback;
+  - muted motion-photo playback;
   - favourite (mirrored to MediaStore), share, details with EXIF location.
 - Folders tab with Favourites, per-folder "Show in Photos", folder and favourite grids.
 - Settings: library count, last scan, rescan.
@@ -27,26 +27,48 @@ Delivered:
   folders).
 
 Verified on the S24 FE:
-- **Onboarding** renders in Turkish. The system dialog offers limited / all / deny. "Allow all"
-  grants images, video and media location in one step.
+- **Onboarding.**
+  - Renders in Turkish. The system dialog offers limited / all / deny; "Allow all" grants images,
+    video and media location in one step.
+  - Partial access (full permissions revoked for the debug app) shows the "only some photos"
+    screen and runs no scan. "Allow all" in the system re-prompt restores access; the next scan
+    forgot nothing (595 items).
 - **Scanning.** The first scan indexed 595 items (502 photos, 91 videos, 2 motion photos) in
-  265 ms; that matches the adb count. Incremental rescans take ~230 ms.
-- **Timeline** with Today / Yesterday / dated headers, video durations and the motion-photo badge.
-- **Video** playback with controls.
-- **Motion photos** play: Samsung's files carry Google Motion Photo v1 XMP next to the SEF
-  trailer. The first try took ~5 s to start, a replay ~1.7 s. Passing the MIME type to Media3
-  should cut this; that fix is not yet measured on the phone.
+  265 ms; that matches the adb count. Incremental rescans take 55–230 ms.
+- **Live updates and deletion.** A test PNG inserted through MediaStore into
+  `Pictures/SettleTest/` appeared in Photos within ~1 s ("1 new"). Deleting that row was noticed
+  within ~1 s ("1 forgotten"), and the count went back to 595. The empty test folder was then
+  removed; nothing else was touched.
+- **Timeline** with Today / Yesterday / full-weekday headers, video durations, motion-photo and
+  favourite badges, and the Photos / Folders bar.
+- **Folders.** Favourites and folders with covers and counts. Hiding Movies dropped Photos from
+  595 to 591 and marked the folder hidden; showing it again restored 595.
+- **Viewer.**
+  - Double-tap zoom stays sharp.
+  - Video plays with controls (time text readable after giving the viewer a dark theme).
+  - The details sheet shows name, date, size, resolution, folder and EXIF location (read from
+    the original); the geo link resolves to the system app chooser.
+  - Share opens the system sheet with a preview, so the read grant works.
+- **Motion photos.**
+  - Samsung's files carry Google Motion Photo v1 XMP next to the SEF trailer, and Media3 plays
+    them.
+  - Preparing one takes ~1.8 s; Media3's event log shows the time is spent reaching the embedded
+    MP4. It isn't audio setup, the image track or location redaction (each ruled out).
+  - So the clip is now prepared while the photo is on screen: tapping play starts at once, the
+    still stays visible (TextureView, hidden until playing), and the photo returns when the clip
+    ends.
+- **Favourites.** Favouriting writes `IS_FAVORITE=1` to MediaStore and shows in Settle's
+  Favourites. Whether Samsung Gallery shows it was left to the owner to check.
+- **English.** Photos, Folders, Viewer and details render correctly; app language reset to system
+  afterwards.
 
-Not yet verified (the phone was locked; these need the owner present):
-- Motion-photo start time after the MIME fix, and the still staying visible until the first
-  frame.
-- Zoom on a large photo, the info sheet location, sharing.
-- Favourites: the MediaStore mirror, and whether Samsung Gallery shows them.
-- Folders tab and hiding WhatsApp from Photos.
-- A new screenshot appearing live.
-- Deletion of a test file pushed over adb.
-- The partial-access path.
-- English screenshots.
+Findings:
+- About 7,200 WhatsApp files (private chats, sent copies, stickers) sit under folders with a
+  `.nomedia` marker. MediaStore lists them with `media_type=0`, so Settle, like Samsung Gallery,
+  doesn't show them. Whether Settle should ever include such folders is a later decision.
+- The adb snapshot taken while planning reported no favourites and no rows without a date taken.
+  Both counts were wrong (a shell quoting error); one WhatsApp image in a `.nomedia` folder was
+  already a favourite.
 
 Not done or deviations from the plan:
 - The grid-to-viewer shared-element transition is deferred to a polish pass: it couldn't be
@@ -57,9 +79,9 @@ Not done or deviations from the plan:
 - The bottom bar landed with Folders instead of with the timeline, to avoid a placeholder tab.
 
 Known issues:
-- Installing over adb hung twice while the phone was locked and dozing (once through
-  `installDebug`, once through `adb install -r`); a third install in the same state succeeded.
-  The cause is unknown; wrap installs in `timeout` and retry with the phone unlocked.
+- Installs over adb sometimes sat in Google's package verification for minutes (183 s logged).
+  A timeout then abandoned the session and left the adb server wedged until `adb kill-server`.
+  The owner turned off "Verify apps over USB"; installs now verify in ~0.1 s.
 - On API 35 devices favourites live only in Room (ADR-012).
 
 ## Phase 0 — Foundation (2026-10-30)
