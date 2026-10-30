@@ -4,6 +4,9 @@ plugins {
     // Navigation 3 back-stack keys are @Serializable so they survive process death.
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.ktfmt)
+    // Room 3 generates its code with KSP only.
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.room3)
 }
 
 // Google recommends a Java toolchain; it also supplies sourceCompatibility/targetCompatibility,
@@ -11,6 +14,9 @@ plugins {
 java { toolchain { languageVersion = JavaLanguageVersion.of(21) } }
 
 ktfmt { kotlinLangStyle() }
+
+// Exported schemas are committed: they document each version and drive auto-migrations.
+room3 { schemaDirectory("$projectDir/schemas") }
 
 android {
     namespace = "com.iltan.settle"
@@ -79,6 +85,8 @@ dependencies {
     implementation(libs.androidx.navigation3.runtime)
     implementation(libs.androidx.navigation3.ui)
     implementation(libs.kotlinx.serialization.core)
+    implementation(libs.androidx.room3.runtime)
+    ksp(libs.androidx.room3.compiler)
 
     // Local UI tests: Compose test rules (JUnit 4) on Robolectric. The test manifest declares the
     // empty activity that createComposeRule() launches.
@@ -87,5 +95,6 @@ dependencies {
     testImplementation(libs.androidx.test.core)
     testImplementation(libs.androidx.test.espresso.core)
     testImplementation(libs.androidx.compose.ui.test.junit4)
+    testImplementation(libs.kotlinx.coroutines.test)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 }
