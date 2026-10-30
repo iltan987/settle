@@ -8,7 +8,11 @@ import com.iltan.settle.domain.MediaItemId
 data class KnownFile(
     val itemId: MediaItemId,
     val volume: String,
-    val mediaStoreId: Long,
+    /**
+     * Null once the file is missing: after a MediaStore rebuild the old ID may belong to another
+     * file, so a missing file is only ever found again by name, size and date.
+     */
+    val mediaStoreId: Long?,
     val displayName: String,
     val sizeBytes: Long,
     val takenAtMillis: Long,
@@ -77,7 +81,11 @@ fun reconcileScan(
         it.volume == scan.volume && it.localState != LocalState.EVICTED
     }
     val byMediaStoreId =
-        if (scan.idsTrusted) candidates.associateBy { it.mediaStoreId } else emptyMap()
+        if (scan.idsTrusted) {
+            candidates.filter { it.mediaStoreId != null }.associateBy { it.mediaStoreId }
+        } else {
+            emptyMap()
+        }
 
     val updates = mutableListOf<IndexedRow>()
     val unmatchedRows = mutableListOf<ScanRow>()

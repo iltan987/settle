@@ -53,7 +53,7 @@ class ReconcileScanTest {
         KnownFile(
             itemId = itemId,
             volume = volume,
-            mediaStoreId = mediaStoreId,
+            mediaStoreId = mediaStoreId.takeIf { state != LocalState.MISSING },
             displayName = displayName,
             sizeBytes = sizeBytes,
             takenAtMillis = takenAtMillis,
@@ -192,7 +192,7 @@ class ReconcileScanTest {
     }
 
     @Test
-    fun `missing file found again in a full scan becomes present`() {
+    fun `missing file found again becomes present`() {
         val old = row(1).known(state = LocalState.MISSING)
         val plan = reconcile(listOf(old), full(row(1)))
 
@@ -231,6 +231,15 @@ class ReconcileScanTest {
             mapOf(b.itemId to 1L, a.itemId to 7L)
         plan.inserts.single().row.displayName shouldBe "new.jpg"
         plan.forgets.shouldBeEmpty()
+    }
+
+    @Test
+    fun `missing file does not claim a new file that reuses its old ID`() {
+        val old = row(1, name = "old.jpg").known(state = LocalState.MISSING)
+        val plan = reconcile(listOf(old), full(row(1, name = "other.jpg")))
+
+        plan.inserts.single().row.displayName shouldBe "other.jpg"
+        plan.updates.shouldBeEmpty()
     }
 
     @Test
