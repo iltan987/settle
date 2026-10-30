@@ -7,6 +7,7 @@ ksp = "2.3.13"
 
 # AndroidX
 activity = "1.13.0"
+lifecycle = "2.11.0"
 compose-bom = "2026.09.00"
 # Material 3 Expressive only ships in 1.5.x; pinned over the BOM's 1.4.0 (ADR-009).
 material3 = "1.5.0-beta02"
@@ -35,6 +36,7 @@ androidx-compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling" }
 androidx-compose-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview" }
 androidx-compose-ui-test-junit4 = { module = "androidx.compose.ui:ui-test-junit4" }
 androidx-compose-ui-test-manifest = { module = "androidx.compose.ui:ui-test-manifest" }
+androidx-lifecycle-runtime-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "lifecycle" }
 androidx-navigation3-runtime = { module = "androidx.navigation3:navigation3-runtime", version.ref = "navigation3" }
 androidx-navigation3-ui = { module = "androidx.navigation3:navigation3-ui", version.ref = "navigation3" }
 androidx-test-core = { module = "androidx.test:core", version.ref = "androidx-test-core" }

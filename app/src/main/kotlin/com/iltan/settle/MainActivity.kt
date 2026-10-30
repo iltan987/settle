@@ -19,6 +19,6 @@ class MainActivity : ComponentActivity() {
     override fun onResume() {
         super.onResume()
         // Catches changes made while Settle was in the background, and a just-granted permission.
-        (application as SettleApplication).graph.librarySync.requestScan()
+        appGraph.librarySync.requestScan()
     }
 }

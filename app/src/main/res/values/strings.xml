@@ -15,4 +15,13 @@
     <string name="language_english" translatable="false">English</string>
     <string name="language_turkish" translatable="false">Türkçe</string>
     <string name="settings_version">Version %1$s</string>
+
+    <string name="onboarding_title">Welcome to Settle</string>
+    <string name="onboarding_body">Settle shows every photo and video on this phone in one place. To do that it needs access to all of them. Nothing leaves your phone until you connect Google Drive.</string>
+    <string name="onboarding_allow">Allow access</string>
+    <string name="onboarding_partial_title">Settle sees only some photos</string>
+    <string name="onboarding_partial_body">With a selection, Settle can\'t show your whole library or notice new photos. Allow access to all photos and videos.</string>
+    <string name="onboarding_allow_all">Allow all</string>
+    <string name="onboarding_blocked_body">Access is turned off. You can turn it on in Settle\'s app settings, under Permissions, Photos and videos.</string>
+    <string name="onboarding_open_settings">Open settings</string>
 </resources>

@@ -10,4 +10,13 @@
     <string name="settings_language">Dil</string>
     <string name="language_system">Sistem varsayılanı</string>
     <string name="settings_version">Sürüm %1$s</string>
+
+    <string name="onboarding_title">Settle\'a hoş geldin</string>
+    <string name="onboarding_body">Settle bu telefondaki tüm fotoğraf ve videoları tek bir yerde gösterir. Bunun için hepsine erişmesi gerekir. Google Drive\'ı bağlayana kadar hiçbir şey telefonundan çıkmaz.</string>
+    <string name="onboarding_allow">Erişime izin ver</string>
+    <string name="onboarding_partial_title">Settle yalnızca bazı fotoğrafları görüyor</string>
+    <string name="onboarding_partial_body">Yalnızca seçtiklerinle Settle tüm kitaplığını gösteremez ve yeni fotoğrafları fark edemez. Tüm fotoğraf ve videolara erişim izni ver.</string>
+    <string name="onboarding_allow_all">Tümüne izin ver</string>
+    <string name="onboarding_blocked_body">Erişim kapalı. Settle\'ın uygulama ayarlarında İzinler, Fotoğraflar ve videolar bölümünden açabilirsin.</string>
+    <string name="onboarding_open_settings">Ayarları aç</string>
 </resources>
