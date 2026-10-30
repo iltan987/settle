@@ -51,6 +51,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import androidx.core.net.toUri
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
@@ -213,14 +214,19 @@ private fun PhotoPage(
             modifier = Modifier.fillMaxSize(),
             onClick = { onTap() },
         )
-        if (playingMotion) {
+        if (settled && entry.specialFormat == SPECIAL_FORMAT_MOTION_PHOTO) {
+            // Prepared while the photo is on screen so playing starts at once; kept behind the
+            // photo (and its zoom gestures) until it plays.
             MediaPlayer(
                 uri = entry.contentUri,
                 mimeType = entry.mimeType,
                 showControls = false,
-                transparentUntilFirstFrame = true,
+                play = playingMotion,
+                motionPhoto = true,
                 onEnded = onMotionEnded,
-                modifier = Modifier.clickable(onClick = onMotionEnded),
+                modifier =
+                    Modifier.zIndex(if (playingMotion) 1f else -1f)
+                        .clickable(enabled = playingMotion, onClick = onMotionEnded),
             )
         }
     }
