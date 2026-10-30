@@ -57,8 +57,8 @@ Verified on the S24 FE:
   - So the clip is now prepared while the photo is on screen: tapping play starts at once, the
     still stays visible (TextureView, hidden until playing), and the photo returns when the clip
     ends.
-- **Favourites.** Favouriting writes `IS_FAVORITE=1` to MediaStore and shows in Settle's
-  Favourites. Whether Samsung Gallery shows it was left to the owner to check.
+- **Favourites** sync both ways with Samsung Gallery. A favourite set in Settle (written as
+  `IS_FAVORITE=1`) showed in Samsung Gallery. The owner removed it there, and Settle updated.
 - **English.** Photos, Folders, Viewer and details render correctly; app language reset to system
   afterwards.
 
