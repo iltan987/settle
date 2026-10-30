@@ -20,7 +20,7 @@ class AppGraph(context: Context) {
 
     val database: SettleDatabase = SettleDatabase.create(appContext)
 
-    val library = Library(database.libraryDao())
+    val library = Library(database.libraryDao(), appContext.contentResolver)
 
     val librarySync =
         LibrarySync(

@@ -38,4 +38,13 @@
     <string name="settings_last_scan">Son kontrol: %s</string>
     <string name="settings_never_scanned">Henüz kontrol edilmedi</string>
     <string name="settings_rescan">Kitaplığı yeniden tara</string>
+
+    <string name="viewer_favorite">Favorilere ekle</string>
+    <string name="viewer_unfavorite">Favorilerden çıkar</string>
+    <string name="viewer_share">Paylaş</string>
+    <string name="viewer_info">Ayrıntılar</string>
+    <string name="viewer_play_motion">Hareketi oynat</string>
+    <string name="viewer_dimensions">%1$d × %2$d</string>
+    <string name="viewer_folder">Klasör</string>
+    <string name="viewer_open_map">Haritada aç</string>
 </resources>

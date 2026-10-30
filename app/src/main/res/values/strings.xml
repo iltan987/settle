@@ -43,4 +43,13 @@
     <string name="settings_last_scan">Last checked %s</string>
     <string name="settings_never_scanned">Not checked yet</string>
     <string name="settings_rescan">Rescan library</string>
+
+    <string name="viewer_favorite">Add to favorites</string>
+    <string name="viewer_unfavorite">Remove from favorites</string>
+    <string name="viewer_share">Share</string>
+    <string name="viewer_info">Details</string>
+    <string name="viewer_play_motion">Play motion</string>
+    <string name="viewer_dimensions">%1$d × %2$d</string>
+    <string name="viewer_folder">Folder</string>
+    <string name="viewer_open_map">Open in maps</string>
 </resources>

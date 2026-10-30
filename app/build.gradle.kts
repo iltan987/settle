@@ -90,6 +90,10 @@ dependencies {
     implementation(libs.kotlinx.serialization.core)
     implementation(libs.androidx.room3.runtime)
     implementation(libs.coil.compose)
+    implementation(libs.telephoto.zoomable.image.coil3)
+    implementation(libs.androidx.media3.exoplayer)
+    implementation(libs.androidx.media3.ui.compose.material3)
+    implementation(libs.androidx.exifinterface)
     ksp(libs.androidx.room3.compiler)
 
     // Local UI tests: Compose test rules (JUnit 4) on Robolectric. The test manifest declares the

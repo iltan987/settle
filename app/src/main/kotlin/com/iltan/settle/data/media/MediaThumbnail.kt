@@ -16,7 +16,11 @@ import coil3.size.pxOrElse
  * A grid thumbnail of a photo or video on the phone. [dateModifiedS] is part of the cache key so an
  * edited file gets a fresh thumbnail.
  */
-data class MediaThumbnail(val uri: Uri, val dateModifiedS: Long)
+data class MediaThumbnail(val uri: Uri, val dateModifiedS: Long) {
+    /** Memory cache key; the viewer uses it to show this thumbnail while the full image loads. */
+    val cacheKey: String
+        get() = "thumbnail:$uri:$dateModifiedS"
+}
 
 /**
  * Loads [MediaThumbnail]s through `ContentResolver.loadThumbnail`, which serves MediaStore's cached
@@ -43,8 +47,7 @@ class MediaThumbnailFetcher(private val data: MediaThumbnail, private val option
     }
 
     class Key : Keyer<MediaThumbnail> {
-        override fun key(data: MediaThumbnail, options: Options) =
-            "thumbnail:${data.uri}:${data.dateModifiedS}"
+        override fun key(data: MediaThumbnail, options: Options) = data.cacheKey
     }
 
     private companion object {
