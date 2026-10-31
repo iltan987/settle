@@ -12,20 +12,27 @@
 <body>
   <p><a href="./">Settle</a></p>
   <h1>Privacy policy</h1>
-  <p>Last updated: 31 October 2026</p>
+  <p>Last updated: 31 October 2026 (automatic backup)</p>
 
   <h2>What Settle accesses</h2>
   <ul>
     <li><strong>Photos and videos on your phone</strong>, with the media permissions you grant, to show
       them and to back them up. Location data inside photos is read so that backups are exact copies
-      and so the app can show where a photo was taken.</li>
+      and so the app can show where a photo was taken. Backup runs automatically in the background
+      for the folders you choose (only the camera folder unless you pick more); you can turn it off
+      or pause it in Settings.</li>
     <li><strong>Your Google Drive, only the files Settle creates.</strong> Settle uses Google's
       <code>drive.file</code> permission. It creates a <em>Settle</em> folder in your Drive, uploads
       originals and a small amount of metadata about each item (such as when it was taken) into it,
       and reads back those files' size and checksums to verify the copies. It cannot see, change or
       delete any other file in your Drive.</li>
     <li><strong>Your Google account's email address and Drive storage usage</strong>, read from Google
-      Drive, to show which account is connected and how much space is left.</li>
+      Drive, to show which account is connected and how much space is left, and to resume backup
+      once a full Drive has space again.</li>
+    <li><strong>How fast your connection is.</strong> While uploading, Settle times how long it takes
+      to open a connection to Google Drive's server, so it can slow down when your network gets busy
+      and leave room for others. Nothing is sent in these checks and nothing about them is stored or
+      shared.</li>
   </ul>
 
   <h2>Where your data goes</h2>
@@ -50,7 +57,9 @@
     (<code>drive.file</code> izni); diğer dosyalarını göremez. Bağlı hesabın e-posta adresini ve Drive
     kullanımını yalnızca ayarlarda göstermek için okur. Veriler yalnızca telefonun ile kendi
     Drive'ın arasında gider: sunucu, analiz, reklam ya da takip yoktur ve hiçbir veri kimseyle
-    paylaşılmaz. Erişimi Settle ayarlarından ya da
+    paylaşılmaz. Yedekleme seçtiğin klasörler için arka planda kendiliğinden çalışır; ayarlardan
+    kapatabilir ya da duraklatabilirsin. Yükleme sırasında ağını yormamak için Google Drive
+    sunucusuna bağlantı kurma süresini ölçer; bu ölçümlerde veri gönderilmez ve saklanmaz. Erişimi Settle ayarlarından ya da
     <a href="https://myaccount.google.com/connections">myaccount.google.com/connections</a> adresinden
     kaldırabilirsin.</p>
 
