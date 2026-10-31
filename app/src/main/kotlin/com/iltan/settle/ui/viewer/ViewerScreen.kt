@@ -518,9 +518,11 @@ private fun BackupRow(status: CloudStatus) {
         }
     val waitingFor =
         (status as? CloudStatus.Waiting)?.let {
+            val now = System.currentTimeMillis()
+            // Under a minute left reads "in 1 minute", not "in 0 minutes".
             DateUtils.getRelativeTimeSpanString(
-                    it.untilMillis,
-                    System.currentTimeMillis(),
+                    maxOf(it.untilMillis, now + DateUtils.MINUTE_IN_MILLIS),
+                    now,
                     DateUtils.MINUTE_IN_MILLIS,
                 )
                 .toString()
