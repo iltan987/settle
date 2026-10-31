@@ -8,6 +8,7 @@ import com.iltan.settle.domain.backup.BackupEngine
 import com.iltan.settle.domain.backup.BackupPause
 import com.iltan.settle.domain.backup.BackupResult
 import com.iltan.settle.domain.backup.UploadProblem
+import com.iltan.settle.domain.backup.checksumRecheckAtMillis
 import com.iltan.settle.domain.backup.retryAtMillis
 import com.iltan.settle.domain.transfer.PacerConfig
 import com.iltan.settle.domain.transfer.UploadPacer
@@ -229,8 +230,21 @@ class BackupRunner(
         val result = done.result
         log("$id: $result")
         if (done.item.requestedAtMillis != null) _outcomes.emit(BackupOutcome.Done(id, result))
-        if (result !is BackupResult.Stopped) return false
-        val problem = result.problem
+        val requested = kind == RunKind.REQUESTED || done.item.requestedAtMillis != null
+        val problem =
+            when (result) {
+                is BackupResult.Verified -> return false
+                is BackupResult.AwaitingChecksum -> {
+                    // Drive hasn't reported the SHA-256 yet: ask again later, not in the next run.
+                    val checks = (dao.retry(id)?.attempts ?: 0) + 1
+                    dao.saveRetry(
+                        UploadRetryEntity(id, checks, checksumRecheckAtMillis(checks, clock()))
+                    )
+                    if (requested) dao.deleteRequest(id)
+                    return false
+                }
+                is BackupResult.Stopped -> result.problem
+            }
         val blocking =
             when (problem) {
                 UploadProblem.AUTH_NEEDED -> BackupPause.AUTH_NEEDED
@@ -244,7 +258,7 @@ class BackupRunner(
         val attempts = (dao.retry(id)?.attempts ?: 0) + 1
         dao.saveRetry(UploadRetryEntity(id, attempts, retryAtMillis(problem, attempts, clock())))
         // The user hears how it ended; asking again starts a new try.
-        if (kind == RunKind.REQUESTED || done.item.requestedAtMillis != null) dao.deleteRequest(id)
+        if (requested) dao.deleteRequest(id)
         return false
     }
 

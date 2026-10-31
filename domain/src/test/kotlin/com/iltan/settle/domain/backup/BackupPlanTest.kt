@@ -122,6 +122,14 @@ class BackupPlanTest {
     }
 
     @Test
+    fun `a copy awaiting its SHA-256 is asked about again later, not at once`() {
+        (1..7).map { checksumRecheckAtMillis(it, now) - now } shouldBe
+            listOf(15L, 30, 60, 120, 240, 360, 360).map { it * 60_000 }
+        decide(candidate(cloud = CloudState.UPLOADED, retryAt = now + 5)) shouldBe
+            BackupDecision.WaitUntil(now + 5)
+    }
+
+    @Test
     fun `retry waits suit each problem`() {
         retryAtMillis(UploadProblem.AUTH_NEEDED, 1, now).shouldBeNull()
         retryAtMillis(UploadProblem.QUOTA_FULL, 1, now).shouldBeNull()

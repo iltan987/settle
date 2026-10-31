@@ -87,6 +87,14 @@ fun backupDecision(
 const val MISMATCH_RETRIES = 1
 
 /**
+ * When Drive is asked again about a copy whose SHA-256 it hasn't reported yet (ADR-004): after 15
+ * minutes, doubling with each check up to 6 hours. Without a wait the copy would look ready at once
+ * and runs would follow each other without a pause.
+ */
+fun checksumRecheckAtMillis(checks: Int, nowMillis: Long): Long =
+    nowMillis + minOf((15 * 60_000L) shl (checks - 1).coerceIn(0, 5), 6 * HOUR_MILLIS)
+
+/**
  * When a failed item may be tried again, or null when it waits for something else: the user
  * (reconnect, Drive full, a copy that failed twice) or the next run anyway.
  */

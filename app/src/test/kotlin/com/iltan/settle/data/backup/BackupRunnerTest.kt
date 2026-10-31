@@ -166,6 +166,14 @@ class BackupRunnerTest {
         )
     }
 
+    private fun TestScope.planner() =
+        BackupPlanner(
+            db.backupDao(),
+            BackupPreferences(db.backupDao()),
+            canReadOriginals = { true },
+            clock = { start + testScheduler.currentTime },
+        )
+
     private suspend fun TestScope.connect() {
         useTestClock()
         db.backupDao().setAccount(DriveAccountEntity(email = "owner@example.com"))
@@ -252,6 +260,38 @@ class BackupRunnerTest {
         assertEquals(1, retries.single().attempts)
         val retryAt = retries.single().retryAtMs!!
         assertTrue(retryAt in start + HOUR_MILLIS..start + testScheduler.currentTime + HOUR_MILLIS)
+    }
+
+    @Test
+    fun aCopyAwaitingItsChecksumWaitsInsteadOfBeingTriedAgainAtOnce() = runTest {
+        connect()
+        val id = item(chunk)
+        drive.sha256Delays = 1_000
+
+        assertEquals(RunEnd.DONE, runner().run(RunKind.AUTOMATIC))
+
+        assertEquals(CloudState.UPLOADED, state(id))
+        val retry = db.backupDao().retry(id.value)!!
+        assertEquals(1, retry.attempts)
+        val wait = 15 * 60_000L
+        assertTrue(retry.retryAtMs!! in start + wait..start + testScheduler.currentTime + wait)
+        val plan = planner().plan()
+        assertTrue(plan.queue.isEmpty())
+        assertEquals(1, plan.waiting)
+        assertEquals(1, drive.mediaFiles.size)
+    }
+
+    @Test
+    fun aRequestAwaitingItsChecksumEndsTheUserInitiatedRun() = runTest {
+        connect()
+        val id = item(chunk)
+        db.backupDao().addRequests(listOf(BackupRequestEntity(id.value, start)))
+        drive.sha256Delays = 1_000
+
+        assertEquals(RunEnd.DONE, runner().run(RunKind.REQUESTED))
+
+        assertNull(planner().plan().requested)
+        assertTrue(db.backupDao().backupCandidates().none { it.requestedAtMs != null })
     }
 
     @Test
