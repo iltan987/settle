@@ -4,35 +4,41 @@ The owner runs these prompts in Claude Design to redesign Settle's UI from scrat
 (HTML or React, screenshots and the handoff sheet) goes in this folder, and a design pass rebuilds
 the screens in Compose from it.
 
+No design system is prescribed, so the designer can choose freely. After the result is back, the
+engineer decides how to build it: Material 3 components restyled with the design's tokens where
+they fit, custom components where they don't. Spec R18 changes with that decision. Phone sizes
+are left to the engineer too.
+
 **How to use it:**
 1. Paste **Message 1** into a new Claude Design project, with no screenshots so it isn't anchored on today's UI.
 2. Pick one of its three directions.
-3. Send Messages 2–4 one at a time. Message 2 holds the screens Phase 4 needs.
+3. Send Messages 2–4 one at a time. Message 2 holds the screens built in Phase 4, which now exist
+   in plain form.
 4. Export the HTML or React and the handoff sheet into `docs/design/`.
 
 ## Message 1: master brief
 
 ```
-# Design brief: Settle, a calm and trustworthy Android gallery
+# Design brief: Settle, a calm and trustworthy photo gallery for Android
 
 ## Your role
-You are a senior product designer who specialises in Android and Material 3 Expressive. Design the
-complete UI and UX of Settle from a blank page. Ignore any existing app; nothing has to be kept.
-Your design will be rebuilt by an engineer in Jetpack Compose with Material 3 Expressive
-(androidx material3 1.5), so every element must map to a Material 3 component or a simple
-composition of them. Aim for an app that feels beautiful, effortless and quietly confident: the
-kind of gallery people keep on their home screen because it is pleasant to open.
+You are a senior product designer. Design the complete UI and UX of Settle from a blank page:
+its visual language, its design system and every screen. Nothing existing has to be kept, and no
+design system is prescribed: choose the visual direction you believe is best for this product and
+these people. Aim for an app that feels beautiful, effortless and quietly confident: the kind of
+gallery people keep on their home screen because it is pleasant to open. Original, not a copy of
+any existing gallery.
 
 ## The product
 Settle is a personal Android gallery that treats the phone and the owner's own Google Drive as one
 photo and video library. Promise: "Your phone and your Drive as one library. Backed up carefully,
 deleted once, never lost."
 - Photos are backed up to a "Settle" folder in the user's Google Drive, byte for byte, and each
-  copy is verified (size and checksums) before Settle calls it safe.
+  copy is verified before Settle calls it safe.
 - Backup is delayed on purpose: new photos wait (24 hours by default) so that the shots the user
   deletes soon never reach the cloud. It runs at night on Wi-Fi and the charger, unnoticed.
 - Deleting once deletes everywhere: the phone file and the Drive copy both go to a trash for 30
-  days and can be restored.
+  days and can be restored. Deleting in another gallery app is noticed and handled the same way.
 - Later, originals of old photos leave the phone to free space; the phone keeps a preview and
   downloads the original on demand ("cloud only").
 
@@ -43,29 +49,29 @@ The three feelings the design must create:
 3. Safe to act. Deleting is easy and undoable. Anything irreversible is unmistakable.
 
 ## The user
-One owner, technically literate, uses Settle daily on a Samsung Galaxy S24 FE: 6.7" portrait,
-about 412 dp wide, gesture navigation, Android 17. Library today: about 600 items on the phone
-(500 photos, 90 videos, a few motion photos), growing to tens of thousands. The UI is in English
-and Turkish; Turkish short labels run up to 40% longer ("Photos" → "Fotoğraflar", "Show in Photos"
-→ "Fotoğraflar'da göster"), so leave room and never truncate actions.
+One owner, technically literate, who uses Settle every day on an Android phone. Library today:
+about 600 items on the phone (photos, videos, a few motion photos), growing to tens of thousands.
+The UI is in English and Turkish; Turkish short labels run up to 40% longer ("Photos" →
+"Fotoğraflar", "Show in Photos" → "Fotoğraflar'da göster"), so leave room and never truncate
+actions.
 
-## Hard constraints
-- Material 3 Expressive. Prefer its components: flexible top app bars (large, collapsing on scroll),
-  short navigation bar, floating toolbar, FAB menu, button groups, split button, loading indicator
-  (shape-morphing) and wavy progress indicators, M3 shapes (the shape library) and the expressive
-  spring motion scheme, grouped/segmented lists, modal bottom sheets, snackbars, chips, dialogs.
-  If you need something M3 lacks, say so and keep it a simple composition.
-- Colour comes from the user's wallpaper (dynamic colour). Use M3 colour roles only (primary,
-  secondaryContainer, surfaceContainerHigh, error…), never fixed brand hues in UI. Show every screen
-  with one sample wallpaper palette, and the key screens with a second very different one to prove
-  it holds. Light and dark themes.
-- Never convey status by colour alone: every status has an icon and text somewhere.
-- Edge to edge: content draws behind the status and navigation bars. Only the photo viewer hides
-  the system bars.
-- Icons: Material Symbols Rounded; filled for selected or "on" states.
-- Type: the M3 type scale (system font), emphasised styles allowed for headlines.
-- Touch targets at least 48 dp, WCAG AA contrast, layouts survive 130% font scale.
-- No hamburger drawer, no iOS idioms, no glassmorphism or heavy blur, no lorem ipsum.
+## What is fixed
+These are facts of the platform and the product, not style choices:
+- It is a native Android app for phones in portrait. Design for a typical modern phone; the
+  engineer adapts the layouts to other sizes.
+- Android draws some things itself, and the design must sit well next to them: the status bar and
+  the gesture navigation bar (content may draw behind them, edge to edge), the back gesture, the
+  system share sheet, and the system's own dialogs for permissions and for moving photos to the
+  trash or deleting them.
+- Light and dark themes, both first-class.
+- Accessibility: touch targets at least 48 px at 1x, WCAG AA contrast, layouts that survive 130%
+  font scale, and status never shown by colour alone (each status has an icon and text somewhere).
+- Realistic content only: real-looking photos, dates in 2026, English and Turkish strings. No
+  lorem ipsum.
+
+Everything else is yours to decide: colour, typography, shape, layout, components, iconography,
+motion. If your direction would work with colours taken from the user's wallpaper, say how; it is
+welcome, not required.
 
 ## Vocabulary: an item's status (exactly one at a time)
 | Status | Meaning |
@@ -86,7 +92,7 @@ should look clean), in the viewer, and in an app-level status surface.
 ## Screens and flows (details come in later messages)
 A. Onboarding and photo access (full / only some photos / blocked), connecting Google Drive.
 B. Photos timeline: day sections, dense grid, fast scrolling through years, status badges,
-   banner slot for important notices, empty and loading states.
+   a place for important notices, empty and loading states.
 C. Selection mode: long-press, drag to select, select a whole day; actions on the selection.
 D. Photo and video viewer: swipe, zoom, video, motion photos, favourite, share, delete, details.
 E. Delete with undo; deleting something that isn't backed up yet.
@@ -97,7 +103,7 @@ I. Settings: library, Google Drive, backup, deletion, background setup steps, la
 J. Backup activity: progress of a running backup, pause and resume, reasons it is paused.
 K. Later (lower fidelity): cloud-only items, restore after reinstall, "free up space" preview,
    albums and pinned items.
-L. App icon (adaptive, with a monochrome themed variant) and a small brand mark.
+L. App icon and a small brand mark.
 
 ## Copy rules
 Plain, short, calm, sentence case. Say what happened and what the user can do. Never blame, no
@@ -107,15 +113,18 @@ your version marked "proposed".
 
 ## Deliverables
 1. Now: three clearly different visual directions, each shown on the Photos timeline, the viewer
-   and the Trash, in light and dark. Give each a name and a short rationale (what it optimises
-   for, its risks). Then stop and wait for my choice.
-2. Later messages: the full screen set for the chosen direction as a clickable prototype at 412 dp
-   width, every state as its own frame.
-3. A handoff sheet: colour roles used (as M3 role names, not hex), type roles, shape and corner
-   tokens, spacing scale, per screen the M3 component names with sizes in dp, motion notes (what
-   animates, which spring), and every string.
-Build prototypes in HTML/React with M3 token names as CSS variables (for example
---md-sys-color-surface-container-high) so the mapping to Compose is direct.
+   and the Trash, in light and dark. Give each a name and a short rationale: what it optimises
+   for, what it risks, and what makes it feel like Settle rather than any gallery. Then stop and
+   wait for my choice.
+2. Later messages: the full screen set for the chosen direction as a clickable prototype, every
+   state as its own frame.
+3. A design system and handoff sheet: colour tokens with their roles (background, surface levels,
+   text levels, accent, success, warning, error…) for light and dark; type scale; shape and corner
+   tokens; spacing scale; elevation or layering; iconography; motion (what animates, durations and
+   easing or springs). Then, per screen, the components it uses with sizes, and every string.
+Build prototypes in HTML/React with the tokens as CSS variables and components named for what
+they are (e.g. `StatusBadge`, `SelectionBar`), so the engineer can rebuild them faithfully in
+Jetpack Compose.
 
 ## Before you start
 If anything is ambiguous, ask me up to five questions. Otherwise list your assumptions in a few
@@ -142,8 +151,10 @@ B. Photos timeline
 
 C. Selection mode
 - Enter by long-press; drag across cells to extend; tap a day header to select or clear that day.
-- A count ("12 selected") and actions: Delete, Back up now, Share; Favourite optional. Use the
-  floating toolbar or top bar, your call; justify it.
+- A count ("12 selected") and actions: Delete, Back up now, Share; Favourite optional. Where the
+  actions live is your call; justify it.
+- Starting a selection must not move the grid: the finger that long-pressed keeps dragging over
+  the same cells. (A version that swapped a tall header for a short one made the grid jump.)
 - What happens if the selection mixes backed-up and not-backed-up items.
 
 D. Viewer
@@ -156,12 +167,13 @@ D. Viewer
   checksums match the original · Open in Google Drive".
 
 E. Delete
-- From the viewer and from a selection. Result: "Moved to trash" snackbar with Undo.
+- From the viewer and from a selection. Result: "Moved to the trash" with Undo, for about ten
+  seconds. Undo must stay reachable when deleting closes the viewer (e.g. the last photo).
 - Android may show its own system confirmation dialog before Settle can trash files unless the
   user granted "Media management" access. Design the moment that explains this once, with a path
   to grant it (it is optional).
-- Deleting items that are only on the phone and not backed up: say it plainly before or after
-  ("3 of these aren't backed up. They stay in the trash for 30 days, then they're gone.").
+- Deleting items that are only on the phone and not backed up: say it plainly. Current copy:
+  "Moved to the trash. 3 items weren't backed up; they're deleted for good after 30 days."
 - Deleting while an item is uploading.
 
 F. Trash
@@ -173,10 +185,11 @@ F. Trash
   from Google Drive. This can't be undone." (error-coloured confirm button).
 - A section "Deleted in another app": items the user deleted in Samsung Gallery. Their Drive copy
   is in Drive's trash; Restore downloads it back to the phone and checks it. Show download
-  progress and the success and failure states ("Couldn't download it. It's still in your Drive's
-  trash for 18 days.").
-- A setting-dependent variant: "Ask me" mode lists items deleted elsewhere with two choices per
-  item or for all: "Move Drive copies to trash" / "Keep in Drive".
+  progress and the success and failure states. Restores can stop because Google needs the user
+  to reconnect, the phone is offline, Drive no longer has the copy, Drive's copy doesn't match the
+  backup, or the phone is full; each needs a short label and a fuller explanation.
+- A setting-dependent variant: with "Ask me first", items deleted elsewhere wait in the trash with
+  two choices for all of them: "Move Drive copies to trash" / "Keep in Drive".
 - Empty trash state.
 
 G. Mass disappearance
@@ -215,8 +228,10 @@ I. Settings, grouped and scannable:
   backing up (no wait, 1 hour, 24 hours, 3 days, 7 days), Only while charging, Use mobile data,
   Network use (Polite: leaves room for others on your network / Up to 5, 10, 20, 40 Mbps / As fast
   as possible), Folders to back up, Pause and Resume.
-- Deletion: "When you delete in another app": Move the Drive copy to trash (default) / Ask me.
-  "Delete without asking each time" (Media management access), shown only while not granted.
+- Deletion: "When you delete in another app" (for backed-up photos and videos): Move the Drive
+  copy to the trash (default) / Ask me first. "Delete without asking each time: lets Settle move
+  items to the trash without Android asking each time" (an optional Android permission), shown
+  only while not granted.
 - Keep backup running (setup steps, only while needed), Language (System default, English,
   Türkçe), About and version.
 
@@ -240,8 +255,9 @@ K3. Free up space: a preview before the first run ("1,204 originals, 18.4 GB can
     confirm, and the result.
 K4. Albums and pinning: an album page, pin an album or folder to keep its originals on the phone.
 
-L. App icon: an adaptive icon (foreground on a 108 dp canvas with the 66 dp safe zone, background
-   layer) and a monochrome variant for themed icons, plus a small in-app brand mark. Idea space:
+L. App icon: an Android adaptive icon (a foreground on a 108 × 108 canvas whose important part fits
+   the central 66 × 66, and a background layer) and a single-colour variant for themed icons, plus
+   a small in-app brand mark. Idea space:
    settling, a calm layer coming to rest, phone and cloud as one. Show it among other icons on a
    home screen in light and dark.
 
