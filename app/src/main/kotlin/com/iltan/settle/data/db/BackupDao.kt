@@ -185,6 +185,12 @@ interface BackupDao {
 
     @Upsert suspend fun saveSettings(settings: BackupSettingsEntity)
 
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun addSuperseded(file: SupersededFileEntity)
+
+    @Query("SELECT * FROM superseded_file WHERE item_id = :itemId")
+    suspend fun superseded(itemId: String): List<SupersededFileEntity>
+
     @Query("SELECT drive_id FROM drive_folder WHERE path = :path")
     suspend fun folderId(path: String): String?
 
@@ -208,11 +214,14 @@ interface BackupDao {
     suspend fun forgetAllUploads() {
         deleteUploads()
         deleteRetries()
+        deleteSuperseded()
         resetCloudStates()
         deleteFolders()
     }
 
     @Query("DELETE FROM upload") suspend fun deleteUploads()
+
+    @Query("DELETE FROM superseded_file") suspend fun deleteSuperseded()
 
     @Query("DELETE FROM upload_retry") suspend fun deleteRetries()
 

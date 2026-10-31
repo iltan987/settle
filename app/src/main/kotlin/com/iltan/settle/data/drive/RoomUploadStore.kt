@@ -2,6 +2,7 @@ package com.iltan.settle.data.drive
 
 import com.iltan.settle.data.db.BackupDao
 import com.iltan.settle.data.db.DriveFolderEntity
+import com.iltan.settle.data.db.SupersededFileEntity
 import com.iltan.settle.data.db.UploadEntity
 import com.iltan.settle.domain.MediaItemId
 import com.iltan.settle.domain.backup.BackupItem
@@ -31,6 +32,9 @@ class RoomUploadStore(private val dao: BackupDao) : UploadStore {
         dao.upload(itemId.value)?.toRecord()
 
     override suspend fun save(record: UploadRecord) = dao.saveUpload(record.toEntity())
+
+    override suspend fun recordSuperseded(itemId: MediaItemId, driveFileId: String) =
+        dao.addSuperseded(SupersededFileEntity(driveFileId, itemId.value))
 
     override suspend fun folderId(path: String): String? = dao.folderId(path)
 

@@ -147,9 +147,11 @@ class BackupEngine(
                 existing == null -> reserve(itemId, current)
                 existing.snapshot != current || existing.state == CloudState.SUSPECT ->
                     // New bytes, or a copy that can't be trusted: a file Drive already created
-                    // keeps its ID and stays as it is; the upload starts over.
-                    if (existing.fileExists) reserve(itemId, current)
-                    else
+                    // stays as it is and is remembered; the upload starts over under a new ID.
+                    if (existing.fileExists) {
+                        store.recordSuperseded(itemId, existing.driveFileId)
+                        reserve(itemId, current)
+                    } else
                         existing.copy(snapshot = current, problem = null).withoutSession().also {
                             store.save(it)
                         }
@@ -338,6 +340,8 @@ class BackupEngine(
                 store.save(uploaded)
                 return confirm(uploaded, remote)
             }
+            // A file with other bytes holds the reserved ID; it stays, and is remembered.
+            store.recordSuperseded(itemId, record.driveFileId)
         }
         reserve(itemId, record.snapshot)
         return null

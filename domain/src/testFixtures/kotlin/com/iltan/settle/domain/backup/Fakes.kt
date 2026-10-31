@@ -228,8 +228,14 @@ class FakeUploadStore : UploadStore {
     val items = mutableMapOf<MediaItemId, BackupItem>()
     val records = mutableMapOf<MediaItemId, UploadRecord>()
     val folderIds = mutableMapOf<String, String>()
+    /** Replaced Drive files, by Drive file ID. */
+    val superseded = mutableMapOf<String, MediaItemId>()
 
     override suspend fun item(itemId: MediaItemId) = items[itemId]
+
+    override suspend fun recordSuperseded(itemId: MediaItemId, driveFileId: String) {
+        superseded[driveFileId] = itemId
+    }
 
     override suspend fun record(itemId: MediaItemId) = records[itemId]
 

@@ -138,15 +138,28 @@ class BackupDaoTest {
     }
 
     @Test
+    fun aReplacedDriveFileIsRememberedOnceAndOutlivesTheItem() = runTest {
+        val id = insertItem()
+        store.recordSuperseded(id, "old1")
+        store.recordSuperseded(id, "old1")
+
+        db.libraryDao().deleteItem(id.value)
+
+        assertEquals(listOf(SupersededFileEntity("old1", id.value)), dao.superseded(id.value))
+    }
+
+    @Test
     fun theDebugResetForgetsUploadsAndFolders() = runTest {
         val id = insertItem()
         store.save(record(id, CloudState.VERIFIED))
         store.saveFolderId("Settle (debug)", "root1")
+        store.recordSuperseded(id, "old1")
 
         dao.forgetAllUploads()
 
         assertNull(store.record(id))
         assertNull(store.folderId("Settle (debug)"))
+        assertEquals(emptyList<SupersededFileEntity>(), dao.superseded(id.value))
         assertEquals(CloudState.NONE, db.libraryDao().timeline().first().single().cloudState)
     }
 

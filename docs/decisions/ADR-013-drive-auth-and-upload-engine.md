@@ -59,4 +59,6 @@
   several uploads at once to finish in reasonable time. Phase 3 adds concurrent uploads with a
   bandwidth limit (R23).
 - A file edited after its backup gets a new upload with a new ID; the old Drive copy stays until
-  superseding is built (ADR-001).
+  superseding is built (ADR-001). Amended 2026-10-31: the replaced copy's Drive ID is recorded
+  (`superseded_file`, schema v4), as is a file with other bytes found under a reserved ID, so
+  superseding and the audit can find them.

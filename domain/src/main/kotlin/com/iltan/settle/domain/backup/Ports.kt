@@ -131,6 +131,14 @@ interface UploadStore {
     /** Saves the record and the item's cloud state together. */
     suspend fun save(record: UploadRecord)
 
+    /**
+     * Remembers a Drive file of this item that a new upload replaces: older bytes of an edited
+     * original, or a copy that can't be trusted. It stays in Drive until superseding moves it to
+     * the Drive trash once the new copy is verified (ADR-001); without this note nothing would know
+     * it exists.
+     */
+    suspend fun recordSuperseded(itemId: MediaItemId, driveFileId: String)
+
     suspend fun folderId(path: String): String?
 
     suspend fun saveFolderId(path: String, id: String)

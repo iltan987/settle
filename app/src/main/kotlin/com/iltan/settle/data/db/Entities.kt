@@ -106,6 +106,16 @@ data class UploadEntity(
     val problem: UploadProblem?,
 )
 
+/**
+ * A Drive file a newer upload of the item replaced (see `UploadStore.recordSuperseded`). No foreign
+ * key: the file stays in Drive even if the item leaves the library, so the note must too.
+ */
+@Entity(tableName = "superseded_file", indices = [Index("item_id")])
+data class SupersededFileEntity(
+    @PrimaryKey @ColumnInfo(name = "drive_file_id") val driveFileId: String,
+    @ColumnInfo(name = "item_id") val itemId: String,
+)
+
 /** Drive IDs of the folders Settle created, by path such as `Settle/media/2026/10`. */
 @Entity(tableName = "drive_folder")
 data class DriveFolderEntity(

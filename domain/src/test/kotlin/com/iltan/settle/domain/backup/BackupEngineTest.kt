@@ -240,6 +240,7 @@ class BackupEngineTest {
         engine().backUp(id) shouldBe BackupResult.Verified(reserved)
 
         drive.mediaFiles shouldHaveSize 1
+        store.superseded shouldBe emptyMap()
     }
 
     @Test
@@ -255,6 +256,7 @@ class BackupEngineTest {
         result.shouldBeInstanceOf<BackupResult.Verified>()
         result.driveFileId shouldNotBe "taken"
         drive.files.getValue("taken").bytes shouldBe ByteArray(10)
+        store.superseded shouldBe mapOf("taken" to id)
     }
 
     @Test
@@ -303,6 +305,8 @@ class BackupEngineTest {
         result.shouldBeInstanceOf<BackupResult.Verified>()
         result.driveFileId shouldNotBe first
         drive.files.containsKey(first) shouldBe true
+        // The copy of the earlier bytes stays in Drive and is remembered for superseding.
+        store.superseded shouldBe mapOf(first to id)
     }
 
     @Test
