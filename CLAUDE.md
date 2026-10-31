@@ -18,8 +18,8 @@ Read `docs/spec.md` for what it must do and `docs/decisions/` for why things are
 ./gradlew ktfmtFormat                        # format; ktfmtCheck fails the build on drift
 ./gradlew assembleDebug && adb push app/build/outputs/apk/debug/app-debug.apk /data/local/tmp/s.apk \
   && adb shell pm install -r /data/local/tmp/s.apk && adb shell rm /data/local/tmp/s.apk
-                                             # install com.iltan.settle.debug; `installDebug` and
-                                             # `adb install` stall at random from WSL
+                                             # install com.iltan.settle.debug (add -s <device>);
+                                             # `installDebug` and `adb install` stalled over USB
 ```
 
 Debug-build helpers on the phone:
@@ -45,7 +45,10 @@ Debug-build helpers on the phone:
 Full check before calling anything done:
 `./gradlew :domain:test :app:testDebugUnitTest :app:lintDebug assembleDebug ktfmtCheck`
 
-The phone is usually attached over USB and reachable with `adb` from WSL (serial `R5CY649XR5B`).
+The phone is reached over Wi-Fi with wireless debugging, as
+`adb-R5CY649XR5B-2dXbI4._adb-tls-connect._tcp` (adb finds it by itself while wireless debugging is
+on; `adb connect <ip:port>` from the phone's Wireless debugging screen otherwise). Since WSL uses
+mirrored networking, pushes over the USB link (usbipd) hang; the cable is only for charging.
 An emulator `settle_api37` (Android 17 / API 37, Google Play image, Pixel 8 profile) runs on
 Windows (Hypervisor Platform; nested KVM inside WSL was too slow) and holds no real photos. It is
 signed in to the owner's own account; there the debug build uses `Settle (emulator)/` in Drive,
@@ -54,7 +57,7 @@ device tests, and the phone for Samsung behaviour and final checks. Start it fro
 `powershell.exe -NoProfile -Command "\$env:ANDROID_SDK_ROOT='C:\Users\icaner\AppData\Local\Android\Sdk'; Start-Process 'C:\Users\icaner\AppData\Local\Android\Sdk\emulator\emulator.exe' -ArgumentList '-avd','settle_api37','-gpu','host','-no-boot-anim'"`.
 WSL runs in mirrored networking (`networkingMode=mirrored` in the Windows `.wslconfig`), so the
 emulator registers with WSL's adb on its own as `emulator-5554`. With both attached, every adb
-command needs `-s R5CY649XR5B` or `-s emulator-5554`. Screenshots:
+command needs `-s <phone>` or `-s emulator-5554`. Screenshots:
 `adb exec-out screencap -p > shot.png`. Samsung's Secure Folder makes some `pm` commands print a
 harmless "user 150" SecurityException.
 
