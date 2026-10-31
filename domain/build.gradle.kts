@@ -11,8 +11,12 @@ java { toolchain { languageVersion = JavaLanguageVersion.of(21) } }
 ktfmt { kotlinLangStyle() }
 
 dependencies {
+    // Suspending ports and backoff delays; JSON for the Drive file description (ADR-003).
+    implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.kotlinx.serialization.json)
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.kotest.assertions.core)
+    testImplementation(libs.kotlinx.coroutines.test)
     testRuntimeOnly(libs.junit.platform.launcher)
 }
 
