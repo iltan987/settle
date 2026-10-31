@@ -68,3 +68,12 @@ Play Store release later must stay possible, so Play-policy-forbidden permission
 Storage overview, duplicates and similar shots, a "temporary" tag with auto-delete, exposing
 cloud-only items to other apps through the system file picker, a home-screen widget, importing an
 existing Google Photos library.
+
+Owner's ideas from 2026-10-31, to research when scheduled:
+- **Galaxy AI from Settle.** Samsung's photo editor accepts no standard `ACTION_EDIT`; Samsung
+  Gallery does accept `ACTION_VIEW` for a photo. Try an "Open in Samsung Gallery" action and check
+  whether its AI button is offered there; "Edit in Google Photos" works through `ACTION_EDIT`.
+  Circle to Search is system-wide and already works on Settle's screens.
+- **Places.** In the details sheet, an address instead of raw coordinates and a small map; a map
+  of the library with photos placed where they were taken.
+- **People.** Group photos by the faces in them, on the phone, and browse one person's photos.
