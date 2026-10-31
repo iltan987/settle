@@ -4,14 +4,21 @@ import android.content.Context
 import android.content.pm.ApplicationInfo
 import android.util.Log
 import com.iltan.settle.data.Library
+import com.iltan.settle.data.backup.BackupMaintenance
+import com.iltan.settle.data.backup.BackupNotifications
+import com.iltan.settle.data.backup.BackupPlanner
+import com.iltan.settle.data.backup.BackupPreferences
+import com.iltan.settle.data.backup.BackupRunner
+import com.iltan.settle.data.backup.BackupScheduler
+import com.iltan.settle.data.backup.CloudBackup
 import com.iltan.settle.data.db.SettleDatabase
-import com.iltan.settle.data.drive.CloudBackup
 import com.iltan.settle.data.drive.DriveAuth
 import com.iltan.settle.data.drive.DriveRest
 import com.iltan.settle.data.drive.DriveSandbox
 import com.iltan.settle.data.drive.FixedToken
 import com.iltan.settle.data.drive.MediaStoreOriginals
 import com.iltan.settle.data.drive.RoomUploadStore
+import com.iltan.settle.data.drive.UploadMeter
 import com.iltan.settle.data.media.LibrarySync
 import com.iltan.settle.data.media.MediaAccess
 import com.iltan.settle.data.media.MediaChangeObserver
@@ -23,13 +30,15 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import okhttp3.Dispatcher
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
+import okhttp3.Protocol
 import okhttp3.Response
 
 /** The app's long-lived objects, wired by hand (ADR-007). One instance per process. */
 class AppGraph(context: Context) {
-    private val appContext = context.applicationContext
+    val appContext: Context = context.applicationContext
 
     /** Work that outlives any screen, such as scanning. */
     val appScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
@@ -43,11 +52,16 @@ class AppGraph(context: Context) {
             source = MediaStoreSource(appContext),
             dao = database.libraryDao(),
             hasFullAccess = { MediaAccess.of(appContext) == MediaAccess.FULL },
+            // New or deleted media change what waits for backup.
+            onChanged = { backupScheduler.reschedule() },
         )
 
-    private val http by lazy {
+    val http by lazy {
         // Timeouts apply per read or write, not per chunk, so slow networks still finish.
         OkHttpClient.Builder()
+            // Up to six uploads and the pacer's delay probe go to the same host at once; OkHttp
+            // allows five per host by default.
+            .dispatcher(Dispatcher().apply { maxRequestsPerHost = 16 })
             .connectTimeout(20, TimeUnit.SECONDS)
             .readTimeout(60, TimeUnit.SECONDS)
             .writeTimeout(60, TimeUnit.SECONDS)
@@ -83,19 +97,62 @@ class AppGraph(context: Context) {
 
     val drive by lazy { DriveRest(http, driveAuth) }
 
+    /**
+     * Uploads get connections of their own, one per upload over HTTP/1.1 as rclone does, so each
+     * has its own TCP window and the pacer's delay probe never waits behind upload data (ADR-014).
+     */
+    private val uploadHttp by lazy {
+        http.newBuilder().protocols(listOf(Protocol.HTTP_1_1)).build()
+    }
+
+    private val uploadMeter = UploadMeter()
+
+    private val uploadDrive by lazy { DriveRest(uploadHttp, driveAuth, meter = uploadMeter) }
+
+    private val originals by lazy { MediaStoreOriginals(appContext, database.backupDao()) }
+
+    val backupPreferences by lazy { BackupPreferences(database.backupDao()) }
+
+    val backupPlanner by lazy {
+        BackupPlanner(database.backupDao(), backupPreferences, originals::canReadOriginals)
+    }
+
+    val backupRunner by lazy {
+        val store = RoomUploadStore(database.backupDao())
+        BackupRunner(
+            dao = database.backupDao(),
+            planner = backupPlanner,
+            preferences = backupPreferences,
+            newEngine = { folderLock ->
+                BackupEngine(
+                    drive = uploadDrive,
+                    originals = originals,
+                    store = store,
+                    clock = { System.currentTimeMillis() },
+                    rootFolder = driveRootFolder,
+                    zone = ZoneId.systemDefault(),
+                    log = { Log.w("BackupEngine", it) },
+                    folderLock = folderLock,
+                )
+            },
+            meter = uploadMeter,
+            ping = { drive.ping() },
+            log = { Log.i("BackupRunner", it) },
+        )
+    }
+
+    val backupScheduler by lazy {
+        BackupScheduler(appContext, database.backupDao(), backupPlanner, backupRunner)
+    }
+
+    val backupNotifications by lazy { BackupNotifications(appContext).also { it.createChannels() } }
+
+    val backupMaintenance by lazy {
+        BackupMaintenance(drive, backupPreferences, backupNotifications)
+    }
+
     val cloudBackup by lazy {
-        val originals = MediaStoreOriginals(appContext, database.backupDao())
-        val engine =
-            BackupEngine(
-                drive = drive,
-                originals = originals,
-                store = RoomUploadStore(database.backupDao()),
-                clock = { System.currentTimeMillis() },
-                rootFolder = driveRootFolder,
-                zone = ZoneId.systemDefault(),
-                log = { Log.w("BackupEngine", it) },
-            )
-        CloudBackup(engine, database.backupDao(), originals)
+        CloudBackup(backupRunner, backupScheduler, database.backupDao(), originals)
     }
 
     /** Only in debug builds. */
@@ -108,7 +165,7 @@ class AppGraph(context: Context) {
     fun start() {
         librarySync.start(appScope)
         MediaChangeObserver { librarySync.requestScan() }.register(appContext.contentResolver)
-        // Building the Drive client stays off the main thread.
-        appScope.launch { cloudBackup.start(appScope) }
+        // A force stop clears every job; building the Drive client stays off the main thread.
+        appScope.launch { backupScheduler.reschedule() }
     }
 }

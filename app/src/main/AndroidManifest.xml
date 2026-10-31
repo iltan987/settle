@@ -9,6 +9,13 @@
     <uses-permission android:name="android.permission.ACCESS_MEDIA_LOCATION" />
     <!-- Google Drive. -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Background backup as jobs (ADR-014): network conditions, "Back up now" that may finish
+         in the background, jobs that survive a reboot, and notices when backup needs the user.
+         No battery-optimization exemption is requested (Play policy). -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.RUN_USER_INITIATED_JOBS" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <!-- No Android backup or device transfer: the library is rebuilt from Drive (ADR-003). -->
     <application
@@ -28,5 +35,22 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <service
+            android:name=".data.backup.BackupJobService"
+            android:exported="false"
+            android:permission="android.permission.BIND_JOB_SERVICE" />
+
+        <receiver
+            android:name=".data.backup.BackupActionReceiver"
+            android:exported="false" />
+
+        <receiver
+            android:name=".data.backup.BootReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
     </application>
 </manifest>

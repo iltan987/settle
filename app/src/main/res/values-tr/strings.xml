@@ -98,4 +98,17 @@
     <string name="backup_problem_mismatch">Drive\'daki kopya orijinalle eşleşmiyor. Yeniden yedekle.</string>
     <string name="backup_problem_failed">Yedekleme başarısız oldu</string>
     <string name="media_backed_up">Yedeklendi</string>
+
+    <string name="notification_channel_progress">Yedekleme ilerlemesi</string>
+    <string name="notification_channel_problems">Yedekleme sorunları</string>
+    <plurals name="notification_backing_up">
+        <item quantity="one">%d öge yedekleniyor</item>
+        <item quantity="other">%d öge yedekleniyor</item>
+    </plurals>
+    <string name="notification_progress">%1$s / %2$s</string>
+    <string name="notification_pause">Duraklat</string>
+    <string name="notification_reconnect_title">Google Drive\'ı yeniden bağla</string>
+    <string name="notification_reconnect_text">Yedeklemenin devam edebilmesi için Google\'da yeniden oturum açman gerekiyor. Hiçbir şey kaybolmadı.</string>
+    <string name="notification_drive_full_title">Google Drive dolu</string>
+    <string name="notification_drive_full_text">Google Drive\'ında yeniden yer açılana kadar yedekleme duraklatıldı. Hiçbir şey kaybolmadı.</string>
 </resources>

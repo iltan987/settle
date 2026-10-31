@@ -123,6 +123,9 @@ class UploadPacer(
         return pace
     }
 
+    /** A round-trip sample taken before uploads start: the network's quiet delay. */
+    fun onIdleDelay(nowMillis: Long, delayMillis: Long) = recordDelay(nowMillis, delayMillis)
+
     /** A different network: everything learned about the old one is dropped. */
     fun onNetworkChanged(nowMillis: Long) {
         delays.clear()

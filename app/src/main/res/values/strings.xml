@@ -103,4 +103,17 @@
     <string name="backup_problem_mismatch">Drive\'s copy doesn\'t match the original. Back it up again.</string>
     <string name="backup_problem_failed">Backup failed</string>
     <string name="media_backed_up">Backed up</string>
+
+    <string name="notification_channel_progress">Backup progress</string>
+    <string name="notification_channel_problems">Backup problems</string>
+    <plurals name="notification_backing_up">
+        <item quantity="one">Backing up %d item</item>
+        <item quantity="other">Backing up %d items</item>
+    </plurals>
+    <string name="notification_progress">%1$s of %2$s</string>
+    <string name="notification_pause">Pause</string>
+    <string name="notification_reconnect_title">Reconnect Google Drive</string>
+    <string name="notification_reconnect_text">Google needs you to sign in again before backup can continue. Nothing was lost.</string>
+    <string name="notification_drive_full_title">Google Drive is full</string>
+    <string name="notification_drive_full_text">Backup is paused until your Google Drive has space again. Nothing was lost.</string>
 </resources>

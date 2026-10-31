@@ -4,13 +4,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.iltan.settle.data.GridSource
 import com.iltan.settle.data.Library
+import com.iltan.settle.data.backup.BackupOutcome
+import com.iltan.settle.data.backup.CloudBackup
 import com.iltan.settle.data.db.BackupDao
 import com.iltan.settle.data.db.MediaDetails
 import com.iltan.settle.data.db.MediaEntry
-import com.iltan.settle.data.drive.BackupOutcome
-import com.iltan.settle.data.drive.CloudBackup
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -34,7 +33,7 @@ class ViewerViewModel(
         library.entries(source).stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
     /** How backups requested anywhere ended, for a short message. */
-    val outcomes: SharedFlow<BackupOutcome> = cloudBackup.outcomes
+    val outcomes: Flow<BackupOutcome> = cloudBackup.outcomes
 
     fun toggleFavorite(entry: MediaEntry) {
         viewModelScope.launch { library.setFavorite(entry, !entry.isFavorite) }
@@ -45,11 +44,14 @@ class ViewerViewModel(
                 backupDao.account().map { it != null },
                 backupDao.observeUpload(itemId),
                 cloudBackup.progress.map { it[itemId] },
+                cloudBackup.requested(itemId),
                 ::cloudStatus,
             )
             .distinctUntilChanged()
 
-    fun backUp(entry: MediaEntry) = cloudBackup.backUpNow(entry.id)
+    fun backUp(entry: MediaEntry) {
+        viewModelScope.launch { cloudBackup.backUpNow(listOf(entry.id)) }
+    }
 
     suspend fun motionVideoOffset(entry: MediaEntry): Long? = library.motionVideoOffset(entry)
 

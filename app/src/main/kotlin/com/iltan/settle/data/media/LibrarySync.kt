@@ -26,6 +26,8 @@ class LibrarySync(
     private val dao: LibraryDao,
     private val hasFullAccess: () -> Boolean,
     private val now: () -> Long = System::currentTimeMillis,
+    /** Called after a scan that changed the index. */
+    private val onChanged: suspend () -> Unit = {},
 ) {
     data class State(
         val scanning: Boolean = false,
@@ -66,20 +68,26 @@ class LibrarySync(
     suspend fun scan(full: Boolean = false) = mutex.withLock {
         if (!hasFullAccess()) return@withLock
         _state.update { it.copy(scanning = true) }
+        var changed = false
         try {
             var tripped = false
             for (volume in source.volumes()) {
-                tripped = scanVolume(volume, full) || tripped
+                val result = scanVolume(volume, full)
+                tripped = result.breakerTripped || tripped
+                changed = changed || result.changed
             }
             _state.update { it.copy(breakerTripped = tripped) }
         } finally {
             _state.update { it.copy(scanning = false) }
         }
+        if (changed) onChanged()
     }
 
-    private suspend fun scanVolume(volume: String, forceFull: Boolean): Boolean {
+    private data class VolumeResult(val breakerTripped: Boolean, val changed: Boolean)
+
+    private suspend fun scanVolume(volume: String, forceFull: Boolean): VolumeResult {
         val started = now()
-        val version = source.version(volume) ?: return false
+        val version = source.version(volume) ?: return VolumeResult(false, false)
         val cursor = dao.cursor(volume)
         val idsTrusted = cursor == null || cursor.mediaStoreVersion == version
         // Missing files can only be found again in a full scan (see VolumeScan.rows).
@@ -103,7 +111,12 @@ class LibrarySync(
                 "${plan.forgets.size} forgotten, ${plan.missing.size} missing" +
                 if (plan.breakerTripped) ", circuit breaker tripped" else "",
         )
-        return plan.breakerTripped
+        val changed =
+            plan.inserts.isNotEmpty() ||
+                plan.updates.isNotEmpty() ||
+                plan.forgets.isNotEmpty() ||
+                plan.missing.isNotEmpty()
+        return VolumeResult(plan.breakerTripped, changed)
     }
 
     private companion object {

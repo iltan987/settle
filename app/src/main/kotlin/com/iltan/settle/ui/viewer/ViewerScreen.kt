@@ -69,9 +69,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import coil3.request.ImageRequest
 import com.iltan.settle.R
+import com.iltan.settle.data.backup.BackupOutcome
 import com.iltan.settle.data.contentUri
 import com.iltan.settle.data.db.MediaEntry
-import com.iltan.settle.data.drive.BackupOutcome
 import com.iltan.settle.data.thumbnail
 import com.iltan.settle.domain.backup.BackupResult
 import com.iltan.settle.domain.backup.UploadProblem

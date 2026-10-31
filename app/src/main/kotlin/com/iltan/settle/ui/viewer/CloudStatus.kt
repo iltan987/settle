@@ -1,7 +1,7 @@
 package com.iltan.settle.ui.viewer
 
+import com.iltan.settle.data.backup.UploadProgress
 import com.iltan.settle.data.db.UploadEntity
-import com.iltan.settle.data.drive.UploadProgress
 import com.iltan.settle.domain.CloudState
 import com.iltan.settle.domain.backup.UploadProblem
 
@@ -23,12 +23,18 @@ sealed interface CloudStatus {
     data class Problem(val problem: UploadProblem) : CloudStatus
 }
 
-fun cloudStatus(connected: Boolean, upload: UploadEntity?, progress: UploadProgress?): CloudStatus =
+fun cloudStatus(
+    connected: Boolean,
+    upload: UploadEntity?,
+    progress: UploadProgress?,
+    requested: Boolean = false,
+): CloudStatus =
     when {
         progress != null ->
             CloudStatus.Uploading(
                 progress.totalBytes.takeIf { it > 0 }?.let { progress.sentBytes.toFloat() / it }
             )
+        requested && upload?.state != CloudState.VERIFIED -> CloudStatus.Uploading(null)
         upload?.state == CloudState.VERIFIED -> CloudStatus.BackedUp(upload.driveFileId)
         !connected -> CloudStatus.NotConnected
         upload?.problem != null -> CloudStatus.Problem(upload.problem)

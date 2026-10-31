@@ -42,6 +42,8 @@ class DriveRest(
     client: OkHttpClient,
     private val tokens: DriveTokens,
     private val baseUrl: HttpUrl = "https://www.googleapis.com/".toHttpUrl(),
+    /** Caps and counts upload bytes, and hears about rate limits; null for metadata-only use. */
+    private val meter: UploadMeter? = null,
 ) : DriveApi {
 
     // A chunk is replayed by the engine after asking the server what it has, never blindly by
@@ -107,7 +109,10 @@ class DriveRest(
     ): ChunkResult =
         uploadStep(sessionUri) {
             header("Content-Range", "bytes $offset-${offset + length - 1}/$totalBytes")
-                .put(buffer.toRequestBody(OCTET_STREAM, 0, length))
+                .put(
+                    meter?.body(buffer, length, OCTET_STREAM)
+                        ?: buffer.toRequestBody(OCTET_STREAM, 0, length)
+                )
         }
 
     override suspend fun uploadStatus(sessionUri: String, totalBytes: Long): ChunkResult =
@@ -134,6 +139,11 @@ class DriveRest(
             limitBytes = about.storageQuota?.limit?.toLongOrNull(),
             usageBytes = about.storageQuota?.usage?.toLongOrNull(),
         )
+    }
+
+    /** The smallest Drive request there is, for measuring round-trip delay. */
+    suspend fun ping() {
+        send { url(api("drive/v3/about").addQueryParameter("fields", "kind").build()) }.close()
     }
 
     /** Moves a file or folder Settle created to the Drive trash; restorable for 30 days. */
@@ -200,8 +210,10 @@ class DriveRest(
                 tokens.invalidate(token)
                 continue
             }
+            val failure = failureFor(response.code, reason)
+            if (failure == DriveFailure.RATE_LIMITED) meter?.onRateLimited()
             throw DriveException(
-                failureFor(response.code, reason),
+                failure,
                 "HTTP ${response.code} ${reason.orEmpty()} for ${request.method} ${request.url.encodedPath}",
             )
         }

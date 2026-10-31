@@ -22,7 +22,7 @@ class DebugBackupReceiver : BroadcastReceiver() {
             try {
                 val itemId = graph.database.backupDao().itemIdForMediaStoreId(mediaStoreId)
                 Log.i("DebugBackup", "MediaStore $mediaStoreId is item $itemId")
-                itemId?.let(graph.cloudBackup::backUpNow)
+                itemId?.let { graph.cloudBackup.backUpNow(listOf(it)) }
             } finally {
                 pending.finish()
             }

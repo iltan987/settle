@@ -4,6 +4,8 @@ plugins {
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.ktfmt)
     `java-library`
+    // The fake Drive, originals and store, shared with the app's tests of the backup runner.
+    `java-test-fixtures`
 }
 
 java { toolchain { languageVersion = JavaLanguageVersion.of(21) } }
@@ -14,6 +16,7 @@ dependencies {
     // Suspending ports and backoff delays; JSON for the Drive file description (ADR-003).
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.serialization.json)
+    testFixturesImplementation(libs.kotlinx.coroutines.core)
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.kotest.assertions.core)
     testImplementation(libs.kotlinx.coroutines.test)

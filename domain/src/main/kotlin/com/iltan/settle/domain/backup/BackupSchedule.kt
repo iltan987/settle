@@ -4,6 +4,8 @@ package com.iltan.settle.domain.backup
 enum class BackupPause {
     /** No Google Drive account is connected. */
     NOT_CONNECTED,
+    /** Without media location access only copies without location can be read (R1). */
+    NO_ORIGINAL_ACCESS,
     /** The user paused backup. */
     BY_USER,
     /** Google needs the user to sign in again. */

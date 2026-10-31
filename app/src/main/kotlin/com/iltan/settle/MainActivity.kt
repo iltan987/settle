@@ -16,6 +16,11 @@ class MainActivity : ComponentActivity() {
         setContent { SettleTheme { SettleApp() } }
     }
 
+    companion object {
+        /** Set by backup notifications that need the user in Settings. */
+        const val EXTRA_OPEN_SETTINGS = "com.iltan.settle.OPEN_SETTINGS"
+    }
+
     override fun onResume() {
         super.onResume()
         // Catches changes made while Settle was in the background, and a just-granted permission.
