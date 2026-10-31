@@ -125,6 +125,18 @@ interface TrashDao {
     )
     suspend fun createdDriveFile(itemId: String): String?
 
+    /**
+     * Deletions made elsewhere whose Drive copies are still waiting for their trash: the window in
+     * which a mass disappearance taken in slices is caught (see `afterScan`).
+     */
+    @Query(
+        """
+        $TRASH_ITEM_COLUMNS WHERE t.origin = 'ELSEWHERE'
+            AND EXISTS(SELECT 1 FROM drive_op o WHERE o.item_id = m.id AND o.kind = 'TRASH')
+        """
+    )
+    suspend fun pendingElsewhere(): List<TrashItemRow>
+
     /** Items in Settle's trash whose time is over. */
     @Query("$TRASH_ITEM_COLUMNS WHERE t.expires_at_ms <= :nowMs")
     suspend fun expiredTrash(nowMs: Long): List<TrashItemRow>
@@ -180,6 +192,7 @@ interface TrashDao {
         changes.vanished.forEach {
             upsertVanished(VanishedEntity(it.itemId.value, it.sinceMillis, it.reason, it.kept))
         }
+        changes.dropOps.forEach { deleteOpFor(it) }
         changes.ops.forEach {
             upsertOp(
                 DriveOpEntity(
@@ -206,6 +219,9 @@ interface TrashDao {
     suspend fun deleteVanished(itemId: String)
 
     @Upsert suspend fun upsertOp(op: DriveOpEntity)
+
+    @Query("DELETE FROM drive_op WHERE drive_file_id = :driveFileId")
+    suspend fun deleteOpFor(driveFileId: String)
 
     @Query("UPDATE local_file SET local_state = :state WHERE item_id = :itemId")
     suspend fun setLocalState(itemId: String, state: LocalState)

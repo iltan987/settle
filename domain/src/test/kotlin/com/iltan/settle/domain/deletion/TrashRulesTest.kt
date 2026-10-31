@@ -172,6 +172,56 @@ class TrashRulesTest {
     }
 
     @Test
+    fun `a mass disappearance taken in slices is still one, while Drive is untouched`() {
+        // Earlier scans took 180 vanished files as deletions elsewhere; their Drive trash waits.
+        val earlier =
+            List(180) {
+                item(local = LocalState.MISSING, entry = TrashOrigin.ELSEWHERE, pendingOps = 1)
+            }
+        val now = List(30) { item() }
+        val plan = scan(missing = now).copy(breakerLimit = 200)
+
+        val changes =
+            afterScan(
+                plan,
+                now.associateBy { it.itemId },
+                ExternalDeletionPolicy.MOVE_DRIVE_COPY_TO_TRASH,
+                this.now,
+                recentElsewhere = earlier,
+            )
+
+        changes.ops.shouldBeEmpty()
+        changes.entries.shouldBeEmpty()
+        changes.removeEntries shouldContainExactlyInAnyOrder earlier.map { it.itemId }
+        changes.dropOps shouldContainExactlyInAnyOrder earlier.mapNotNull { it.driveFiles.current }
+        changes.vanished.size shouldBe 210
+        changes.vanished.map { it.reason }.toSet() shouldBe setOf(VanishedReason.BREAKER)
+    }
+
+    @Test
+    fun `a few deletions elsewhere in a row stay deletions elsewhere`() {
+        val earlier =
+            List(100) {
+                item(local = LocalState.MISSING, entry = TrashOrigin.ELSEWHERE, pendingOps = 1)
+            }
+        val now = List(30) { item() }
+
+        val changes =
+            afterScan(
+                scan(missing = now).copy(breakerLimit = 200),
+                now.associateBy { it.itemId },
+                ExternalDeletionPolicy.MOVE_DRIVE_COPY_TO_TRASH,
+                this.now,
+                recentElsewhere = earlier,
+            )
+
+        changes.entries.size shouldBe 30
+        changes.ops.size shouldBe 30
+        changes.dropOps.shouldBeEmpty()
+        changes.removeEntries.shouldBeEmpty()
+    }
+
+    @Test
     fun `an item already in the trash is not taken for a new deletion`() {
         val mine = item(local = LocalState.PRESENT, entry = TrashOrigin.SETTLE)
         val asked = item(vanished = VanishedReason.ASK)

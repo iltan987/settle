@@ -113,6 +113,8 @@ data class TrashChanges(
     val removeVanished: List<MediaItemId> = emptyList(),
     /** Queued, replacing any operation on the same file. */
     val ops: List<DriveOp> = emptyList(),
+    /** Drive files whose queued operation is dropped. */
+    val dropOps: List<String> = emptyList(),
     /** Items whose phone file Settle just moved into or out of the system trash. */
     val markTrashed: List<MediaItemId> = emptyList(),
     val markPresent: List<MediaItemId> = emptyList(),
@@ -126,6 +128,7 @@ data class TrashChanges(
                 vanished.isEmpty() &&
                 removeVanished.isEmpty() &&
                 ops.isEmpty() &&
+                dropOps.isEmpty() &&
                 markTrashed.isEmpty() &&
                 markPresent.isEmpty() &&
                 purge.isEmpty()
@@ -145,6 +148,12 @@ private fun ops(itemId: MediaItemId, files: List<String>, kind: DriveOpKind, not
  *   with [ExternalDeletionPolicy.ASK] it waits for the user;
  * - a mass disappearance touches nothing in Drive and waits for the user (R14).
  *
+ * Live scans can take a large deletion in slices of a few dozen files, each below the breaker's
+ * limit. So the wait doubles as the breaker's window: this scan's disappearances count together
+ * with [recentElsewhere], the deletions elsewhere whose Drive copies haven't been touched yet. When
+ * together they pass the limit, all of them become one mass disappearance and their queued Drive
+ * changes are dropped.
+ *
  * [items] holds the state before the scan of every item the plan mentions.
  */
 fun afterScan(
@@ -153,6 +162,7 @@ fun afterScan(
     policy: ExternalDeletionPolicy,
     nowMillis: Long,
     externalWaitMillis: Long = EXTERNAL_DELETION_WAIT_MILLIS,
+    recentElsewhere: List<TrashItem> = emptyList(),
 ): TrashChanges {
     val entries = mutableListOf<TrashEntry>()
     val removeEntries = mutableListOf<MediaItemId>()
@@ -181,9 +191,23 @@ fun afterScan(
         }
     }
 
+    val recent = recentElsewhere.filter { it.itemId !in items }
+    val massDisappearance =
+        plan.breakerTripped ||
+            (plan.missing.isNotEmpty() && plan.missing.size + recent.size > plan.breakerLimit)
+    val dropOps = mutableListOf<String>()
+    if (massDisappearance) {
+        for (item in recent) {
+            val entry = item.entry ?: continue
+            removeEntries += item.itemId
+            vanished += Vanished(item.itemId, entry.trashedAtMillis, VanishedReason.BREAKER)
+            dropOps += item.driveFiles.all
+        }
+    }
+
     for (id in plan.missing) {
         val item = items[id] ?: continue
-        if (plan.breakerTripped) {
+        if (massDisappearance) {
             if (item.vanished == null && item.entry == null) {
                 vanished += Vanished(id, nowMillis, VanishedReason.BREAKER)
             }
@@ -215,6 +239,7 @@ fun afterScan(
         vanished = vanished,
         removeVanished = removeVanished,
         ops = queued,
+        dropOps = dropOps,
     )
 }
 

@@ -25,8 +25,13 @@ class TrashStore(private val dao: TrashDao) : DriveOpStore, DownloadStore {
                 dao.trashItems(chunk).map { it.toTrashItem(superseded[it.id].orEmpty()) }
             }
 
-    suspend fun expired(nowMillis: Long): List<TrashItem> {
-        val rows = dao.expiredTrash(nowMillis)
+    suspend fun expired(nowMillis: Long): List<TrashItem> =
+        withSuperseded(dao.expiredTrash(nowMillis))
+
+    /** Deletions made elsewhere whose Drive copies haven't been trashed yet. */
+    suspend fun pendingElsewhere(): List<TrashItem> = withSuperseded(dao.pendingElsewhere())
+
+    private suspend fun withSuperseded(rows: List<TrashItemRow>): List<TrashItem> {
         val superseded =
             rows
                 .map { it.id }

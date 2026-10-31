@@ -70,6 +70,7 @@ class AppGraph(context: Context) {
                     backupPreferences.current().externalDeletion,
                     now,
                     externalDeletionWaitMillis,
+                    recentElsewhere = trashStore.pendingElsewhere(),
                 )
             },
             // New or deleted media change what waits for backup and what Drive must hear.

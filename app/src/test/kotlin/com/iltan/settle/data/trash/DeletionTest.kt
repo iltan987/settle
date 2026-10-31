@@ -131,6 +131,7 @@ class DeletionTest {
                     preferences.current().externalDeletion,
                     nowMillis,
                     wait,
+                    recentElsewhere = trashStore.pendingElsewhere(),
                 )
             },
         )
@@ -354,6 +355,23 @@ class DeletionTest {
         assertTrue(drive.trashed.isEmpty())
         assertEquals(0, deletion.breakerCount.first())
         assertEquals(ids.size, allIds().size)
+    }
+
+    @Test
+    fun aMassDisappearanceTakenInSlicesIsStillCaughtBeforeDriveIsTouched() = runTest {
+        backedUp(*(1L..250L).toList().toLongArray())
+
+        // Live scans see a large deletion in slices, each below the breaker's limit.
+        for (slice in (1L..250L).chunked(50)) {
+            slice.forEach { source.files.remove(it) }
+            sync.scan()
+        }
+        now += wait
+        work.runDriveChanges()
+
+        assertTrue(drive.trashed.isEmpty())
+        assertEquals(250, deletion.breakerCount.first())
+        assertEquals(emptyList<Any>(), deletion.trash.first())
     }
 
     @Test

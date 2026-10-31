@@ -56,6 +56,8 @@ data class ScanPlan(
      * another app (ADR-015).
      */
     val expired: List<MediaItemId> = emptyList(),
+    /** More disappearances than this at once are a mass disappearance: max(200, 10 %). */
+    val breakerLimit: Int = BREAKER_MIN_FILES,
 ) {
     val isEmpty: Boolean
         get() =
@@ -139,7 +141,8 @@ fun reconcileScan(
     // A trashed file vanishing is the trash expiring, so it says nothing about the phone's health.
     val (lostFromTrash, lostFromPhone) = lost.partition { it.localState == LocalState.TRASHED }
     val onPhone = candidates.count { it.localState == LocalState.PRESENT }
-    val breakerTripped = lostFromPhone.size > maxOf(BREAKER_MIN_FILES, onPhone / 10)
+    val breakerLimit = maxOf(BREAKER_MIN_FILES, onPhone / 10)
+    val breakerTripped = lostFromPhone.size > breakerLimit
     val (forgets, missing) =
         if (breakerTripped) emptyList<KnownFile>() to lostFromPhone
         else lostFromPhone.partition { it.cloudState == CloudState.NONE }
@@ -156,6 +159,7 @@ fun reconcileScan(
         missing = missing.map { it.itemId },
         breakerTripped = breakerTripped,
         expired = expired.map { it.itemId },
+        breakerLimit = breakerLimit,
     )
 }
 
