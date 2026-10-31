@@ -31,6 +31,8 @@ enum class CloudState {
 
 /** The single status shown on an item in the timeline. */
 enum class ItemStatus {
+    /** On the phone and not chosen for backup (its folder is off, or automatic backup is off). */
+    NOT_BACKED_UP,
     /** On the phone, inside the grace period before backup. */
     WAITING,
     /** On the phone, eligible for backup and queued. */
@@ -56,7 +58,8 @@ fun deriveStatus(
     local: LocalState,
     cloud: CloudState,
     inTrash: Boolean,
-    uploadEligibleAtMillis: Long,
+    /** When backup may start; null when the item isn't chosen for backup. */
+    uploadEligibleAtMillis: Long?,
     nowMillis: Long,
 ): ItemStatus {
     if (inTrash) return ItemStatus.IN_TRASH
@@ -67,14 +70,19 @@ fun deriveStatus(
             when (cloud) {
                 CloudState.NONE,
                 CloudState.RESERVED ->
-                    if (nowMillis < uploadEligibleAtMillis) ItemStatus.WAITING
-                    else ItemStatus.QUEUED
+                    when {
+                        uploadEligibleAtMillis == null -> ItemStatus.NOT_BACKED_UP
+                        nowMillis < uploadEligibleAtMillis -> ItemStatus.WAITING
+                        else -> ItemStatus.QUEUED
+                    }
                 CloudState.UPLOADING,
                 CloudState.UPLOADED -> ItemStatus.UPLOADING
                 CloudState.VERIFIED -> ItemStatus.BACKED_UP
                 // The cloud copy is gone but the phone still has the original: back it up again.
                 CloudState.TRASHED,
-                CloudState.DELETED -> ItemStatus.QUEUED
+                CloudState.DELETED ->
+                    if (uploadEligibleAtMillis == null) ItemStatus.NOT_BACKED_UP
+                    else ItemStatus.QUEUED
                 CloudState.SUSPECT -> ItemStatus.NEEDS_ATTENTION
             }
         LocalState.EVICTED ->

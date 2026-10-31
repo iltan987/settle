@@ -11,7 +11,7 @@ class DeriveStatusTest {
         local: LocalState,
         cloud: CloudState,
         inTrash: Boolean = false,
-        eligibleAt: Long = now,
+        eligibleAt: Long? = now,
     ) = deriveStatus(local, cloud, inTrash, uploadEligibleAtMillis = eligibleAt, nowMillis = now)
 
     @Test
@@ -19,6 +19,16 @@ class DeriveStatusTest {
         status(LocalState.PRESENT, CloudState.NONE, eligibleAt = now + 1) shouldBe
             ItemStatus.WAITING
         status(LocalState.PRESENT, CloudState.NONE, eligibleAt = now) shouldBe ItemStatus.QUEUED
+    }
+
+    @Test
+    fun `item not chosen for backup says so, unless a copy is already under way or done`() {
+        status(LocalState.PRESENT, CloudState.NONE, eligibleAt = null) shouldBe
+            ItemStatus.NOT_BACKED_UP
+        status(LocalState.PRESENT, CloudState.UPLOADING, eligibleAt = null) shouldBe
+            ItemStatus.UPLOADING
+        status(LocalState.PRESENT, CloudState.VERIFIED, eligibleAt = null) shouldBe
+            ItemStatus.BACKED_UP
     }
 
     @Test
