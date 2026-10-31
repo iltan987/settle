@@ -1,6 +1,7 @@
 package com.iltan.settle.data.drive
 
 import com.iltan.settle.domain.backup.ChunkResult
+import com.iltan.settle.domain.backup.DownloadStream
 import com.iltan.settle.domain.backup.DriveApi
 import com.iltan.settle.domain.backup.DriveException
 import com.iltan.settle.domain.backup.DriveFailure
@@ -8,6 +9,8 @@ import com.iltan.settle.domain.backup.NewDriveFile
 import com.iltan.settle.domain.backup.RemoteFile
 import java.io.IOException
 import kotlin.coroutines.resumeWithException
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runInterruptible
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -146,10 +149,45 @@ class DriveRest(
         send { url(api("drive/v3/about").addQueryParameter("fields", "kind").build()) }.close()
     }
 
-    /** Moves a file or folder Settle created to the Drive trash; restorable for 30 days. */
-    suspend fun trash(id: String) {
+    /** Moves a file or folder Settle created into the Drive trash (30 days), or out of it. */
+    override suspend fun setTrashed(id: String, trashed: Boolean) {
         val url = api("drive/v3/files/$id").addQueryParameter("fields", "id")
-        send { url(url.build()).patch("""{"trashed":true}""".toRequestBody(JSON)) }.close()
+        send { url(url.build()).patch("""{"trashed":$trashed}""".toRequestBody(JSON)) }.close()
+    }
+
+    override suspend fun delete(id: String) {
+        send { url(api("drive/v3/files/$id").build()).delete() }.close()
+    }
+
+    /**
+     * The file's bytes from [fromByte] on (`alt=media` with a `Range` header,
+     * guides/manage-downloads). A server that ignores the range answers 200 with the whole file;
+     * the bytes before [fromByte] are then skipped.
+     */
+    override suspend fun download(id: String, fromByte: Long): DownloadStream {
+        val url = api("drive/v3/files/$id").addQueryParameter("alt", "media")
+        val response = send {
+            url(url.build()).apply { if (fromByte > 0) header("Range", "bytes=$fromByte-") }
+        }
+        val source = response.body.source()
+        if (fromByte > 0 && response.code != PARTIAL_CONTENT) {
+            try {
+                runInterruptible(Dispatchers.IO) { source.skip(fromByte) }
+            } catch (e: IOException) {
+                response.close()
+                throw DriveException(DriveFailure.TRANSIENT, e.message, e)
+            }
+        }
+        return object : DownloadStream {
+            override suspend fun read(buffer: ByteArray, offset: Int, length: Int): Int =
+                try {
+                    runInterruptible(Dispatchers.IO) { source.read(buffer, offset, length) }
+                } catch (e: IOException) {
+                    throw DriveException(DriveFailure.TRANSIENT, e.message, e)
+                }
+
+            override fun close() = response.close()
+        }
     }
 
     /**
@@ -243,6 +281,7 @@ class DriveRest(
         private const val FOLDER = "application/vnd.google-apps.folder"
         private const val FILE_FIELDS = "id,size,md5Checksum,sha256Checksum"
         private const val RESUME_INCOMPLETE = 308
+        private const val PARTIAL_CONTENT = 206
         private val RANGE = Regex("""bytes=0-(\d+)""")
         private val JSON = "application/json; charset=UTF-8".toMediaType()
         private val OCTET_STREAM = "application/octet-stream".toMediaType()

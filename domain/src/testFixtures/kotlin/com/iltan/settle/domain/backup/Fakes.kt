@@ -28,6 +28,8 @@ class FakeDrive : DriveApi {
     }
 
     val files = linkedMapOf<String, StoredFile>()
+    /** IDs of files in Drive's trash. */
+    val trashed = mutableSetOf<String>()
     private val sessions = mutableMapOf<String, Session>()
     private var nextId = 0
     private var nextSession = 0
@@ -145,6 +147,52 @@ class FakeDrive : DriveApi {
     override suspend fun getFile(id: String): RemoteFile? {
         fault("getFile")
         return files[id]?.let(::remote)
+    }
+
+    override suspend fun setTrashed(id: String, trashed: Boolean) {
+        fault("setTrashed")
+        if (id !in files) throw DriveException(DriveFailure.NOT_FOUND)
+        if (trashed) this.trashed += id else this.trashed -= id
+        answer("setTrashed")
+    }
+
+    override suspend fun delete(id: String) {
+        fault("delete")
+        if (files.remove(id) == null) throw DriveException(DriveFailure.NOT_FOUND)
+        trashed -= id
+        answer("delete")
+    }
+
+    /** Downloads end after this many bytes, as a dropped connection would. */
+    var cutDownloadAfter: Int? = null
+    var downloadCalls = 0
+    val downloadOffsets = mutableListOf<Long>()
+
+    override suspend fun download(id: String, fromByte: Long): DownloadStream {
+        fault("download")
+        val bytes = files[id]?.bytes ?: throw DriveException(DriveFailure.NOT_FOUND)
+        downloadCalls++
+        downloadOffsets += fromByte
+        val cut = cutDownloadAfter?.also { cutDownloadAfter = null }
+        return object : DownloadStream {
+            var position = fromByte.toInt()
+            var sent = 0
+
+            override suspend fun read(buffer: ByteArray, offset: Int, length: Int): Int {
+                if (cut != null && sent >= cut) {
+                    throw DriveException(DriveFailure.TRANSIENT, "connection dropped")
+                }
+                if (position >= bytes.size) return -1
+                val limit = if (cut != null) minOf(length, cut - sent) else length
+                val count = minOf(limit, bytes.size - position)
+                bytes.copyInto(buffer, offset, position, position + count)
+                position += count
+                sent += count
+                return count
+            }
+
+            override fun close() {}
+        }
     }
 
     private fun live(uri: String): Session {

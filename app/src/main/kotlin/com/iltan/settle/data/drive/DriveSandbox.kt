@@ -14,7 +14,7 @@ class DriveSandbox(
     suspend fun reset() {
         check(isSandboxFolder(rootFolder)) { "Only a debug build's own folder may be reset" }
         val id = dao.folderId(rootFolder) ?: drive.findFolder(rootFolder, parentId = null)
-        if (id != null) drive.trash(id)
+        if (id != null) drive.setTrashed(id, trashed = true)
         dao.forgetAllUploads()
     }
 

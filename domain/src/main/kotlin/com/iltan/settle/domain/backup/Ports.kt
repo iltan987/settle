@@ -78,6 +78,23 @@ interface DriveApi {
 
     /** The file with its size and checksums; null if it doesn't exist. */
     suspend fun getFile(id: String): RemoteFile?
+
+    /** Moves the file into Drive's trash, or out of it. A missing file throws NOT_FOUND. */
+    suspend fun setTrashed(id: String, trashed: Boolean)
+
+    /** Deletes the file permanently, skipping the trash. A missing file throws NOT_FOUND. */
+    suspend fun delete(id: String)
+
+    /** Reads the file's content from byte [fromByte] on. A missing file throws NOT_FOUND. */
+    suspend fun download(id: String, fromByte: Long): DownloadStream
+}
+
+/** A file's content as it arrives from Drive. */
+interface DownloadStream : Closeable {
+    /**
+     * Reads up to [length] bytes into [buffer] at [offset]; returns the count, or -1 at the end.
+     */
+    suspend fun read(buffer: ByteArray, offset: Int, length: Int): Int
 }
 
 /**

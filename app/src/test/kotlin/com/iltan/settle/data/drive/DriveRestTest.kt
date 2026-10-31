@@ -1,10 +1,12 @@
 package com.iltan.settle.data.drive
 
 import com.iltan.settle.domain.backup.ChunkResult
+import com.iltan.settle.domain.backup.DownloadStream
 import com.iltan.settle.domain.backup.DriveException
 import com.iltan.settle.domain.backup.DriveFailure
 import com.iltan.settle.domain.backup.NewDriveFile
 import com.iltan.settle.domain.backup.RemoteFile
+import java.io.ByteArrayOutputStream
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonArray
@@ -227,5 +229,81 @@ class DriveRestTest {
 
         assertEquals(DriveAbout("me@example.com", 100, 40), drive.about())
         assertEquals(DriveAbout(null, null, 40), drive.about())
+    }
+
+    @Test
+    fun trashingAndRestoringPatchTheTrashedField() = runBlocking {
+        respond(200, """{"id":"f1"}""")
+        respond(200, """{"id":"f1"}""")
+
+        drive.setTrashed("f1", trashed = true)
+        drive.setTrashed("f1", trashed = false)
+
+        val trash = take()
+        assertEquals("PATCH", trash.method)
+        assertEquals("/drive/v3/files/f1", trash.url.encodedPath)
+        assertEquals("""{"trashed":true}""", trash.body?.utf8())
+        assertEquals("""{"trashed":false}""", take().body?.utf8())
+    }
+
+    @Test
+    fun deletingSendsDelete() = runBlocking {
+        respond(204)
+
+        drive.delete("f1")
+
+        val request = take()
+        assertEquals("DELETE", request.method)
+        assertEquals("/drive/v3/files/f1", request.url.encodedPath)
+    }
+
+    @Test
+    fun trashingOrDeletingAMissingFileIsNotFound() {
+        respond(404)
+        respond(404)
+
+        assertEquals(DriveFailure.NOT_FOUND, failureOf { drive.setTrashed("gone", true) })
+        assertEquals(DriveFailure.NOT_FOUND, failureOf { drive.delete("gone") })
+    }
+
+    @Test
+    fun downloadingFromTheStartAsksForTheMediaWithoutARange() = runBlocking {
+        respond(200, "hello world")
+
+        val bytes = drive.download("f1", fromByte = 0).use { readAll(it) }
+
+        assertEquals("hello world", bytes.decodeToString())
+        val request = take()
+        assertEquals("media", request.url.queryParameter("alt"))
+        assertNull(request.headers["Range"])
+    }
+
+    @Test
+    fun aResumedDownloadAsksForTheRestWithARange() = runBlocking {
+        respond(206, "world", "Content-Range" to "bytes 6-10/11")
+
+        val bytes = drive.download("f1", fromByte = 6).use { readAll(it) }
+
+        assertEquals("world", bytes.decodeToString())
+        assertEquals("bytes=6-", take().headers["Range"])
+    }
+
+    @Test
+    fun aServerIgnoringTheRangeHasTheSkippedBytesDropped() = runBlocking {
+        respond(200, "hello world")
+
+        val bytes = drive.download("f1", fromByte = 6).use { readAll(it) }
+
+        assertEquals("world", bytes.decodeToString())
+    }
+
+    private suspend fun readAll(stream: DownloadStream): ByteArray {
+        val out = ByteArrayOutputStream()
+        val buffer = ByteArray(4)
+        while (true) {
+            val count = stream.read(buffer, 0, buffer.size)
+            if (count < 0) return out.toByteArray()
+            out.write(buffer, 0, count)
+        }
     }
 }
