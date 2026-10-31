@@ -21,6 +21,7 @@ data class MediaEntry(
     val volume: String,
     @ColumnInfo(name = "media_store_id") val mediaStoreId: Long,
     @ColumnInfo(name = "date_modified_s") val dateModifiedS: Long,
+    @ColumnInfo(name = "cloud_state") val cloudState: CloudState,
 )
 
 /** A folder on the phone with its newest item as the cover. */

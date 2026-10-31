@@ -7,6 +7,7 @@ import androidx.room3.Index
 import androidx.room3.PrimaryKey
 import com.iltan.settle.domain.CloudState
 import com.iltan.settle.domain.LocalState
+import com.iltan.settle.domain.backup.UploadProblem
 import com.iltan.settle.domain.scan.MediaKind
 
 /** One photo or video in the library, wherever its bytes are (ADR-001, ADR-002). */
@@ -69,3 +70,43 @@ data class ScanCursorEntity(
     val generation: Long,
     @ColumnInfo(name = "last_scan_at_ms") val lastScanAtMs: Long,
 )
+
+/** An item's upload to Drive, step by step (ADR-004); see `UploadRecord`. */
+@Entity(
+    tableName = "upload",
+    foreignKeys =
+        [
+            ForeignKey(
+                entity = MediaItemEntity::class,
+                parentColumns = ["id"],
+                childColumns = ["item_id"],
+                onDelete = ForeignKey.CASCADE,
+            )
+        ],
+)
+data class UploadEntity(
+    @PrimaryKey @ColumnInfo(name = "item_id") val itemId: String,
+    @ColumnInfo(name = "drive_file_id") val driveFileId: String,
+    val state: CloudState,
+    /** The original's size and modification time when the upload started. */
+    @ColumnInfo(name = "size_bytes") val sizeBytes: Long,
+    @ColumnInfo(name = "date_modified_s") val dateModifiedS: Long,
+    @ColumnInfo(name = "session_uri") val sessionUri: String?,
+    @ColumnInfo(name = "session_started_at_ms") val sessionStartedAtMs: Long?,
+    @ColumnInfo(name = "confirmed_bytes") val confirmedBytes: Long,
+    val sha256: String?,
+    val md5: String?,
+    @ColumnInfo(name = "verified_at_ms") val verifiedAtMs: Long?,
+    val problem: UploadProblem?,
+)
+
+/** Drive IDs of the folders Settle created, by path such as `Settle/media/2026/10`. */
+@Entity(tableName = "drive_folder")
+data class DriveFolderEntity(
+    @PrimaryKey val path: String,
+    @ColumnInfo(name = "drive_id") val driveId: String,
+)
+
+/** The connected Google account. At most one row. */
+@Entity(tableName = "drive_account")
+data class DriveAccountEntity(@PrimaryKey val id: Int = 0, val email: String)

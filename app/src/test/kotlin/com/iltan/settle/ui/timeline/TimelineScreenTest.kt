@@ -5,6 +5,7 @@ import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import com.iltan.settle.data.db.MediaEntry
+import com.iltan.settle.domain.CloudState
 import com.iltan.settle.domain.scan.MediaKind
 import com.iltan.settle.domain.timeline.groupByDay
 import com.iltan.settle.ui.grid.MediaGridState
@@ -32,6 +33,7 @@ class TimelineScreenTest {
         durationMs: Long = 0,
         specialFormat: Int = 0,
         favorite: Boolean = false,
+        cloudState: CloudState = CloudState.NONE,
     ) =
         MediaEntry(
             id = id,
@@ -46,6 +48,7 @@ class TimelineScreenTest {
             volume = "external_primary",
             mediaStoreId = id.hashCode().toLong(),
             dateModifiedS = 0,
+            cloudState = cloudState,
         )
 
     private fun show(state: MediaGridState) = compose.setContent {
