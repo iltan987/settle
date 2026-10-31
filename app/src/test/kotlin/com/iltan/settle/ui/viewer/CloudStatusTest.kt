@@ -10,6 +10,7 @@ import com.iltan.settle.data.backup.UploadProgress
 import com.iltan.settle.data.db.UploadEntity
 import com.iltan.settle.domain.CloudState
 import com.iltan.settle.domain.backup.BackupDecision
+import com.iltan.settle.domain.backup.BackupPause
 import com.iltan.settle.domain.backup.UploadProblem
 import com.iltan.settle.ui.theme.SettleTheme
 import org.junit.Assert.assertEquals
@@ -123,6 +124,38 @@ class CloudStatusTest {
         assertEquals(
             CloudStatus.BackedUp("drive1"),
             cloudStatus(true, upload(CloudState.VERIFIED), null, requested = true),
+        )
+    }
+
+    @Test
+    fun aRequestWithoutARunWaitsForTheNextAutomaticBackup() {
+        assertEquals(
+            CloudStatus.Queued,
+            cloudStatus(true, null, null, requested = true, running = false),
+        )
+    }
+
+    @Test
+    fun whileBackupWaitsForTheUserARequestShowsWhyInsteadOfASpinner() {
+        for (reason in
+            listOf(
+                BackupPause.BY_USER,
+                BackupPause.AUTH_NEEDED,
+                BackupPause.QUOTA_FULL,
+                BackupPause.NO_ORIGINAL_ACCESS,
+            )) {
+            assertEquals(
+                CloudStatus.Paused(reason),
+                cloudStatus(true, null, null, requested = true, pause = reason),
+            )
+        }
+        assertEquals(
+            CloudStatus.NotConnected,
+            cloudStatus(true, null, null, requested = true, pause = BackupPause.NOT_CONNECTED),
+        )
+        assertEquals(
+            CloudStatus.BackedUp("drive1"),
+            cloudStatus(true, upload(CloudState.VERIFIED), null, pause = BackupPause.BY_USER),
         )
     }
 }

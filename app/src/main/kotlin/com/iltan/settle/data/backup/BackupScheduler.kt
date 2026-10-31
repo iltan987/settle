@@ -69,18 +69,30 @@ class BackupScheduler(
         )
     }
 
+    /** What became of "Back up now". */
+    enum class NowResult {
+        /** A user-initiated job runs the requests, or one already running takes them. */
+        STARTED,
+        /** No request needs a run: backup is paused (R6), or the items need no backup. */
+        NOT_NEEDED,
+        /** Android refused a user-initiated job; the automatic job takes the requests instead. */
+        DEFERRED,
+    }
+
     /**
      * Backs these items up now, in a user-initiated job that Android lets finish in the background
-     * (R3). Only works while Settle is visible; returns false if the job couldn't be scheduled.
+     * (R3). Only works while Settle is visible. The requests are kept either way.
      */
-    suspend fun backUpNow(itemIds: Collection<String>): Boolean = lock.withLock {
+    suspend fun backUpNow(itemIds: Collection<String>): NowResult = lock.withLock {
         val now = clock()
         dao.addRequests(itemIds.map { BackupRequestEntity(it, now) })
-        val run = planner.plan().requested ?: return@withLock false
+        val run = planner.plan().requested ?: return@withLock NowResult.NOT_NEEDED
         // A running job picks up new requests before it ends.
-        if (jobs.getPendingJob(REQUESTED_JOB) != null) return@withLock true
-        if (!jobs.canRunUserInitiatedJobs()) return@withLock false
-        jobs.schedule(requestedJob(run)) == JobScheduler.RESULT_SUCCESS
+        if (jobs.getPendingJob(REQUESTED_JOB) != null) return@withLock NowResult.STARTED
+        val scheduled =
+            jobs.canRunUserInitiatedJobs() &&
+                jobs.schedule(requestedJob(run)) == JobScheduler.RESULT_SUCCESS
+        if (scheduled) NowResult.STARTED else NowResult.DEFERRED
     }
 
     /** Stops both upload jobs, for "Pause"; records stay resumable. */

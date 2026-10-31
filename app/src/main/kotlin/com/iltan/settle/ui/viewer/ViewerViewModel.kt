@@ -9,6 +9,7 @@ import com.iltan.settle.data.backup.CloudBackup
 import com.iltan.settle.data.db.BackupDao
 import com.iltan.settle.data.db.MediaDetails
 import com.iltan.settle.data.db.MediaEntry
+import com.iltan.settle.domain.backup.BackupPause
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -41,13 +42,22 @@ class ViewerViewModel(
 
     fun cloudStatus(itemId: String): Flow<CloudStatus> =
         combine(
-                backupDao.account().map { it != null },
+                cloudBackup.pause,
                 backupDao.observeUpload(itemId),
                 cloudBackup.progress.map { it[itemId] },
-                cloudBackup.requested(itemId),
+                combine(cloudBackup.requested(itemId), cloudBackup.running, ::Pair),
                 cloudBackup.decision(itemId),
-                ::cloudStatus,
-            )
+            ) { pause, upload, progress, (requested, running), decision ->
+                cloudStatus(
+                    connected = pause != BackupPause.NOT_CONNECTED,
+                    upload = upload,
+                    progress = progress,
+                    requested = requested,
+                    decision = decision,
+                    pause = pause,
+                    running = running,
+                )
+            }
             .distinctUntilChanged()
 
     fun backUp(entry: MediaEntry) {

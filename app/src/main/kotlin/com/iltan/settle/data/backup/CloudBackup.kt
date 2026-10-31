@@ -3,6 +3,7 @@ package com.iltan.settle.data.backup
 import com.iltan.settle.data.db.BackupDao
 import com.iltan.settle.data.drive.MediaStoreOriginals
 import com.iltan.settle.domain.backup.BackupDecision
+import com.iltan.settle.domain.backup.BackupPause
 import com.iltan.settle.domain.backup.backupDecision
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -22,6 +23,24 @@ class CloudBackup(
 ) {
     /** Uploads under way, by item ID. */
     val progress: StateFlow<Map<String, UploadProgress>> = runner.progress
+
+    /** Whether a run of uploads is going, so a request is about to be taken. */
+    val running: StateFlow<Boolean> = runner.running
+
+    /**
+     * Why no backup runs at all right now, the user's own pause included (R6); null when it may.
+     * Media location access is read on each change of the account or the settings.
+     */
+    val pause: Flow<BackupPause?> =
+        combine(dao.account(), preferences.choices) { account, choices ->
+            when {
+                account == null -> BackupPause.NOT_CONNECTED
+                !originals.canReadOriginals() -> BackupPause.NO_ORIGINAL_ACCESS
+                choices.blocked != null -> choices.blocked
+                choices.settings.paused -> BackupPause.BY_USER
+                else -> null
+            }
+        }
 
     private val refused = MutableSharedFlow<BackupOutcome>(extraBufferCapacity = 4)
 
@@ -43,6 +62,10 @@ class CloudBackup(
             itemIds.forEach { refused.emit(BackupOutcome.NeedsOriginalAccess(it)) }
             return
         }
-        scheduler.backUpNow(itemIds)
+        if (scheduler.backUpNow(itemIds) == BackupScheduler.NowResult.DEFERRED) {
+            // The automatic job takes requests too; make sure it is planned, and say so.
+            scheduler.reschedule()
+            itemIds.forEach { refused.emit(BackupOutcome.Deferred(it)) }
+        }
     }
 }

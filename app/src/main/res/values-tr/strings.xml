@@ -82,7 +82,8 @@
     <string name="backup_backed_up">Google Drive\'a yedeklendi</string>
     <string name="backup_try_again">Yeniden yedekle</string>
     <string name="backup_done">Yedeklendi ve doğrulandı</string>
-    <string name="backup_checking">Yüklendi. Drive sağlama toplamını henüz doğrulamadı; kontrol için daha sonra yeniden yedekle.</string>
+    <string name="backup_checking">Yüklendi. Drive sağlama toplamını henüz doğrulamadı; Settle daha sonra yeniden kontrol edecek.</string>
+    <string name="backup_deferred">Şu an başlatılamadı. Bir sonraki otomatik yedeklemede yedeklenecek.</string>
     <string name="backup_checking_short">Yüklendi, Drive\'ın doğrulaması bekleniyor</string>
     <string name="backup_not_backed_up">Yedeklenmedi</string>
     <string name="backup_not_connected">Yedeklenmedi · Google Drive bağlı değil</string>

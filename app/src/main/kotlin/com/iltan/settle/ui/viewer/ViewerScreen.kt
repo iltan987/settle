@@ -74,6 +74,7 @@ import com.iltan.settle.data.backup.BackupOutcome
 import com.iltan.settle.data.contentUri
 import com.iltan.settle.data.db.MediaEntry
 import com.iltan.settle.data.thumbnail
+import com.iltan.settle.domain.backup.BackupPause
 import com.iltan.settle.domain.backup.BackupResult
 import com.iltan.settle.domain.backup.UploadProblem
 import com.iltan.settle.domain.scan.MediaKind
@@ -190,7 +191,9 @@ private fun Viewer(
                 onCloud = {
                     when (cloud) {
                         is CloudStatus.BackedUp -> showInfo = true
-                        CloudStatus.NotConnected -> onOpenSettings()
+                        // Settings offers Resume, Reconnect, Try again or Allow.
+                        CloudStatus.NotConnected,
+                        is CloudStatus.Paused -> onOpenSettings()
                         is CloudStatus.Uploading,
                         null -> {}
                         else -> viewModel.backUp(current)
@@ -275,6 +278,7 @@ private fun BackupOutcome.message(): Pair<Int, Int?> =
     when (this) {
         is BackupOutcome.NeedsOriginalAccess ->
             R.string.backup_needs_location to R.string.backup_allow
+        is BackupOutcome.Deferred -> R.string.backup_deferred to null
         is BackupOutcome.Done ->
             when (val result = result) {
                 is BackupResult.Verified -> R.string.backup_done to null
@@ -297,6 +301,16 @@ private val UploadProblem.text: Int
             UploadProblem.CHANGED_DURING_UPLOAD -> R.string.backup_problem_changed
             UploadProblem.CHECKSUM_MISMATCH -> R.string.backup_problem_mismatch
             UploadProblem.FAILED -> R.string.backup_problem_failed
+        }
+
+private val BackupPause.text: Int
+    get() =
+        when (this) {
+            BackupPause.NOT_CONNECTED -> R.string.backup_not_connected
+            BackupPause.NO_ORIGINAL_ACCESS -> R.string.backup_needs_location
+            BackupPause.BY_USER -> R.string.backup_status_paused
+            BackupPause.AUTH_NEEDED -> R.string.backup_problem_auth
+            BackupPause.QUOTA_FULL -> R.string.backup_problem_quota
         }
 
 @Composable
@@ -442,6 +456,7 @@ fun CloudButton(status: CloudStatus, onClick: () -> Unit) {
             BarButton(R.drawable.ic_cloud_done, R.string.backup_backed_up, onClick)
         is CloudStatus.Problem ->
             BarButton(R.drawable.ic_cloud_off, R.string.backup_try_again, onClick)
+        is CloudStatus.Paused -> BarButton(R.drawable.ic_cloud_off, status.reason.text, onClick)
         CloudStatus.NotConnected,
         CloudStatus.NotBackedUp,
         CloudStatus.NotChosen,
@@ -515,6 +530,7 @@ private fun BackupRow(status: CloudStatus) {
             CloudStatus.Queued -> R.drawable.ic_cloud_upload to R.string.backup_queued
             is CloudStatus.Waiting -> R.drawable.ic_cloud_upload to R.string.backup_waiting
             is CloudStatus.Problem -> R.drawable.ic_cloud_off to status.problem.text
+            is CloudStatus.Paused -> R.drawable.ic_cloud_off to status.reason.text
         }
     val waitingFor =
         (status as? CloudStatus.Waiting)?.let {

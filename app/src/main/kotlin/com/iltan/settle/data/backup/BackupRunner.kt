@@ -43,6 +43,9 @@ sealed interface BackupOutcome {
 
     /** Media location access is missing, so only a redacted copy could be read. */
     data class NeedsOriginalAccess(override val itemId: String) : BackupOutcome
+
+    /** Android didn't allow a run to start now; the next automatic backup takes it. */
+    data class Deferred(override val itemId: String) : BackupOutcome
 }
 
 /** Which items a run covers. */

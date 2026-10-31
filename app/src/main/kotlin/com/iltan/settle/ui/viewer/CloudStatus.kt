@@ -4,6 +4,7 @@ import com.iltan.settle.data.backup.UploadProgress
 import com.iltan.settle.data.db.UploadEntity
 import com.iltan.settle.domain.CloudState
 import com.iltan.settle.domain.backup.BackupDecision
+import com.iltan.settle.domain.backup.BackupPause
 import com.iltan.settle.domain.backup.UploadProblem
 
 /** What the viewer shows about an item's backup. */
@@ -31,6 +32,9 @@ sealed interface CloudStatus {
     data class BackedUp(val driveFileId: String) : CloudStatus
 
     data class Problem(val problem: UploadProblem) : CloudStatus
+
+    /** Backup as a whole waits for the user (R6): paused, reconnect, Drive full, or access. */
+    data class Paused(val reason: BackupPause) : CloudStatus
 }
 
 fun cloudStatus(
@@ -40,15 +44,22 @@ fun cloudStatus(
     requested: Boolean = false,
     /** What automatic backup will do with it; null when unknown. */
     decision: BackupDecision? = null,
+    /** Why no backup runs at all, if so. */
+    pause: BackupPause? = null,
+    /** Whether a run of uploads is going, which takes a request soon. */
+    running: Boolean = true,
 ): CloudStatus =
     when {
         progress != null ->
             CloudStatus.Uploading(
                 progress.totalBytes.takeIf { it > 0 }?.let { progress.sentBytes.toFloat() / it }
             )
-        requested && upload?.state != CloudState.VERIFIED -> CloudStatus.Uploading(null)
         upload?.state == CloudState.VERIFIED -> CloudStatus.BackedUp(upload.driveFileId)
-        !connected -> CloudStatus.NotConnected
+        !connected || pause == BackupPause.NOT_CONNECTED -> CloudStatus.NotConnected
+        // A request waits for the user here too, so no spinner that never ends.
+        pause != null -> CloudStatus.Paused(pause)
+        // Without a run, a request waits for the next automatic backup.
+        requested -> if (running) CloudStatus.Uploading(null) else CloudStatus.Queued
         upload?.problem != null -> CloudStatus.Problem(upload.problem)
         upload?.state == CloudState.UPLOADED -> CloudStatus.Checking
         decision is BackupDecision.WaitUntil -> CloudStatus.Waiting(decision.millis)

@@ -87,7 +87,8 @@
     <string name="backup_backed_up">Backed up to Google Drive</string>
     <string name="backup_try_again">Back up again</string>
     <string name="backup_done">Backed up and verified</string>
-    <string name="backup_checking">Uploaded. Drive hasn\'t confirmed its checksum yet; back it up again later to check.</string>
+    <string name="backup_checking">Uploaded. Drive hasn\'t confirmed its checksum yet; Settle checks again later.</string>
+    <string name="backup_deferred">Couldn\'t start now. It backs up with the next automatic backup.</string>
     <string name="backup_checking_short">Uploaded, waiting for Drive to confirm it</string>
     <string name="backup_not_backed_up">Not backed up</string>
     <string name="backup_not_connected">Not backed up · Google Drive not connected</string>
