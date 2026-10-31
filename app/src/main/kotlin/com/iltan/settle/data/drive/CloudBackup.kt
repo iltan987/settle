@@ -6,6 +6,7 @@ import com.iltan.settle.data.db.BackupDao
 import com.iltan.settle.domain.MediaItemId
 import com.iltan.settle.domain.backup.BackupEngine
 import com.iltan.settle.domain.backup.BackupResult
+import java.util.Locale
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -104,6 +105,7 @@ class CloudBackup(
             TAG,
             "Backup of $itemId: $result. File %.1f MiB, started at %.1f MiB, sent %.1f MiB in %.1f s (%.1f MiB/s)"
                 .format(
+                    Locale.ROOT,
                     total / MIB,
                     resumedAt.coerceAtLeast(0) / MIB,
                     sent,
