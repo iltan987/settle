@@ -12,13 +12,15 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 /**
  * Every background job of backup (ADR-014): the automatic run on Wi-Fi and the charger, the run the
- * user started, a library scan when new media appear, and daily maintenance. Each job is a
- * coroutine; stopping the job cancels it, and uploads continue from the server's offset next time.
+ * user started, a library scan when new media appear, and maintenance every six hours. Each job is
+ * a coroutine; stopping the job cancels it, and uploads continue from the server's offset next
+ * time.
  */
 class BackupJobService : JobService() {
 
@@ -44,6 +46,7 @@ class BackupJobService : JobService() {
                 BackupScheduler.MAINTENANCE_JOB -> ({ graph.backupMaintenance.run() })
                 else -> return false
             }
+        if (params.jobId in UPLOAD_JOBS) graph.backupRunner.onNetworkChanged(params.network)
         running[params.jobId] = scope.launch {
             try {
                 work()
@@ -54,6 +57,9 @@ class BackupJobService : JobService() {
             }
             running.remove(params.jobId)
             jobFinished(params, false)
+            if (params.jobId == BackupScheduler.REQUESTED_JOB) {
+                graph.backupNotifications.clearProgress()
+            }
             afterRun(uploaded = params.jobId in UPLOAD_JOBS)
         }
         return true
@@ -85,7 +91,8 @@ class BackupJobService : JobService() {
                 if (graph.backupPlanner.plan().requested == null) break
             }
         } finally {
-            reporter.cancel()
+            // An update still being posted would outlive the job and leave the notification up.
+            reporter.cancelAndJoin()
         }
     }
 

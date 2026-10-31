@@ -34,7 +34,9 @@ class BackupScheduler(
     /** Brings the automatic, media-watching and maintenance jobs in line with the plan. */
     suspend fun reschedule() = lock.withLock {
         if (jobs.getPendingJob(MEDIA_JOB) == null) jobs.schedule(mediaJob())
-        if (jobs.getPendingJob(MAINTENANCE_JOB) == null) jobs.schedule(maintenanceJob())
+        if (jobs.getPendingJob(MAINTENANCE_JOB)?.intervalMillis != MAINTENANCE_EVERY_MILLIS) {
+            jobs.schedule(maintenanceJob())
+        }
         // A run under way plans its own next step when it ends; rescheduling would stop it.
         if (runner.running.value) return@withLock
         val plan = planner.plan()
@@ -109,10 +111,14 @@ class BackupScheduler(
             .setTriggerContentMaxDelay(TimeUnit.MINUTES.toMillis(2))
             .build()
 
-    /** Once a day: is Drive's space back, and is everything scheduled. */
+    /**
+     * Every six hours: is Drive's space back, and is everything scheduled. On the phone, an
+     * automatic job whose process was killed mid-run waited until conditions next changed (e.g. the
+     * charger); planning again from here starts it within hours instead of the next morning.
+     */
     private fun maintenanceJob() =
         JobInfo.Builder(MAINTENANCE_JOB, service)
-            .setPeriodic(TimeUnit.DAYS.toMillis(1), TimeUnit.HOURS.toMillis(6))
+            .setPeriodic(MAINTENANCE_EVERY_MILLIS, TimeUnit.HOURS.toMillis(1))
             .setRequiredNetwork(network(unmetered = false))
             .setRequiresBatteryNotLow(true)
             .setPersisted(true)
@@ -135,5 +141,6 @@ class BackupScheduler(
         const val REQUESTED_JOB = 2
         const val MEDIA_JOB = 3
         const val MAINTENANCE_JOB = 4
+        private val MAINTENANCE_EVERY_MILLIS = TimeUnit.HOURS.toMillis(6)
     }
 }

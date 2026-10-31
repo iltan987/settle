@@ -3,7 +3,7 @@ package com.iltan.settle.data.backup
 import com.iltan.settle.data.drive.DriveRest
 import com.iltan.settle.domain.backup.BackupPause
 
-/** The daily maintenance job: lets backup resume once Drive has room again (R6). */
+/** The maintenance job (every six hours): lets backup resume once Drive has room again (R6). */
 class BackupMaintenance(
     private val drive: DriveRest,
     private val preferences: BackupPreferences,
