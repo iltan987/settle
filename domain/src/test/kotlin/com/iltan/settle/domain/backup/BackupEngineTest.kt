@@ -281,6 +281,19 @@ class BackupEngineTest {
     }
 
     @Test
+    fun anUploadTriedAgainNoLongerCarriesTheProblemThatStoppedIt() = runTest {
+        val id = item(3 * chunk)
+        drive.failNext("uploadChunk", DriveFailure.TRANSIENT, times = 7)
+        engine().backUp(id) shouldBe BackupResult.Stopped(UploadProblem.OFFLINE)
+        store.records.getValue(id).problem shouldBe UploadProblem.OFFLINE
+
+        drive.sha256Delays = 100
+        engine().backUp(id).shouldBeInstanceOf<BackupResult.AwaitingChecksum>()
+
+        store.records.getValue(id).problem shouldBe null
+    }
+
+    @Test
     fun aCopyWithDifferentBytesIsSuspectAndNeverVerified() = runTest {
         val id = item(chunk)
         drive.corruptStoredBytes = true

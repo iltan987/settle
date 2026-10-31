@@ -155,6 +155,8 @@ class BackupEngine(
                         existing.copy(snapshot = current, problem = null).withoutSession().also {
                             store.save(it)
                         }
+                // Trying again: the problem that stopped the last try no longer describes it.
+                existing.problem != null -> existing.copy(problem = null).also { store.save(it) }
                 else -> existing
             }
         when (record.state) {
