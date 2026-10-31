@@ -7,6 +7,8 @@
     <uses-permission android:name="android.permission.READ_MEDIA_VISUAL_USER_SELECTED" />
     <!-- Photo locations, and unredacted original bytes for backup. -->
     <uses-permission android:name="android.permission.ACCESS_MEDIA_LOCATION" />
+    <!-- Google Drive. -->
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <!-- No Android backup or device transfer: the library is rebuilt from Drive (ADR-003). -->
     <application

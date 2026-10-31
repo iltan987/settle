@@ -88,6 +88,9 @@ dependencies {
     implementation(libs.androidx.navigation3.runtime)
     implementation(libs.androidx.navigation3.ui)
     implementation(libs.kotlinx.serialization.core)
+    implementation(libs.kotlinx.serialization.json)
+    // Drive REST client (ADR-010).
+    implementation(libs.okhttp)
     implementation(libs.androidx.room3.runtime)
     implementation(libs.coil.compose)
     implementation(libs.telephoto.zoomable.image.coil3)
@@ -104,5 +107,6 @@ dependencies {
     testImplementation(libs.androidx.test.espresso.core)
     testImplementation(libs.androidx.compose.ui.test.junit4)
     testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.okhttp.mockwebserver3)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 }
