@@ -59,6 +59,9 @@ fun FoldersScreen(
     onOpenFavorites: () -> Unit,
     onSetHidden: (relativePath: String, hidden: Boolean) -> Unit,
     onSetBackUp: (relativePath: String, backUp: Boolean) -> Unit = { _, _ -> },
+    /** Items in Settle's trash (R12). */
+    trashCount: Int = 0,
+    onOpenTrash: () -> Unit = {},
 ) {
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     val rootName = stringResource(R.string.folder_root)
@@ -101,6 +104,15 @@ fun FoldersScreen(
                     cover = state.favorites.firstOrNull()?.thumbnail,
                     placeholderIcon = R.drawable.ic_favorite,
                     onClick = onOpenFavorites,
+                )
+            }
+            item(key = "trash") {
+                Tile(
+                    name = stringResource(R.string.trash_title),
+                    count = trashCount,
+                    cover = null,
+                    placeholderIcon = R.drawable.ic_delete,
+                    onClick = onOpenTrash,
                 )
             }
             items(state.folders, key = { it.relativePath }) { folder ->

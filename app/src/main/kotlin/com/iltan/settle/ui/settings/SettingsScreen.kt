@@ -70,6 +70,8 @@ fun SettingsScreen(
             DriveSettings(snackbar, reconnect, onReconnectStarted)
             SectionTitle(R.string.settings_backup)
             BackupSettings()
+            SectionTitle(R.string.settings_deletion)
+            DeletionSettings()
             SectionTitle(R.string.settings_language)
             Column(Modifier.selectableGroup()) {
                 AppLanguage.entries.forEach { option ->

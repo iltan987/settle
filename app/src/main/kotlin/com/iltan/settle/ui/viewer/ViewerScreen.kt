@@ -80,6 +80,7 @@ import com.iltan.settle.domain.backup.UploadProblem
 import com.iltan.settle.domain.scan.MediaKind
 import com.iltan.settle.ui.grid.SPECIAL_FORMAT_MOTION_PHOTO
 import com.iltan.settle.ui.theme.SettleTheme
+import com.iltan.settle.ui.trash.rememberItemActions
 import java.util.Date
 import java.util.Locale
 import me.saket.telephoto.zoomable.coil3.ZoomableAsyncImage
@@ -134,6 +135,7 @@ private fun Viewer(
     val cloud by
         remember(current.id) { viewModel.cloudStatus(current.id) }.collectAsStateWithLifecycle(null)
     val snackbar = remember { SnackbarHostState() }
+    val actions = rememberItemActions(snackbar)
     val askOriginalAccess =
         rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
             if (granted) viewModel.backUp(current)
@@ -202,6 +204,7 @@ private fun Viewer(
                 onBack = onBack,
                 onFavorite = { viewModel.toggleFavorite(current) },
                 onShare = { share(context, current) },
+                onDelete = { actions.delete(listOf(current)) {} },
                 onInfo = { showInfo = true },
             )
         }
@@ -400,6 +403,7 @@ private fun TopBar(
     onBack: () -> Unit,
     onFavorite: () -> Unit,
     onShare: () -> Unit,
+    onDelete: () -> Unit,
     onInfo: () -> Unit,
 ) {
     Row(
@@ -428,6 +432,7 @@ private fun TopBar(
         )
         cloud?.let { CloudButton(it, onCloud) }
         BarButton(R.drawable.ic_share, R.string.viewer_share, onShare)
+        BarButton(R.drawable.ic_delete, R.string.action_delete, onDelete)
         BarButton(R.drawable.ic_info, R.string.viewer_info, onInfo)
     }
 }

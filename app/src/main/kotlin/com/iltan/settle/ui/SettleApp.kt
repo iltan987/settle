@@ -7,10 +7,13 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ShortNavigationBar
 import androidx.compose.material3.ShortNavigationBarItem
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -29,6 +32,7 @@ import androidx.navigation3.ui.NavDisplay
 import com.iltan.settle.R
 import com.iltan.settle.appGraph
 import com.iltan.settle.data.GridSource
+import com.iltan.settle.domain.deletion.VanishedDecision
 import com.iltan.settle.ui.folders.CollectionScreen
 import com.iltan.settle.ui.folders.CollectionViewModel
 import com.iltan.settle.ui.folders.FoldersScreen
@@ -37,8 +41,13 @@ import com.iltan.settle.ui.onboarding.MediaAccessGate
 import com.iltan.settle.ui.settings.SettingsScreen
 import com.iltan.settle.ui.timeline.TimelineScreen
 import com.iltan.settle.ui.timeline.TimelineViewModel
+import com.iltan.settle.ui.trash.TrashScreen
+import com.iltan.settle.ui.trash.TrashViewModel
+import com.iltan.settle.ui.trash.rememberDeletionRunner
+import com.iltan.settle.ui.trash.rememberItemActions
 import com.iltan.settle.ui.viewer.ViewerScreen
 import com.iltan.settle.ui.viewer.ViewerViewModel
+import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 
 @Serializable data object Timeline : NavKey
@@ -52,6 +61,8 @@ import kotlinx.serialization.Serializable
 @Serializable data class Viewer(val source: GridSource, val itemId: String) : NavKey
 
 @Serializable data object Settings : NavKey
+
+@Serializable data object Trash : NavKey
 
 /** Root of the UI: onboarding until media access is granted, then one Navigation 3 back stack. */
 @Composable
@@ -130,10 +141,21 @@ private fun Navigation(openSettings: Boolean, reconnect: Boolean) {
                             TimelineViewModel(graph.library, graph.librarySync)
                         }
                         val state by viewModel.state.collectAsStateWithLifecycle()
+                        val breaker by graph.deletion.breakerCount.collectAsStateWithLifecycle(0)
+                        val snackbar = remember { SnackbarHostState() }
+                        fun decide(decision: VanishedDecision) {
+                            graph.appScope.launch { graph.deletion.decide(null, decision) }
+                        }
                         TimelineScreen(
                             state = state,
                             onOpen = { backStack.add(Viewer(GridSource.Timeline, it.id)) },
                             onOpenSettings = { backStack.add(Settings) },
+                            actions = rememberItemActions(snackbar),
+                            snackbar = snackbar,
+                            breakerCount = breaker,
+                            onBreakerKeep = { decide(VanishedDecision.KEEP_DRIVE_COPIES) },
+                            onBreakerMove = { decide(VanishedDecision.MOVE_DRIVE_COPIES_TO_TRASH) },
+                            onCheckAgain = { graph.librarySync.requestScan(full = true) },
                         )
                     }
                     entry<Folders> {
@@ -141,12 +163,15 @@ private fun Navigation(openSettings: Boolean, reconnect: Boolean) {
                             FoldersViewModel(graph.library) { graph.backupScheduler.reschedule() }
                         }
                         val state by viewModel.state.collectAsStateWithLifecycle()
+                        val trash by graph.deletion.trash.collectAsStateWithLifecycle(emptyList())
                         FoldersScreen(
                             state = state,
                             onOpenFolder = { path, name -> backStack.add(Folder(path, name)) },
                             onOpenFavorites = { backStack.add(Favorites) },
                             onSetHidden = viewModel::setHiddenFromTimeline,
                             onSetBackUp = viewModel::setBackUp,
+                            trashCount = trash.size,
+                            onOpenTrash = { backStack.add(Trash) },
                         )
                     }
                     entry<Folder> { key ->
@@ -188,6 +213,36 @@ private fun Navigation(openSettings: Boolean, reconnect: Boolean) {
                             initialId = key.itemId,
                             onBack = { backStack.removeLastOrNull() },
                             onOpenSettings = { backStack.add(Settings) },
+                        )
+                    }
+                    entry<Trash> {
+                        val viewModel = viewModel { TrashViewModel(graph.deletion) }
+                        val state by viewModel.state.collectAsStateWithLifecycle()
+                        val scope = rememberCoroutineScope()
+                        val run = rememberDeletionRunner { _, _ -> }
+                        val deletion = graph.deletion
+                        TrashScreen(
+                            state = state,
+                            nowMillis = System.currentTimeMillis(),
+                            onBack = { backStack.removeLastOrNull() },
+                            onRestore = { scope.launch { run(deletion.restore(it)) } },
+                            onDeleteForever = { scope.launch { run(deletion.deleteForever(it)) } },
+                            onEmpty = { scope.launch { run(deletion.emptyTrash()) } },
+                            onMoveDriveCopies = {
+                                val ids = state.undecided.map { it.id }
+                                graph.appScope.launch {
+                                    deletion.decide(
+                                        ids,
+                                        VanishedDecision.MOVE_DRIVE_COPIES_TO_TRASH,
+                                    )
+                                }
+                            },
+                            onKeepDriveCopies = {
+                                val ids = state.undecided.map { it.id }
+                                graph.appScope.launch {
+                                    deletion.decide(ids, VanishedDecision.KEEP_DRIVE_COPIES)
+                                }
+                            },
                         )
                     }
                     entry<Settings> {

@@ -139,10 +139,12 @@ class Deletion(
 
     suspend fun emptyTrash(): DeletionRequest = deleteForever(dao.trashIds())
 
-    /** The user's answer for items that left the phone without Settle; null means all of them. */
+    /**
+     * The user's answer for items that left the phone without Settle; null means the mass
+     * disappearance waiting for an answer (R14).
+     */
     suspend fun decide(itemIds: Collection<String>?, decision: VanishedDecision) {
-        val ids =
-            itemIds ?: (dao.undecided(VanishedReason.BREAKER) + dao.undecided(VanishedReason.ASK))
+        val ids = itemIds ?: dao.undecided(VanishedReason.BREAKER)
         apply(decideVanished(items(ids), decision, clock()))
     }
 

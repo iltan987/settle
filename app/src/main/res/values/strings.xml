@@ -189,4 +189,71 @@
     <string name="drive_reconnect">Reconnect</string>
     <string name="drive_reconnect_text">Google needs you to sign in again. Backup is paused until then; nothing was lost.</string>
     <string name="backup_status_reconnect">Backup is paused: reconnect Google Drive above</string>
+
+    <!-- Selecting, deleting and the trash (R3, R12–R14) -->
+    <plurals name="selected_count">
+        <item quantity="one">%d selected</item>
+        <item quantity="other">%d selected</item>
+    </plurals>
+    <string name="selection_clear">Clear selection</string>
+    <string name="selection_item">Select</string>
+    <string name="selection_day">Select this day</string>
+    <string name="action_delete">Delete</string>
+    <plurals name="trash_moved">
+        <item quantity="one">Moved to the trash</item>
+        <item quantity="other">Moved %d items to the trash</item>
+    </plurals>
+    <plurals name="trash_moved_not_backed_up">
+        <item quantity="one">Moved to the trash. %d item wasn\'t backed up; it\'s deleted for good after 30 days.</item>
+        <item quantity="other">Moved to the trash. %d items weren\'t backed up; they\'re deleted for good after 30 days.</item>
+    </plurals>
+    <string name="trash_undo">Undo</string>
+    <plurals name="backup_requested">
+        <item quantity="one">Backing up %d item</item>
+        <item quantity="other">Backing up %d items</item>
+    </plurals>
+    <string name="trash_title">Trash</string>
+    <string name="trash_explainer">Items stay here and in your Drive\'s trash for 30 days, then they\'re deleted for good.</string>
+    <string name="trash_empty">The trash is empty</string>
+    <string name="trash_empty_action">Empty trash</string>
+    <string name="trash_restore">Restore</string>
+    <string name="trash_delete_forever">Delete forever</string>
+    <plurals name="trash_confirm_title">
+        <item quantity="one">Delete %d item forever?</item>
+        <item quantity="other">Delete %d items forever?</item>
+    </plurals>
+    <string name="trash_confirm_text">They\'ll be removed from this phone and from Google Drive. This can\'t be undone.</string>
+    <plurals name="trash_days_left">
+        <item quantity="one">%d day</item>
+        <item quantity="other">%d days</item>
+    </plurals>
+    <string name="trash_deleted_elsewhere">Deleted in another app</string>
+    <string name="trash_restoring">Restoring</string>
+    <string name="restore_problem_auth">Reconnect Drive</string>
+    <string name="restore_problem_offline">Offline</string>
+    <string name="restore_problem_not_in_drive">Not in Drive</string>
+    <string name="restore_problem_mismatch">Copy differs</string>
+    <string name="restore_problem_no_space">Phone full</string>
+    <string name="restore_problem_failed">Failed</string>
+    <plurals name="undecided_title">
+        <item quantity="one">%d item deleted in another app</item>
+        <item quantity="other">%d items deleted in another app</item>
+    </plurals>
+    <string name="undecided_text">Their Drive copies stay as they are until you choose.</string>
+    <string name="move_drive_copies_to_trash">Move Drive copies to trash</string>
+    <string name="keep_in_drive">Keep in Drive</string>
+    <plurals name="breaker_title">
+        <item quantity="one">%d photo or video disappeared from this phone at once</item>
+        <item quantity="other">%d photos and videos disappeared from this phone at once</item>
+    </plurals>
+    <string name="breaker_text">Their Drive copies are untouched. A removed memory card or a change in access can cause this.</string>
+    <string name="breaker_keep">Keep Drive copies</string>
+    <string name="breaker_check_again">Check again</string>
+    <string name="settings_deletion">Deletion</string>
+    <string name="deletion_policy_title">When you delete in another app</string>
+    <string name="deletion_policy_text">For photos and videos that are backed up</string>
+    <string name="deletion_policy_move">Move the Drive copy to the trash</string>
+    <string name="deletion_policy_ask">Ask me first</string>
+    <string name="manage_media_title">Delete without asking each time</string>
+    <string name="manage_media_text">Lets Settle move items to the trash without Android asking each time</string>
 </resources>

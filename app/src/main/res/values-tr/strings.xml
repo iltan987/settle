@@ -184,4 +184,71 @@
     <string name="drive_reconnect">Yeniden bağlan</string>
     <string name="drive_reconnect_text">Google\'da yeniden oturum açman gerekiyor. O zamana kadar yedekleme duraklatıldı; hiçbir şey kaybolmadı.</string>
     <string name="backup_status_reconnect">Yedekleme duraklatıldı: Google Drive\'ı yukarıdan yeniden bağla</string>
+
+    <!-- Seçme, silme ve çöp kutusu (R3, R12–R14) -->
+    <plurals name="selected_count">
+        <item quantity="one">%d seçildi</item>
+        <item quantity="other">%d seçildi</item>
+    </plurals>
+    <string name="selection_clear">Seçimi temizle</string>
+    <string name="selection_item">Seç</string>
+    <string name="selection_day">Bu günü seç</string>
+    <string name="action_delete">Sil</string>
+    <plurals name="trash_moved">
+        <item quantity="one">Çöp kutusuna taşındı</item>
+        <item quantity="other">%d öge çöp kutusuna taşındı</item>
+    </plurals>
+    <plurals name="trash_moved_not_backed_up">
+        <item quantity="one">Çöp kutusuna taşındı. %d öge yedeklenmemişti; 30 gün sonra kalıcı olarak silinecek.</item>
+        <item quantity="other">Çöp kutusuna taşındı. %d öge yedeklenmemişti; 30 gün sonra kalıcı olarak silinecekler.</item>
+    </plurals>
+    <string name="trash_undo">Geri al</string>
+    <plurals name="backup_requested">
+        <item quantity="one">%d öge yedekleniyor</item>
+        <item quantity="other">%d öge yedekleniyor</item>
+    </plurals>
+    <string name="trash_title">Çöp kutusu</string>
+    <string name="trash_explainer">Ögeler burada ve Drive\'ınızın çöp kutusunda 30 gün kalır, sonra kalıcı olarak silinir.</string>
+    <string name="trash_empty">Çöp kutusu boş</string>
+    <string name="trash_empty_action">Çöp kutusunu boşalt</string>
+    <string name="trash_restore">Geri yükle</string>
+    <string name="trash_delete_forever">Kalıcı olarak sil</string>
+    <plurals name="trash_confirm_title">
+        <item quantity="one">%d öge kalıcı olarak silinsin mi?</item>
+        <item quantity="other">%d öge kalıcı olarak silinsin mi?</item>
+    </plurals>
+    <string name="trash_confirm_text">Bu telefondan ve Google Drive\'dan kaldırılacaklar. Bu işlem geri alınamaz.</string>
+    <plurals name="trash_days_left">
+        <item quantity="one">%d gün</item>
+        <item quantity="other">%d gün</item>
+    </plurals>
+    <string name="trash_deleted_elsewhere">Başka bir uygulamada silindi</string>
+    <string name="trash_restoring">Geri yükleniyor</string>
+    <string name="restore_problem_auth">Drive\'ı bağla</string>
+    <string name="restore_problem_offline">Çevrimdışı</string>
+    <string name="restore_problem_not_in_drive">Drive\'da yok</string>
+    <string name="restore_problem_mismatch">Kopya farklı</string>
+    <string name="restore_problem_no_space">Telefon dolu</string>
+    <string name="restore_problem_failed">Başarısız</string>
+    <plurals name="undecided_title">
+        <item quantity="one">%d öge başka bir uygulamada silindi</item>
+        <item quantity="other">%d öge başka bir uygulamada silindi</item>
+    </plurals>
+    <string name="undecided_text">Siz seçene kadar Drive kopyaları olduğu gibi kalır.</string>
+    <string name="move_drive_copies_to_trash">Drive kopyalarını çöpe taşı</string>
+    <string name="keep_in_drive">Drive\'da tut</string>
+    <plurals name="breaker_title">
+        <item quantity="one">%d fotoğraf veya video bu telefondan bir anda kayboldu</item>
+        <item quantity="other">%d fotoğraf ve video bu telefondan bir anda kayboldu</item>
+    </plurals>
+    <string name="breaker_text">Drive kopyalarına dokunulmadı. Çıkarılan bir hafıza kartı ya da erişimdeki bir değişiklik buna yol açabilir.</string>
+    <string name="breaker_keep">Drive kopyalarını tut</string>
+    <string name="breaker_check_again">Yeniden kontrol et</string>
+    <string name="settings_deletion">Silme</string>
+    <string name="deletion_policy_title">Başka bir uygulamada sildiğinizde</string>
+    <string name="deletion_policy_text">Yedeklenmiş fotoğraf ve videolar için</string>
+    <string name="deletion_policy_move">Drive kopyasını çöp kutusuna taşı</string>
+    <string name="deletion_policy_ask">Önce bana sor</string>
+    <string name="manage_media_title">Her seferinde sormadan sil</string>
+    <string name="manage_media_text">Settle\'ın ögeleri Android her seferinde sormadan çöp kutusuna taşımasına izin verir</string>
 </resources>
