@@ -55,7 +55,7 @@ interface LibraryDao {
     @Query(
         """
         SELECT f.relative_path, COUNT(*) AS item_count, MAX(m.taken_at_ms) AS latest_taken_at_ms,
-            COALESCE(s.hidden_from_timeline, 0) AS hidden_from_timeline,
+            COALESCE(s.hidden_from_timeline, 0) AS hidden_from_timeline, s.back_up,
             m.kind AS cover_kind, f.volume AS cover_volume,
             f.media_store_id AS cover_media_store_id, f.date_modified_s AS cover_date_modified_s
         $ON_PHONE_LEFT_JOIN_SETTINGS

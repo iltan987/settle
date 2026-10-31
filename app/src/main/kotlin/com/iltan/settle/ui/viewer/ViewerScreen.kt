@@ -3,6 +3,7 @@ package com.iltan.settle.ui.viewer
 import android.Manifest
 import android.content.Intent
 import android.text.format.DateFormat
+import android.text.format.DateUtils
 import android.text.format.Formatter
 import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -443,6 +444,9 @@ fun CloudButton(status: CloudStatus, onClick: () -> Unit) {
             BarButton(R.drawable.ic_cloud_off, R.string.backup_try_again, onClick)
         CloudStatus.NotConnected,
         CloudStatus.NotBackedUp,
+        CloudStatus.NotChosen,
+        CloudStatus.Queued,
+        is CloudStatus.Waiting,
         CloudStatus.Checking -> BarButton(R.drawable.ic_cloud_upload, R.string.backup_now, onClick)
     }
 }
@@ -507,7 +511,19 @@ private fun BackupRow(status: CloudStatus) {
             CloudStatus.Checking -> R.drawable.ic_cloud_upload to R.string.backup_checking_short
             CloudStatus.NotBackedUp -> R.drawable.ic_cloud_off to R.string.backup_not_backed_up
             CloudStatus.NotConnected -> R.drawable.ic_cloud_off to R.string.backup_not_connected
+            CloudStatus.NotChosen -> R.drawable.ic_cloud_off to R.string.backup_not_chosen
+            CloudStatus.Queued -> R.drawable.ic_cloud_upload to R.string.backup_queued
+            is CloudStatus.Waiting -> R.drawable.ic_cloud_upload to R.string.backup_waiting
             is CloudStatus.Problem -> R.drawable.ic_cloud_off to status.problem.text
+        }
+    val waitingFor =
+        (status as? CloudStatus.Waiting)?.let {
+            DateUtils.getRelativeTimeSpanString(
+                    it.untilMillis,
+                    System.currentTimeMillis(),
+                    DateUtils.MINUTE_IN_MILLIS,
+                )
+                .toString()
         }
     val driveFileId = (status as? CloudStatus.BackedUp)?.driveFileId
     ListItem(
@@ -525,7 +541,9 @@ private fun BackupRow(status: CloudStatus) {
         },
         enabled = driveFileId != null,
         leadingContent = { Icon(painterResource(icon), null) },
-        content = { Text(stringResource(text)) },
+        content = {
+            Text(if (waitingFor != null) stringResource(text, waitingFor) else stringResource(text))
+        },
         supportingContent =
             if (driveFileId != null) {
                 { Text(stringResource(R.string.backup_verified)) }

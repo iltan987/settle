@@ -13,6 +13,7 @@ import com.iltan.settle.data.drive.DriveAuth
 import com.iltan.settle.data.drive.DriveRest
 import com.iltan.settle.data.drive.DriveSandbox
 import com.iltan.settle.domain.backup.DriveException
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -20,6 +21,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -40,6 +42,8 @@ data class DriveSettingsState(
     val busy: Boolean = false,
     val sandbox: Boolean = false,
     val notice: DriveNotice? = null,
+    /** Google wants the user to sign in again before backup can continue (R6). */
+    val needsReconnect: Boolean = false,
 )
 
 class DriveSettingsViewModel(
@@ -48,6 +52,9 @@ class DriveSettingsViewModel(
     private val drive: DriveRest,
     private val sandbox: DriveSandbox?,
     folder: String,
+    /** Called after connecting or disconnecting, so backup follows the account. */
+    private val onAccountChanged: suspend (connected: Boolean) -> Unit = {},
+    needsReconnect: Flow<Boolean> = flowOf(false),
 ) : ViewModel() {
 
     private val about = MutableStateFlow<DriveAbout?>(null)
@@ -59,8 +66,14 @@ class DriveSettingsViewModel(
     val consent: StateFlow<PendingIntent?> = _consent.asStateFlow()
 
     val state: StateFlow<DriveSettingsState> =
-        combine(dao.account(), about, busy, notice) { account, about, busy, notice ->
+        combine(dao.account(), about, busy, notice, needsReconnect) {
+                account,
+                about,
+                busy,
+                notice,
+                needsReconnect ->
                 DriveSettingsState(
+                    needsReconnect = needsReconnect && account != null,
                     loaded = true,
                     email = account?.email,
                     about = about.takeIf { account != null },
@@ -104,7 +117,10 @@ class DriveSettingsViewModel(
         _consent.value = null
     }
 
-    fun disconnect() = working { auth.disconnect() }
+    fun disconnect() = working {
+        auth.disconnect()
+        onAccountChanged(false)
+    }
 
     fun resetSandbox() = working {
         notice.value =
@@ -124,7 +140,7 @@ class DriveSettingsViewModel(
     private fun handle(step: ConnectStep) {
         when (step) {
             is ConnectStep.NeedsUser -> _consent.value = step.intent
-            is ConnectStep.Connected -> {}
+            is ConnectStep.Connected -> viewModelScope.launch { onAccountChanged(true) }
             is ConnectStep.Failed -> {
                 Log.w(TAG, "Connecting Drive failed: ${step.reason}")
                 notice.value = DriveNotice.CONNECT_FAILED

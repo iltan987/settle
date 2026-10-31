@@ -45,6 +45,7 @@ class ViewerViewModel(
                 backupDao.observeUpload(itemId),
                 cloudBackup.progress.map { it[itemId] },
                 cloudBackup.requested(itemId),
+                cloudBackup.decision(itemId),
                 ::cloudStatus,
             )
             .distinctUntilChanged()

@@ -4,6 +4,7 @@ import androidx.room3.ColumnInfo
 import com.iltan.settle.domain.CloudState
 import com.iltan.settle.domain.LocalState
 import com.iltan.settle.domain.MediaItemId
+import com.iltan.settle.domain.backup.folderBacksUp
 import com.iltan.settle.domain.scan.KnownFile
 import com.iltan.settle.domain.scan.MediaKind
 
@@ -34,7 +35,13 @@ data class FolderSummary(
     @ColumnInfo(name = "cover_volume") val coverVolume: String,
     @ColumnInfo(name = "cover_media_store_id") val coverMediaStoreId: Long,
     @ColumnInfo(name = "cover_date_modified_s") val coverDateModifiedS: Long,
-)
+    /** The user's backup switch for the folder; null means the default. */
+    @ColumnInfo(name = "back_up") val backUp: Boolean? = null,
+) {
+    /** Whether new items in this folder are backed up (only the camera's by default). */
+    val backsUp: Boolean
+        get() = folderBacksUp(relativePath, backUp)
+}
 
 /** Details shown in the viewer's info sheet. */
 data class MediaDetails(

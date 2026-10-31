@@ -58,6 +58,7 @@ fun FoldersScreen(
     onOpenFolder: (relativePath: String, name: String) -> Unit,
     onOpenFavorites: () -> Unit,
     onSetHidden: (relativePath: String, hidden: Boolean) -> Unit,
+    onSetBackUp: (relativePath: String, backUp: Boolean) -> Unit = { _, _ -> },
 ) {
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     val rootName = stringResource(R.string.folder_root)
@@ -123,6 +124,16 @@ fun FoldersScreen(
                                 },
                                 onClick = {
                                     onSetHidden(folder.relativePath, !folder.hiddenFromTimeline)
+                                    onDismiss()
+                                },
+                            )
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.folder_back_up)) },
+                                trailingIcon = {
+                                    Switch(checked = folder.backsUp, onCheckedChange = null)
+                                },
+                                onClick = {
+                                    onSetBackUp(folder.relativePath, !folder.backsUp)
                                     onDismiss()
                                 },
                             )

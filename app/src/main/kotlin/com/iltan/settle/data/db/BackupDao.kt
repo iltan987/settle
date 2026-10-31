@@ -142,6 +142,16 @@ interface BackupDao {
     )
     fun observeBackupCandidates(): Flow<List<BackupCandidateRow>>
 
+    /** One item's row of [backupCandidates]; null once verified or off the phone. */
+    @Query(
+        """
+        SELECT m.id, f.local_state, f.size_bytes, m.taken_at_ms, f.date_added_s, f.relative_path,
+            s.back_up, m.cloud_state, u.problem, r.retry_at_ms, r.attempts, q.requested_at_ms
+        $CANDIDATES AND m.id = :itemId
+        """
+    )
+    fun observeBackupCandidate(itemId: String): Flow<BackupCandidateRow?>
+
     @Query(
         """
         SELECT COUNT(*) FROM media_item m JOIN local_file f ON f.item_id = m.id

@@ -97,4 +97,13 @@ class DriveSectionTest {
 
         compose.onNodeWithText("Reset debug Drive folder").assertDoesNotExist()
     }
+
+    @Test
+    fun whenGoogleNeedsANewSignInItOffersToReconnect() {
+        show(connected.copy(needsReconnect = true))
+
+        compose.onNodeWithText("Reconnect").performClick()
+
+        assertEquals(listOf("connect"), calls)
+    }
 }

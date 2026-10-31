@@ -69,8 +69,7 @@ class AppGraph(context: Context) {
             .build()
     }
 
-    private val debuggable =
-        appContext.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE != 0
+    val debuggable = appContext.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE != 0
 
     /** Debug builds: one line per Drive request, for measuring. Query strings stay out of logs. */
     private fun logTiming(chain: Interceptor.Chain): Response {
@@ -110,6 +109,9 @@ class AppGraph(context: Context) {
     private val uploadDrive by lazy { DriveRest(uploadHttp, driveAuth, meter = uploadMeter) }
 
     private val originals by lazy { MediaStoreOriginals(appContext, database.backupDao()) }
+
+    /** Whether originals can be read with their location (R1). */
+    fun canReadOriginals(): Boolean = originals.canReadOriginals()
 
     val backupPreferences by lazy { BackupPreferences(database.backupDao()) }
 
@@ -152,7 +154,13 @@ class AppGraph(context: Context) {
     }
 
     val cloudBackup by lazy {
-        CloudBackup(backupRunner, backupScheduler, database.backupDao(), originals)
+        CloudBackup(
+            backupRunner,
+            backupScheduler,
+            database.backupDao(),
+            backupPreferences,
+            originals,
+        )
     }
 
     /** Only in debug builds. */

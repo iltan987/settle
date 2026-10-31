@@ -13,7 +13,8 @@ class MainActivity : ComponentActivity() {
         // readable in light and dark themes.
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
-        setContent { SettleTheme { SettleApp() } }
+        val openSettings = intent.getBooleanExtra(EXTRA_OPEN_SETTINGS, false)
+        setContent { SettleTheme { SettleApp(openSettings) } }
     }
 
     companion object {

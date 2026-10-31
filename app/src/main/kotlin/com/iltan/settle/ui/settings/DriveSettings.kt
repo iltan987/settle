@@ -28,6 +28,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.iltan.settle.R
 import com.iltan.settle.appGraph
+import com.iltan.settle.domain.backup.BackupPause
+import kotlinx.coroutines.flow.map
 
 /** The Google Drive part of Settings, wired to the app. */
 @Composable
@@ -41,6 +43,14 @@ fun DriveSettings(snackbar: SnackbarHostState) {
             drive = graph.drive,
             sandbox = graph.driveSandbox,
             folder = graph.driveRootFolder,
+            onAccountChanged = { connected ->
+                if (connected && graph.backupPreferences.unblock(BackupPause.AUTH_NEEDED)) {
+                    graph.backupNotifications.clearPause()
+                }
+                graph.backupScheduler.reschedule()
+            },
+            needsReconnect =
+                graph.backupPreferences.choices.map { it.blocked == BackupPause.AUTH_NEEDED },
         )
     }
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -103,6 +113,16 @@ fun DriveSection(
                 )
             },
         )
+        if (state.needsReconnect) {
+            ListItem(content = { Text(stringResource(R.string.drive_reconnect_text)) })
+            Button(
+                onClick = onConnect,
+                enabled = !state.busy,
+                modifier = Modifier.padding(start = 16.dp, bottom = 8.dp),
+            ) {
+                Text(stringResource(R.string.drive_reconnect))
+            }
+        }
         ListItem(
             onClick = { confirmDisconnect = true },
             enabled = !state.busy,

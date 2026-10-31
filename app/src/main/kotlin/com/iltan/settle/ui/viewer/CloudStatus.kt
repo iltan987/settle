@@ -3,6 +3,7 @@ package com.iltan.settle.ui.viewer
 import com.iltan.settle.data.backup.UploadProgress
 import com.iltan.settle.data.db.UploadEntity
 import com.iltan.settle.domain.CloudState
+import com.iltan.settle.domain.backup.BackupDecision
 import com.iltan.settle.domain.backup.UploadProblem
 
 /** What the viewer shows about an item's backup. */
@@ -11,6 +12,15 @@ sealed interface CloudStatus {
 
     /** Never backed up, or an upload that stopped and continues on the next try. */
     data object NotBackedUp : CloudStatus
+
+    /** Its folder isn't chosen for backup, or automatic backup is off. */
+    data object NotChosen : CloudStatus
+
+    /** In its grace period (R2), or waiting to retry; backs up on its own after [untilMillis]. */
+    data class Waiting(val untilMillis: Long) : CloudStatus
+
+    /** Ready; the next automatic run takes it. */
+    data object Queued : CloudStatus
 
     /** Queued or uploading; [fraction] is null while queued. */
     data class Uploading(val fraction: Float?) : CloudStatus
@@ -28,6 +38,8 @@ fun cloudStatus(
     upload: UploadEntity?,
     progress: UploadProgress?,
     requested: Boolean = false,
+    /** What automatic backup will do with it; null when unknown. */
+    decision: BackupDecision? = null,
 ): CloudStatus =
     when {
         progress != null ->
@@ -39,5 +51,8 @@ fun cloudStatus(
         !connected -> CloudStatus.NotConnected
         upload?.problem != null -> CloudStatus.Problem(upload.problem)
         upload?.state == CloudState.UPLOADED -> CloudStatus.Checking
+        decision is BackupDecision.WaitUntil -> CloudStatus.Waiting(decision.millis)
+        decision == BackupDecision.Ready -> CloudStatus.Queued
+        decision == BackupDecision.Skip -> CloudStatus.NotChosen
         else -> CloudStatus.NotBackedUp
     }

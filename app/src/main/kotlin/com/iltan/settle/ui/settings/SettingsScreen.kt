@@ -64,6 +64,8 @@ fun SettingsScreen(onBack: () -> Unit) {
             LibrarySection()
             SectionTitle(R.string.settings_drive)
             DriveSettings(snackbar)
+            SectionTitle(R.string.settings_backup)
+            BackupSettings()
             SectionTitle(R.string.settings_language)
             Column(Modifier.selectableGroup()) {
                 AppLanguage.entries.forEach { option ->

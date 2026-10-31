@@ -25,7 +25,11 @@ data class FoldersState(
     val loading: Boolean = true,
 )
 
-class FoldersViewModel(private val library: Library) : ViewModel() {
+class FoldersViewModel(
+    private val library: Library,
+    /** Called after a folder's backup choice changed, so the backup plan follows. */
+    private val onBackupChoiceChanged: suspend () -> Unit = {},
+) : ViewModel() {
     val state: StateFlow<FoldersState> =
         combine(library.folders(), library.entries(GridSource.Favorites)) { folders, favorites ->
                 FoldersState(folders, favorites, loading = false)
@@ -34,6 +38,13 @@ class FoldersViewModel(private val library: Library) : ViewModel() {
 
     fun setHiddenFromTimeline(relativePath: String, hidden: Boolean) {
         viewModelScope.launch { library.setFolderHidden(relativePath, hidden) }
+    }
+
+    fun setBackUp(relativePath: String, backUp: Boolean) {
+        viewModelScope.launch {
+            library.setFolderBackUp(relativePath, backUp)
+            onBackupChoiceChanged()
+        }
     }
 }
 

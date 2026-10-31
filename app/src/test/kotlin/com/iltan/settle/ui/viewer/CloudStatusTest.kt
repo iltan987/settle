@@ -9,6 +9,7 @@ import androidx.compose.ui.test.performClick
 import com.iltan.settle.data.backup.UploadProgress
 import com.iltan.settle.data.db.UploadEntity
 import com.iltan.settle.domain.CloudState
+import com.iltan.settle.domain.backup.BackupDecision
 import com.iltan.settle.domain.backup.UploadProblem
 import com.iltan.settle.ui.theme.SettleTheme
 import org.junit.Assert.assertEquals
@@ -98,5 +99,30 @@ class CloudStatusTest {
         compose.onNodeWithContentDescription("Back up again").performClick()
 
         assertEquals(2, taps)
+    }
+
+    @Test
+    fun automaticBackupsDecisionShowsAsWaitingQueuedOrNotChosen() {
+        assertEquals(
+            CloudStatus.Waiting(5_000),
+            cloudStatus(true, null, null, decision = BackupDecision.WaitUntil(5_000)),
+        )
+        assertEquals(
+            CloudStatus.Queued,
+            cloudStatus(true, null, null, decision = BackupDecision.Ready),
+        )
+        assertEquals(
+            CloudStatus.NotChosen,
+            cloudStatus(true, null, null, decision = BackupDecision.Skip),
+        )
+    }
+
+    @Test
+    fun aRequestShowsAsUnderWayUntilVerified() {
+        assertEquals(CloudStatus.Uploading(null), cloudStatus(true, null, null, requested = true))
+        assertEquals(
+            CloudStatus.BackedUp("drive1"),
+            cloudStatus(true, upload(CloudState.VERIFIED), null, requested = true),
+        )
     }
 }

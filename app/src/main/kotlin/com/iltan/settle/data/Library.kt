@@ -50,6 +50,9 @@ class Library(private val dao: LibraryDao, private val resolver: ContentResolver
     suspend fun setFolderHidden(relativePath: String, hidden: Boolean) =
         dao.setFolderHidden(relativePath, hidden)
 
+    suspend fun setFolderBackUp(relativePath: String, backUp: Boolean) =
+        dao.setFolderBackUp(relativePath, backUp)
+
     /**
      * For a file on the phone, MediaStore's favourite flag is the truth (ADR-012): it is written
      * there so other apps see it, and scans copy it back. Room is updated right away so the UI

@@ -52,10 +52,10 @@ import kotlinx.serialization.Serializable
 
 /** Root of the UI: onboarding until media access is granted, then one Navigation 3 back stack. */
 @Composable
-fun SettleApp() {
+fun SettleApp(openSettings: Boolean = false) {
     val context = LocalContext.current
     MediaAccessGate(onAccessGranted = { context.appGraph.librarySync.requestScan() }) {
-        Navigation()
+        Navigation(openSettings)
     }
 }
 
@@ -76,10 +76,13 @@ private fun NavBackStack<NavKey>.select(tab: Tab) {
 }
 
 @Composable
-private fun Navigation() {
+private fun Navigation(openSettings: Boolean) {
     val context = LocalContext.current
     val graph = context.appGraph
-    val backStack = rememberNavBackStack(Timeline)
+    // A backup notification that needs the user opens Settings over the timeline.
+    val backStack =
+        if (openSettings) rememberNavBackStack(Timeline, Settings)
+        else rememberNavBackStack(Timeline)
     val currentTab = Tab.entries.firstOrNull { it.key == backStack.lastOrNull() }
 
     Scaffold(
@@ -129,13 +132,16 @@ private fun Navigation() {
                         )
                     }
                     entry<Folders> {
-                        val viewModel = viewModel { FoldersViewModel(graph.library) }
+                        val viewModel = viewModel {
+                            FoldersViewModel(graph.library) { graph.backupScheduler.reschedule() }
+                        }
                         val state by viewModel.state.collectAsStateWithLifecycle()
                         FoldersScreen(
                             state = state,
                             onOpenFolder = { path, name -> backStack.add(Folder(path, name)) },
                             onOpenFavorites = { backStack.add(Favorites) },
                             onSetHidden = viewModel::setHiddenFromTimeline,
+                            onSetBackUp = viewModel::setBackUp,
                         )
                     }
                     entry<Folder> { key ->

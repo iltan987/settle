@@ -139,10 +139,21 @@ private fun MediaCell(entry: MediaEntry, onClick: () -> Unit) {
                 BadgeIcon(R.drawable.ic_favorite_filled, R.string.media_favorite)
             }
         }
-        if (entry.cloudState == CloudState.VERIFIED) {
-            Badge(Modifier.align(Alignment.TopStart)) {
-                BadgeIcon(R.drawable.ic_cloud_done_filled, R.string.media_backed_up)
-            }
+        when (entry.cloudState) {
+            CloudState.VERIFIED ->
+                Badge(Modifier.align(Alignment.TopStart)) {
+                    BadgeIcon(R.drawable.ic_cloud_done_filled, R.string.media_backed_up)
+                }
+            CloudState.UPLOADING,
+            CloudState.UPLOADED ->
+                Badge(Modifier.align(Alignment.TopStart)) {
+                    BadgeIcon(R.drawable.ic_cloud_upload, R.string.backup_uploading)
+                }
+            CloudState.SUSPECT ->
+                Badge(Modifier.align(Alignment.TopStart)) {
+                    BadgeIcon(R.drawable.ic_cloud_off, R.string.media_needs_attention)
+                }
+            else -> {}
         }
     }
 }

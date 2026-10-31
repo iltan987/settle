@@ -111,4 +111,71 @@
     <string name="notification_reconnect_text">Yedeklemenin devam edebilmesi için Google\'da yeniden oturum açman gerekiyor. Hiçbir şey kaybolmadı.</string>
     <string name="notification_drive_full_title">Google Drive dolu</string>
     <string name="notification_drive_full_text">Google Drive\'ında yeniden yer açılana kadar yedekleme duraklatıldı. Hiçbir şey kaybolmadı.</string>
+    <string name="backup_not_chosen">Yedeklenmiyor · klasörü yedeklenmiyor</string>
+    <string name="backup_queued">Bir sonraki otomatik yedeklemede yedeklenecek</string>
+    <string name="backup_waiting">%1$s kendiliğinden yedeklenecek</string>
+    <string name="folder_back_up">Yedekle</string>
+    <string name="settings_backup">Yedekleme</string>
+    <string name="backup_status_not_connected">Yedeklemek için yukarıdan Google Drive\'ı bağla</string>
+    <string name="backup_status_paused">Yedekleme duraklatıldı</string>
+    <plurals name="backup_count_backed_up">
+        <item quantity="one">%d yedeklendi</item>
+        <item quantity="other">%d yedeklendi</item>
+    </plurals>
+    <plurals name="backup_count_uploading">
+        <item quantity="one">%d yükleniyor</item>
+        <item quantity="other">%d yükleniyor</item>
+    </plurals>
+    <plurals name="backup_count_queued">
+        <item quantity="one">%d hazır</item>
+        <item quantity="other">%d hazır</item>
+    </plurals>
+    <plurals name="backup_count_waiting">
+        <item quantity="one">%d bekliyor</item>
+        <item quantity="other">%d bekliyor</item>
+    </plurals>
+    <plurals name="backup_needs_attention">
+        <item quantity="one">%d öge ilgilenmeni bekliyor</item>
+        <item quantity="other">%d öge ilgilenmeni bekliyor</item>
+    </plurals>
+    <string name="backup_everything_now">Şimdi her şeyi yedekle</string>
+    <string name="backup_everything_now_text">Bekleme süresini ve şarjı beklemez; arka planda devam eder</string>
+    <string name="backup_automatic">Otomatik yedekle</string>
+    <string name="backup_automatic_text">Seçilen klasörlerdeki yeni fotoğraf ve videolar</string>
+    <string name="backup_grace">Yedeklemeden önce bekle</string>
+    <string name="backup_grace_none">Bekleme yok</string>
+    <string name="backup_grace_minute">1 dakika (hata ayıklama)</string>
+    <plurals name="backup_grace_hours">
+        <item quantity="one">%d saat</item>
+        <item quantity="other">%d saat</item>
+    </plurals>
+    <plurals name="backup_grace_days">
+        <item quantity="one">%d gün</item>
+        <item quantity="other">%d gün</item>
+    </plurals>
+    <string name="backup_only_charging">Yalnızca şarj olurken</string>
+    <string name="backup_only_charging_text">Genellikle gece, hiç fark etmezsin</string>
+    <string name="backup_mobile_data">Mobil veri kullan</string>
+    <string name="backup_mobile_data_text">Aksi halde yedekleme Wi-Fi\'ı bekler</string>
+    <string name="backup_network">Ağ kullanımı</string>
+    <string name="backup_network_polite">Nazik: ağındaki diğer cihazlara yer bırakır</string>
+    <string name="backup_network_limit">En fazla %d Mbps</string>
+    <string name="backup_network_unlimited">Olabildiğince hızlı</string>
+    <string name="backup_folders">Yedeklenecek klasörler</string>
+    <plurals name="backup_folders_chosen">
+        <item quantity="one">%d klasör seçili</item>
+        <item quantity="other">%d klasör seçili</item>
+    </plurals>
+    <string name="backup_pause">Yedeklemeyi duraklat</string>
+    <string name="backup_resume">Devam et</string>
+    <string name="backup_allow_notifications">Bildirimlere izin ver</string>
+    <string name="backup_allow_notifications_text">Yalnızca yedekleme sana ihtiyaç duyduğunda ve başlattığın yedeklemeler için</string>
+    <string name="backup_battery">Sınırsız pil kullanımına izin ver</string>
+    <string name="backup_battery_text">Aksi halde Android yedeklemeleri geciktirebilir. Uygulama bilgileri\'nde Pil\'i açıp Sınırsız\'ı seç.</string>
+    <string name="backup_battery_restricted">Pil kullanımı Kısıtlı, bu yüzden yedekleme arka planda çalışamaz. Uygulama bilgileri\'nde Pil\'i açıp Sınırsız\'ı seç.</string>
+    <string name="backup_never_sleeping">Settle\'ı Hiç uyumayan uygulamalar\'a ekle</string>
+    <string name="backup_never_sleeping_text">Samsung, bir süre açmadığın uygulamaları uyutur; bu da yedeklemeyi durdurur</string>
+    <string name="media_needs_attention">Yedekleme ilgilenmeni bekliyor</string>
+    <string name="drive_reconnect">Yeniden bağlan</string>
+    <string name="drive_reconnect_text">Google\'da yeniden oturum açman gerekiyor. O zamana kadar yedekleme duraklatıldı; hiçbir şey kaybolmadı.</string>
 </resources>
