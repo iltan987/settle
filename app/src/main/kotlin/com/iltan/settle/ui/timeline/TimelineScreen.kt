@@ -68,7 +68,12 @@ fun TimelineScreen(
         snackbarHost = { SnackbarHost(snackbar) },
         topBar = {
             if (actions != null && chosen.isNotEmpty()) {
-                SelectionTopBar(chosen.size, onClear = { selection = emptySet() }) {
+                SelectionTopBar(
+                    chosen.size,
+                    onClear = { selection = emptySet() },
+                    subtitle = pluralStringResource(R.plurals.item_count, state.count, state.count),
+                    scrollBehavior = scrollBehavior,
+                ) {
                     SelectionAction(R.drawable.ic_share, R.string.viewer_share) {
                         actions.share(chosen)
                     }

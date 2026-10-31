@@ -101,7 +101,12 @@ fun TrashScreen(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             if (selection.isNotEmpty()) {
-                SelectionTopBar(selection.size, onClear = { selection = emptySet() }) {
+                SelectionTopBar(
+                    selection.size,
+                    onClear = { selection = emptySet() },
+                    subtitle = null,
+                    scrollBehavior = scrollBehavior,
+                ) {
                     SelectionAction(R.drawable.ic_restore_from_trash, R.string.trash_restore) {
                         onRestore(selection)
                         selection = emptySet()

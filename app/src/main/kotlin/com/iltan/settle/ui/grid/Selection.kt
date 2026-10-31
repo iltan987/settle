@@ -5,12 +5,14 @@ import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
@@ -96,13 +98,24 @@ fun Modifier.gridGestures(
     }
 }
 
-/** The top bar while items are selected: how many, a way out, and what can be done with them. */
-@OptIn(ExperimentalMaterial3Api::class)
+/**
+ * The top bar while items are selected: how many, a way out, and what can be done with them. The
+ * same large, collapsing bar as the screen's own, with [subtitle] kept, so the grid doesn't jump
+ * under the finger when selecting starts.
+ */
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun SelectionTopBar(count: Int, onClear: () -> Unit, actions: @Composable () -> Unit) {
+fun SelectionTopBar(
+    count: Int,
+    onClear: () -> Unit,
+    subtitle: String?,
+    scrollBehavior: TopAppBarScrollBehavior,
+    actions: @Composable () -> Unit,
+) {
     BackHandler(onBack = onClear)
-    TopAppBar(
+    LargeFlexibleTopAppBar(
         title = { Text(pluralStringResource(R.plurals.selected_count, count, count)) },
+        subtitle = subtitle?.let { { Text(it) } },
         navigationIcon = {
             IconButton(onClick = onClear) {
                 Icon(
@@ -114,8 +127,10 @@ fun SelectionTopBar(count: Int, onClear: () -> Unit, actions: @Composable () -> 
         actions = { actions() },
         colors =
             TopAppBarDefaults.topAppBarColors(
-                containerColor = MaterialTheme.colorScheme.secondaryContainer
+                containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                scrolledContainerColor = MaterialTheme.colorScheme.secondaryContainer,
             ),
+        scrollBehavior = scrollBehavior,
     )
 }
 
