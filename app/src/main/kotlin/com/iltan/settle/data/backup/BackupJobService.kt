@@ -56,11 +56,15 @@ class BackupJobService : JobService() {
                 Log.e(TAG, "Job ${params.jobId} failed", e)
             }
             running.remove(params.jobId)
-            jobFinished(params, false)
-            if (params.jobId == BackupScheduler.REQUESTED_JOB) {
-                graph.backupNotifications.clearProgress()
+            // Before jobFinished: once the job is finished Android unbinds and destroys this
+            // service, which cancels the scope, and may freeze the process.
+            try {
+                afterRun(params.jobId)
+            } catch (e: Exception) {
+                if (e is CancellationException) throw e
+                Log.e(TAG, "Planning after job ${params.jobId} failed", e)
             }
-            afterRun(uploaded = params.jobId in UPLOAD_JOBS)
+            jobFinished(params, false)
         }
         return true
     }
@@ -96,15 +100,19 @@ class BackupJobService : JobService() {
         }
     }
 
-    /** Plans the next run; after uploads, tells the user if backup now waits for them. */
-    private suspend fun afterRun(uploaded: Boolean) {
+    /**
+     * After uploads, tells the user if backup now waits for them; then plans the next run. Planning
+     * comes last: scheduling this job's own ID again stops this run.
+     */
+    private suspend fun afterRun(jobId: Int) {
         val graph = appGraph
-        graph.backupScheduler.reschedule()
-        if (!uploaded) return
-        val blocked = graph.backupPreferences.current().blocked
-        if (blocked == BackupPause.AUTH_NEEDED || blocked == BackupPause.QUOTA_FULL) {
-            graph.backupNotifications.showPause(blocked)
+        if (jobId in UPLOAD_JOBS) {
+            val blocked = graph.backupPreferences.current().blocked
+            if (blocked == BackupPause.AUTH_NEEDED || blocked == BackupPause.QUOTA_FULL) {
+                graph.backupNotifications.showPause(blocked)
+            }
         }
+        graph.backupScheduler.reschedule(finishingJob = jobId)
     }
 
     override fun onStopJob(params: JobParameters): Boolean {

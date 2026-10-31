@@ -99,8 +99,6 @@ class BackupNotifications(private val context: Context) {
 
     fun clearPause() = manager.cancel(PROBLEM_ID)
 
-    fun clearProgress() = manager.cancel(PROGRESS_ID)
-
     private fun notify(id: Int, notification: Notification) {
         if (
             context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) ==

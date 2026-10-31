@@ -31,9 +31,14 @@ class BackupScheduler(
     private val service = ComponentName(context, BackupJobService::class.java)
     private val lock = Mutex()
 
-    /** Brings the automatic, media-watching and maintenance jobs in line with the plan. */
-    suspend fun reschedule() = lock.withLock {
-        if (jobs.getPendingJob(MEDIA_JOB) == null) jobs.schedule(mediaJob())
+    /**
+     * Brings the automatic, media-watching and maintenance jobs in line with the plan. A job that
+     * is ending passes its ID: it still counts as pending, but a trigger job must be armed again.
+     */
+    suspend fun reschedule(finishingJob: Int? = null) = lock.withLock {
+        if (finishingJob == MEDIA_JOB || jobs.getPendingJob(MEDIA_JOB) == null) {
+            jobs.schedule(mediaJob())
+        }
         if (jobs.getPendingJob(MAINTENANCE_JOB)?.intervalMillis != MAINTENANCE_EVERY_MILLIS) {
             jobs.schedule(maintenanceJob())
         }
