@@ -46,13 +46,14 @@ Full check before calling anything done:
 `./gradlew :domain:test :app:testDebugUnitTest :app:lintDebug assembleDebug ktfmtCheck`
 
 The phone is usually attached over USB and reachable with `adb` from WSL (serial `R5CY649XR5B`).
-An emulator `settle_api37` (Android 17 / API 37, Google Play image, Pixel 8 profile) holds no real
-photos and is signed in to a throwaway Google account: use it for anything that deletes files or
-needs real device tests, and the phone for Samsung behaviour and final checks. Start it with
-`sg kvm -c "$HOME/Android/Sdk/emulator/emulator -avd settle_api37 -gpu swiftshader_indirect -no-boot-anim" &`
-(plain `emulator …` once WSL has restarted since the `kvm` group change); its window opens on the
-Windows desktop through WSLg. With both attached, every adb command needs `-s R5CY649XR5B` or
-`-s emulator-5554`. Screenshots:
+An emulator `settle_api37` (Android 17 / API 37, Google Play image, Pixel 8 profile) runs on
+Windows (Hypervisor Platform; nested KVM inside WSL was too slow) and holds no real photos; it is
+signed in to a throwaway Google account. Use it for anything that deletes files or needs real
+device tests, and the phone for Samsung behaviour and final checks. Start it from WSL with
+`powershell.exe -NoProfile -Command "\$env:ANDROID_SDK_ROOT='C:\Users\icaner\AppData\Local\Android\Sdk'; Start-Process 'C:\Users\icaner\AppData\Local\Android\Sdk\emulator\emulator.exe' -ArgumentList '-avd','settle_api37','-gpu','host','-no-boot-anim'"`.
+WSL runs in mirrored networking (`networkingMode=mirrored` in the Windows `.wslconfig`), so the
+emulator registers with WSL's adb on its own as `emulator-5554`. With both attached, every adb
+command needs `-s R5CY649XR5B` or `-s emulator-5554`. Screenshots:
 `adb exec-out screencap -p > shot.png`. Samsung's Secure Folder makes some `pm` commands print a
 harmless "user 150" SecurityException.
 
