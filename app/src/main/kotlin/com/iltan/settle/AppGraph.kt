@@ -2,6 +2,7 @@ package com.iltan.settle
 
 import android.content.Context
 import android.content.pm.ApplicationInfo
+import android.os.Build
 import android.util.Log
 import com.iltan.settle.data.Library
 import com.iltan.settle.data.backup.BackupMaintenance
@@ -86,8 +87,17 @@ class AppGraph(context: Context) {
         return response
     }
 
-    /** Settle's Drive folder: `Settle`, or `Settle (debug)` in debug builds (ADR-008). */
-    val driveRootFolder: String = appContext.getString(R.string.drive_root_folder)
+    /**
+     * Settle's Drive folder: `Settle`, or `Settle (debug)` in debug builds (ADR-008). A debug build
+     * on an emulator signed in to the same account uses `Settle (emulator)`, so tests there never
+     * touch what the phone's debug build uploaded.
+     */
+    val driveRootFolder: String =
+        appContext.getString(
+            if (appContext.resources.getBoolean(R.bool.drive_sandbox) && Build.HARDWARE == "ranchu")
+                R.string.drive_root_folder_emulator
+            else R.string.drive_root_folder
+        )
 
     val driveAuth by lazy {
         DriveAuth(appContext, database.backupDao()) { token ->

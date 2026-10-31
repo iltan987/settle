@@ -12,6 +12,10 @@ real photo library.
   app with its own data.
 - It gets its own OAuth client (debug keystore SHA-1) and writes only under `Settle (debug)/` in
   Drive. A debug-only menu can wipe that folder.
+- Amended 2026-10-31: a debug build on an emulator (hardware `ranchu`) writes under
+  `Settle (emulator)/` instead. The test emulator is signed in to the owner's own account, and
+  `drive.file` grants per app, so without this it would share `Settle (debug)/` with the phone,
+  including the debug copies of real photos.
 - Destructive behaviour runs on the debug build with test media first. The release build touches
   the real library only after the user agrees.
 

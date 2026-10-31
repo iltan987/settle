@@ -47,8 +47,9 @@ Full check before calling anything done:
 
 The phone is usually attached over USB and reachable with `adb` from WSL (serial `R5CY649XR5B`).
 An emulator `settle_api37` (Android 17 / API 37, Google Play image, Pixel 8 profile) runs on
-Windows (Hypervisor Platform; nested KVM inside WSL was too slow) and holds no real photos; it is
-signed in to a throwaway Google account. Use it for anything that deletes files or needs real
+Windows (Hypervisor Platform; nested KVM inside WSL was too slow) and holds no real photos. It is
+signed in to the owner's own account; there the debug build uses `Settle (emulator)/` in Drive,
+apart from the phone's `Settle (debug)/` (ADR-008). Use it for anything that deletes files or needs real
 device tests, and the phone for Samsung behaviour and final checks. Start it from WSL with
 `powershell.exe -NoProfile -Command "\$env:ANDROID_SDK_ROOT='C:\Users\icaner\AppData\Local\Android\Sdk'; Start-Process 'C:\Users\icaner\AppData\Local\Android\Sdk\emulator\emulator.exe' -ArgumentList '-avd','settle_api37','-gpu','host','-no-boot-anim'"`.
 WSL runs in mirrored networking (`networkingMode=mirrored` in the Windows `.wslconfig`), so the

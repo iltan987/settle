@@ -2,6 +2,8 @@
 <resources>
     <!-- Settle's folder in My Drive (ADR-003); debug builds use their own (ADR-008). -->
     <string name="drive_root_folder" translatable="false">Settle</string>
+    <!-- A debug build on an emulator keeps apart from the phone's debug folder (ADR-008). -->
+    <string name="drive_root_folder_emulator" translatable="false">Settle (emulator)</string>
     <!-- Debug builds may move their Drive folder to the trash to start tests over. -->
     <bool name="drive_sandbox">false</bool>
 </resources>
