@@ -16,7 +16,10 @@ Smart Switch would restore a local index whose MediaStore references no longer m
   - `_library/library.json` (folder rules, pins, settings), `_library/albums/<albumId>.json`
     (one manifest per album), `_library/trash.json`.
 - Every file carries `appProperties` (`st.v`, `st.id`, `st.sha`, `st.kind`, `st.path`, `st.taken`,
-  `st.dim`, `st.sf`, `st.fav`, `st.alb`, `st.dev`) and a JSON copy in `description`. If `_library`
+  `st.dim`, `st.sf`, `st.fav`, `st.alb`, `st.dev`) and a JSON copy in `description`.
+  Amended 2026-10-31 (ADR-013): `st.sha` is dropped, since it isn't known when the upload
+  starts and Drive's own `sha256Checksum` serves the same purpose. A value that would exceed
+  Drive's 124-byte property limit (a long `st.path`) is kept only in the description. If `_library`
   is lost, the library can still be rebuilt from `files.list` alone.
 - Settle's local data is excluded from Android cloud backup and device transfer
   (`data_extraction_rules.xml`). Drive is the only restore source.

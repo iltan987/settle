@@ -3,6 +3,64 @@
 Each phase ends with something that runs on the phone, a build, tests, and a check-in before the
 next phase. Newest first.
 
+## Phase 2 — Connect Google Drive, back up one item (2026-10-31)
+
+Delivered:
+- `:domain` backup rules (`BackupEngine`, ADR-013): reserved Drive file IDs, 8 MiB resumable
+  chunks that follow the server's offset, digests of confirmed bytes rebuilt from the phone on
+  resume, verification of size + SHA-256 + MD5 (ADR-004), backoff, 409 and session-expiry
+  recovery. 23 scenario tests against an in-memory Drive, each ending with the invariant "VERIFIED
+  means Drive holds the phone's exact bytes"; 66 domain tests in total.
+- `DriveRest`, a Drive v3 REST client over OkHttp 5.5.1, tested against MockWebServer (12 tests).
+- Room schema v2 (upload records, Drive folder IDs, account) by auto-migration, with a migration
+  test built from the committed v1 schema.
+- `MediaStoreOriginals`: unredacted originals (`setRequireOriginal`), positional reads.
+- `DriveAuth` on `AuthorizationClient` (play-services-auth 22.0.0): no sign-in step, account read
+  from Drive's `about`, silent tokens, revoke on disconnect.
+- Settings → Google Drive: connect, account, storage, folder, disconnect; debug-only reset of
+  `Settle (debug)/` to the Drive trash.
+- Viewer: cloud button (back up now, progress, backed up), backup row with "Open in Google Drive",
+  outcome snackbars; grid badge for backed-up items.
+- Debug-only tools: per-request timing in logcat (`DriveHttp`) and an adb hook that backs up an item
+  by MediaStore ID.
+- OAuth consent screen published to production; home page and privacy policy on `gh-pages`.
+- 59 Robolectric/JVM tests in `:app`.
+
+Verified on the S24 FE (debug build, `Settle (debug)/` in the owner's Drive):
+- Connect: account chooser and consent, then Settings showed the account and "50 GB of 5.5 TB".
+- Test PNG, a GPS photo, both motion photos and a 337 MiB camera video were backed up and verified.
+  For each, the SHA-256 Settle recorded equals `sha256sum` of the file pulled with adb. The GPS
+  photo's location EXIF is present in that file, so the location survives byte for byte.
+- Interrupt: the video upload was force-stopped after 120 MiB. On restart Settle resumed on its
+  own: one status query (Drive held 124.3 MiB), 124 MiB re-hashed in about 0.3 s, only the
+  remaining 212.7 MiB sent, same Drive file ID, verified.
+- Lost answer, seen live: an upload started in the background lost its network mid-chunk. Once
+  Settle was in front, the status query showed Drive already had the whole file; Settle verified
+  it without sending it again.
+- Asking to back up a verified item again makes no Drive request.
+- Chunk size: 8 MiB 4.8 / 4.6 MiB/s, 32 MiB 4.7 / 4.7 MiB/s on 120 MiB test files; 8 MiB kept.
+
+Findings:
+- One upload stream reaches about 5 MiB/s although the phone's Wi-Fi link is 2.4 Gbps and the
+  owner's line is gigabit.
+- Drive needs about 3–4 s to answer the last chunk of every file, so a 124 KB photo takes ~5 s.
+  A backlog of small photos needs several uploads at once (R23, Phase 3).
+- A cached background process has no network on Android 15+ (`blocked=APP_BACKGROUND`), so Phase 3
+  backups must run as jobs.
+- The first upload also created the four folders, taking 7.9 s in total.
+
+Not done or deviations from the plan:
+- Credential Manager sign-in was dropped: `AuthorizationClient` shows the account chooser itself.
+- `st.sha` left out of `appProperties`; the change snapshot ignores the MediaStore generation;
+  digests are re-hashed on resume instead of persisted (ADR-003/004 amended, ADR-013).
+- `MigrationTestHelper` reads schemas from app assets, which local tests lack; the migration test
+  builds the old database from the exported JSON instead.
+- Release OAuth client: not created until release signing exists.
+
+Known issues:
+- An abandoned empty pending MediaStore row (id 38635) from a failed test insert; Android removes
+  such rows after 7 days.
+
 ## Phase 1 — Local gallery (2026-10-30)
 
 Delivered:

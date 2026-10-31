@@ -16,8 +16,9 @@
 ## Decision
 - Scopes: `drive.file` only (add `drive.appdata` only if a use appears). Consent screen External,
   published to production without verification.
-- Sign-in with Credential Manager; Drive tokens from `AuthorizationClient`, which renews them
-  silently; a background job that needs user interaction posts a notification instead.
+- Drive tokens from `AuthorizationClient`, which renews them silently; a background job that
+  needs user interaction posts a notification instead. Amended 2026-10-31 (ADR-013): no
+  Credential Manager sign-in and no Web client; `authorize()` shows the account chooser itself.
 - A small hand-written Drive v3 REST client over OkHttp: resumable uploads in chunks that are
   multiples of 256 KiB, session URI and offset persisted in Room, `files.generateIds` for
   idempotent creation.

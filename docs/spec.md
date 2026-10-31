@@ -32,6 +32,11 @@ Play Store release later must stay possible, so Play-policy-forbidden permission
 - R4. An interrupted upload resumes without re-sending confirmed bytes and without creating duplicate Drive files.
 - R5. Backup continues in the background without the app open, after a one-time setup.
 - R6. When Drive is full or sign-in needs the user, backup pauses and says why; nothing is lost.
+- R22. Google Drive is connected once in Settings by picking an account; Settings shows the account
+  and its storage. Disconnecting withdraws access and never deletes anything in Drive or on the
+  phone.
+- R23. Transfers adapt to the network: they leave bandwidth for other devices on the same network,
+  run several uploads at once when the connection allows, and slow down when it is poor.
 
 ### Phone storage
 - R7. An original is removed from the phone only when its cloud copy is verified (ADR-004) and every eviction precondition holds (ADR-005).

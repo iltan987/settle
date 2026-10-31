@@ -22,6 +22,15 @@ Read `docs/spec.md` for what it must do and `docs/decisions/` for why things are
                                              # `adb install` stall at random from WSL
 ```
 
+Debug-build helpers on the phone:
+- `adb shell am broadcast -a com.iltan.settle.debug.BACK_UP -p com.iltan.settle.debug --el
+  media_store_id <id>` queues a backup of that MediaStore item (Settle must be in front: a cached
+  background process has no network on Android 15+).
+- `adb logcat -s DriveHttp CloudBackup BackupEngine` shows each Drive request's time, each
+  backup's result and throughput, and every failure the engine handled.
+- Settle's database: `adb exec-out run-as com.iltan.settle.debug cat databases/settle.db` (copy
+  `-wal` and `-shm` too).
+
 Full check before calling anything done:
 `./gradlew :domain:test :app:testDebugUnitTest :app:lintDebug assembleDebug ktfmtCheck`
 
@@ -47,6 +56,11 @@ harmless "user 150" SecurityException.
   Android backup and Smart Switch (ADR-003, `res/xml/data_extraction_rules.xml`).
 - Debug builds (`.debug` app ID suffix) use their own OAuth client and the `Settle (debug)/` Drive
   folder (ADR-008).
+- Drive: `DriveAuth` (AuthorizationClient, `drive.file` only, no tokens stored), `DriveRest` (OkHttp
+  REST client), `BackupEngine` in `:domain` (ADR-013), run by `CloudBackup` one at a time. The
+  Google Cloud project "Settle" holds the Android OAuth client (package + debug SHA-1); nothing
+  from it lives in the repo. Its consent screen is published, with the home page and privacy
+  policy on the `gh-pages` branch: keep `privacy.html` true when Settle's data use changes.
 
 Build specifics that aren't obvious:
 - AGP 9 built-in Kotlin: no `kotlin-android` plugin. The Kotlin version comes from declaring the
