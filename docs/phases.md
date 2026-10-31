@@ -3,6 +3,30 @@
 Each phase ends with something that runs on the phone, a build, tests, and a check-in before the
 next phase. Newest first.
 
+## Review fixes after Phase 3 (2026-10-31)
+
+A code review of Phases 0–3 found these; each has its own commit and tests:
+- **Checksum wait.** A copy whose SHA-256 Drive hadn't reported yet was ready again at once, so
+  jobs followed each other without a pause. It now waits 15 minutes, doubling up to 6 hours, and
+  its request ends.
+- **Emulator reset.** Resetting the debug Drive folder crashed on the emulator, whose folder is
+  `Settle (emulator)/`. Both debug folders are accepted; nothing else ever is.
+- **Start-up race.** Settle's start-up planning could replace an automatic job the system had just
+  started. The scheduler now asks JobScheduler whether that job is executing.
+- **Viewer status.** A request showed an endless spinner while backup was paused, blocked or
+  refused by Android. The viewer shows the reason instead, and a refused job says it waits for the
+  next automatic backup.
+- **Replaced Drive files.** The ID of a copy replaced by a newer upload was lost. It is now kept
+  in `superseded_file` (schema v4) for superseding and the audit.
+- **Stale problem.** A retried upload no longer shows the problem of its last stop.
+- **Settings lock.** Settings changes from a run and from the screen can't undo each other.
+- First tests for `BackupScheduler`: 100 domain and 93 app tests in total.
+
+Not done:
+- Not tried on the phone or the emulator; the fixes are covered by JVM and Robolectric tests.
+- A review finding that the notification's Pause left the automatic job scheduled was wrong:
+  Pause cancels both upload jobs.
+
 ## Phase 3 — Automatic, polite background backup (2026-10-31)
 
 Delivered:
