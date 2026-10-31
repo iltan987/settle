@@ -12,7 +12,7 @@
 <body>
   <p><a href="./">Settle</a></p>
   <h1>Privacy policy</h1>
-  <p>Last updated: 31 October 2026 (automatic backup)</p>
+  <p>Last updated: 31 October 2026 (deletion and the trash)</p>
 
   <h2>What Settle accesses</h2>
   <ul>
@@ -20,12 +20,17 @@
       them and to back them up. Location data inside photos is read so that backups are exact copies
       and so the app can show where a photo was taken. Backup runs automatically in the background
       for the folders you choose (only the camera folder unless you pick more); you can turn it off
-      or pause it in Settings.</li>
+      or pause it in Settings. When you delete in Settle, it moves the photo or video to your
+      phone's trash through Android, which asks you unless you allowed Settle to manage media; it
+      deletes it for good only when you choose Delete forever or Empty trash.</li>
     <li><strong>Your Google Drive, only the files Settle creates.</strong> Settle uses Google's
       <code>drive.file</code> permission. It creates a <em>Settle</em> folder in your Drive, uploads
       originals and a small amount of metadata about each item (such as when it was taken) into it,
-      and reads back those files' size and checksums to verify the copies. It cannot see, change or
-      delete any other file in your Drive.</li>
+      and reads back those files' size and checksums to verify the copies. When an item is deleted,
+      in Settle or (with the default setting) in another app, Settle moves its copies to your
+      Drive's trash, where they stay restorable for 30 days; Delete forever removes them. Restoring an
+      item takes its copy out of the trash and, if the phone no longer has it, downloads it back.
+      It cannot see, change or delete any other file in your Drive.</li>
     <li><strong>Your Google account's email address and Drive storage usage</strong>, read from Google
       Drive, to show which account is connected and how much space is left, and to resume backup
       once a full Drive has space again.</li>
@@ -59,7 +64,10 @@
     Drive'ın arasında gider: sunucu, analiz, reklam ya da takip yoktur ve hiçbir veri kimseyle
     paylaşılmaz. Yedekleme seçtiğin klasörler için arka planda kendiliğinden çalışır; ayarlardan
     kapatabilir ya da duraklatabilirsin. Yükleme sırasında ağını yormamak için Google Drive
-    sunucusuna bağlantı kurma süresini ölçer; bu ölçümlerde veri gönderilmez ve saklanmaz. Erişimi Settle ayarlarından ya da
+    sunucusuna bağlantı kurma süresini ölçer; bu ölçümlerde veri gönderilmez ve saklanmaz. Bir öge
+    silindiğinde telefondaki dosyayı Android üzerinden çöp kutusuna, Drive kopyalarını Drive'ın çöp
+    kutusuna taşır; 30 gün içinde geri yüklenebilirler. Kalıcı silme yalnızca sen seçtiğinde olur.
+    Geri yükleme, telefonda artık olmayan bir ögeyi Drive'dan indirir. Erişimi Settle ayarlarından ya da
     <a href="https://myaccount.google.com/connections">myaccount.google.com/connections</a> adresinden
     kaldırabilirsin.</p>
 
