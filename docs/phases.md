@@ -64,6 +64,13 @@ Verified on the S24 FE (debug build, `Settle (debug)/`):
   - Three random photos' SHA-256 values equal Drive's.
   - A PC ping during the whole backlog: median 70 ms, p90 73, max 93, the same as idle.
 - Settings, statuses and folder switches render in Turkish.
+- **Reconnect** (the owner revoked Settle's access at myaccount.google.com).
+  - A backup run got 401, Google answered "needs consent", and backup paused.
+  - The "Google Drive'ı yeniden bağla" notification appeared, and Settings showed Reconnect.
+  - Tapping the notification opened Google's account picker. After the owner allowed access, the
+    pause and the notification cleared, and the waiting request was verified 3 s later.
+- **Reboot.** The boot receiver ran 46 s after boot and re-armed the media and maintenance jobs.
+  A file added afterwards, with Settle closed, was scanned and planned for 24 h later.
 
 Findings:
 - **Drive's `about` is a poor delay signal.** It took 200–500 ms on Google's side, while a round
@@ -80,6 +87,14 @@ Findings:
 - **This router doesn't bloat.** Even full-speed uploads didn't raise other devices' ping; Polite's
   75% cap is what leaves room here.
 - **adb from WSL is still unreliable.** `adb push` stalled twice on 64 MiB files.
+- **Reconnect test, first try.**
+  - A request made while access was revoked stayed queued after reconnecting. The automatic job
+    now also covers requests, and reconnecting restarts them.
+  - The notification only opened Settings; it now opens the account picker.
+  - The storage figure wasn't read again after reconnecting.
+- **Second try.** The notification never appeared. Work done after `jobFinished()` was cancelled:
+  Android destroys the job service, and its scope with it. Notifying and planning now happen
+  before `jobFinished()`. The media trigger re-arms itself explicitly.
 
 Not done or deviations from the plan:
 - **Measurement scare.** A measurement script picked IDs with SQL `LIKE 'sc_%'`, which matched the
@@ -88,15 +103,13 @@ Not done or deviations from the plan:
   one upload record; nothing was deleted. The debug tool now refuses anything outside the test
   folder.
 - **Not tested on the phone:**
-  - revoking access to see "Reconnect" (needs the owner);
   - a full Drive;
-  - a reboot (asked before doing);
   - the Samsung Never sleeping intent opening the list.
 - **The full Drive audit** moves to the eviction phase.
 - **Live Updates / Now Bar** are not used.
 
 Left on the phone:
-- The debug build keeps backing up the Camera folder automatically, with a 24 h grace.
+- Camera backup is off again in the debug build (owner's choice); a 24 h grace.
 - The debug app has notification permission (`pm grant`).
 - Test files and `Pictures/SettleTest/` are deleted; their Drive copies stay in `Settle (debug)/`.
 
