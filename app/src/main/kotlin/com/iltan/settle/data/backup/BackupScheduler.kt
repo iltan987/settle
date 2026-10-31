@@ -108,7 +108,8 @@ class BackupScheduler(
         if (finishingJob != DRIVE_CHANGES_JOB && isExecuting(DRIVE_CHANGES_JOB)) return
         val dueAt = nextDriveChangeAt()
         if (dueAt == null) {
-            jobs.cancel(DRIVE_CHANGES_JOB)
+            // A finishing job ends by itself; cancelling it would only report it as stopped.
+            if (finishingJob != DRIVE_CHANGES_JOB) jobs.cancel(DRIVE_CHANGES_JOB)
         } else {
             jobs.schedule(driveChangesJob(dueAt))
         }

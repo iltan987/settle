@@ -11,6 +11,8 @@ import com.iltan.settle.domain.deletion.RestoreProblem
 import com.iltan.settle.domain.deletion.RestoreResult
 import com.iltan.settle.domain.deletion.TrashChanges
 import com.iltan.settle.domain.deletion.expiredItems
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 /** Progress of the restore job: items left and bytes of the current download. */
 data class RestoreProgress(val itemsLeft: Int, val receivedBytes: Long, val totalBytes: Long)
@@ -26,8 +28,12 @@ class TrashWork(
     private val clock: () -> Long = System::currentTimeMillis,
     private val log: (String) -> Unit = {},
 ) {
+    // The change job and the restore job both run the queue; one at a time, so no change is
+    // sent twice at once.
+    private val queueLock = Mutex()
+
     /** Runs the queued Drive changes that are due. */
-    suspend fun runDriveChanges() {
+    suspend fun runDriveChanges() = queueLock.withLock {
         when (val result = driveChanges.run()) {
             DriveChangesResult.AuthNeeded -> preferences.block(BackupPause.AUTH_NEEDED)
             is DriveChangesResult.Done ->
