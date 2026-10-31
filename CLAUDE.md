@@ -26,8 +26,19 @@ Debug-build helpers on the phone:
 - `adb shell am broadcast -a com.iltan.settle.debug.BACK_UP -p com.iltan.settle.debug --el
   media_store_id <id>` queues a backup of that MediaStore item (Settle must be in front: a cached
   background process has no network on Android 15+).
-- `adb logcat -s DriveHttp CloudBackup BackupEngine` shows each Drive request's time, each
-  backup's result and throughput, and every failure the engine handled.
+- `adb shell am broadcast -a com.iltan.settle.debug.MEASURE -p com.iltan.settle.debug --es ids
+  <id,id,...> --ei parallel <n> --es protocol h1|h2` uploads test items N at a time and logs
+  throughput and delay (`DebugMeasure`). It refuses anything outside `Pictures/SettleTest/`.
+- `adb logcat -s DriveHttp BackupRunner BackupScheduler BackupJobs BackupEngine LibrarySync` shows
+  each Drive request, the plan, every run with its pace (slots, cap, delay), and failures.
+- Jobs: `adb shell dumpsys jobscheduler com.iltan.settle.debug` (IDs 1 automatic, 2 requested,
+  3 media trigger, 4 maintenance). `adb shell dumpsys battery unplug` / `reset` simulates the
+  charger for the automatic job; always `reset` afterwards. Settings has a 1-minute grace period in
+  debug builds.
+- Test media: push generated files to `/sdcard/Pictures/SettleTest/`, then send
+  `MEDIA_SCANNER_SCAN_FILE` for each so MediaStore fills in their size. Select them only with
+  `relative_path = 'Pictures/SettleTest/' AND _display_name GLOB '<prefix>_[0-9]*'`; in SQL `LIKE`,
+  `_` matches any character and once picked real screenshots.
 - Settle's database: `adb exec-out run-as com.iltan.settle.debug cat databases/settle.db` (copy
   `-wal` and `-shm` too).
 
@@ -57,7 +68,11 @@ harmless "user 150" SecurityException.
 - Debug builds (`.debug` app ID suffix) use their own OAuth client and the `Settle (debug)/` Drive
   folder (ADR-008).
 - Drive: `DriveAuth` (AuthorizationClient, `drive.file` only, no tokens stored), `DriveRest` (OkHttp
-  REST client), `BackupEngine` in `:domain` (ADR-013), run by `CloudBackup` one at a time. The
+  REST client), `BackupEngine` in `:domain` (ADR-013).
+- Background backup (ADR-014): the pure `planBackup` (`:domain`) decides what and when, and
+  `BackupScheduler` turns that into JobScheduler jobs run by `BackupJobService`. `BackupRunner`
+  runs one engine per upload slot, paced by `UploadPacer` (`:domain`) through `UploadMeter`'s shared
+  throttle. Uploads use their own HTTP/1.1 connections. No WorkManager. The
   Google Cloud project "Settle" holds the Android OAuth client (package + debug SHA-1); nothing
   from it lives in the repo. Its consent screen is published, with the home page and privacy
   policy on the `gh-pages` branch: keep `privacy.html` true when Settle's data use changes.

@@ -3,6 +3,103 @@
 Each phase ends with something that runs on the phone, a build, tests, and a check-in before the
 next phase. Newest first.
 
+## Phase 3 — Automatic, polite background backup (2026-10-31)
+
+Delivered:
+- `:domain` rules (ADR-014):
+  - **`planBackup`**: folder defaults (camera only), the grace period from `DATE_ADDED`, retry
+    waits per problem, requests first and then the newest, run conditions, and pause reasons.
+  - **`UploadPacer`**: LEDBAT-style delay backoff, measured speed with a cap between 25% and 75% of
+    it, and slots that are kept only while they add throughput.
+  - **Engine**: several engines upload at once and share a folder lock.
+  - 98 domain tests.
+- Room schema v3:
+  - date added, the per-folder backup switch, retry waits, saved "Back up now" requests, and
+    backup settings;
+  - folder choices change one column at a time;
+  - migration test from the v2 schema.
+- Jobs, all JobScheduler and no WorkManager:
+  - **automatic**: Wi-Fi, charger, battery not low; no notification;
+  - **requested**: user-initiated, with a silent progress notification and Pause;
+  - **media**: a content-URI trigger that scans new media while Settle is closed;
+  - **maintenance**: every 6 hours.
+  - A boot receiver re-arms the jobs.
+- `BackupRunner`:
+  - slots paced by the pacer through one shared Okio throttle;
+  - its own HTTP/1.1 upload connections;
+  - a TCP-handshake delay probe;
+  - Drive full or "auth needed" pauses backup and notifies the user.
+- UI:
+  - **Settings → Backup**: summary, everything now, automatic, grace, charging, mobile data,
+    network use, folders, pause, and the reliability setup (notifications, battery, Samsung Never
+    sleeping apps).
+  - **Settings → Drive**: Reconnect.
+  - **Folders**: a Back up switch in each folder's menu.
+  - **Viewer and grid**: waiting (with time), queued, not chosen, uploading, needs attention.
+  - English and Turkish.
+- A debug tool for measuring parallel uploads.
+- 81 Robolectric/JVM tests in `:app`, including the runner against the in-memory Drive on a virtual
+  clock.
+
+Verified on the S24 FE (debug build, `Settle (debug)/`):
+- **Measured first.**
+  - One upload reaches about 42 Mbps, which is the owner's line. HTTP/1.1 and HTTP/2 are equal.
+  - Small files go from 1.5 to 4.4 MiB/s with 6 uploads at once.
+  - A PC on the same network kept a 70 ms ping in every run.
+- **Grace (R2).** New test files waited out a 1-minute debug grace. A file deleted inside it was
+  forgotten and never uploaded.
+- **Background, app closed (R5).** When the charger appeared (simulated with `dumpsys battery`),
+  the automatic job ran with Settle closed and uploaded with no network block.
+- **New photo while closed.** The media job started Settle about 10 s after the file appeared and
+  planned the upload. The automatic job uploaded it about 1.5 min after the grace ended.
+- **Killed mid-upload** (`kill -9`). The next run asked Drive for each session's offset, finished
+  both 64 MiB files without a new session, and their SHA-256 values equal the local files.
+- **"Back up everything now"** with the phone "unplugged" and Settle in the background. It skipped
+  grace and charger, showed "3 öge yedekleniyor" with progress, and the notification was gone
+  afterwards.
+- **Pause** stopped a running upload job within a second; Resume continued from Drive's offsets.
+- **Real backlog** (owner approved): 256 Camera items, 2.19 GB.
+  - All verified in about 13 minutes on the charger, Polite mode settling at 2.9–3.5 MB/s with 2–4
+    uploads.
+  - Three random photos' SHA-256 values equal Drive's.
+  - A PC ping during the whole backlog: median 70 ms, p90 73, max 93, the same as idle.
+- Settings, statuses and folder switches render in Turkish.
+
+Findings:
+- **Drive's `about` is a poor delay signal.** It took 200–500 ms on Google's side, while a round
+  trip to the host varied by about 5 ms. The first pacer read that noise as congestion, and it
+  also re-measured on every `onNetworkChanged` (Android sends it for capability changes). Fixed
+  before the backlog test.
+- **A dropped result hung a run.** `withTimeoutOrNull { receive() }` dropped an upload's result once,
+  so the run never ended and kept probing. Fixed with `select`.
+- **A killed job waited for a change.** After `kill -9`, the automatic job didn't run again until
+  the charger state changed. Maintenance now runs every 6 hours and plans again.
+- **Battery "Optimized" stopped a long run.** After 12 minutes Android stopped the automatic job
+  with `STOP_REASON_BACKGROUND_RESTRICTION` because Settle's battery use isn't "Unrestricted"; it
+  restarted 6 s later. The Settings item for unrestricted battery use is there for this.
+- **This router doesn't bloat.** Even full-speed uploads didn't raise other devices' ping; Polite's
+  75% cap is what leaves room here.
+- **adb from WSL is still unreliable.** `adb push` stalled twice on 64 MiB files.
+
+Not done or deviations from the plan:
+- **Measurement scare.** A measurement script picked IDs with SQL `LIKE 'sc_%'`, which matched the
+  owner's screenshots. 3 screenshots were copied into `Settle (debug)/media/2026/06/` and 840 MiB of
+  a screen recording went into an unfinished session (no Drive file). I stopped it and removed that
+  one upload record; nothing was deleted. The debug tool now refuses anything outside the test
+  folder.
+- **Not tested on the phone:**
+  - revoking access to see "Reconnect" (needs the owner);
+  - a full Drive;
+  - a reboot (asked before doing);
+  - the Samsung Never sleeping intent opening the list.
+- **The full Drive audit** moves to the eviction phase.
+- **Live Updates / Now Bar** are not used.
+
+Left on the phone:
+- The debug build keeps backing up the Camera folder automatically, with a 24 h grace.
+- The debug app has notification permission (`pm grant`).
+- Test files and `Pictures/SettleTest/` are deleted; their Drive copies stay in `Settle (debug)/`.
+
 ## Phase 2 — Connect Google Drive, back up one item (2026-10-31)
 
 Delivered:

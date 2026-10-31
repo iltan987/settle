@@ -17,6 +17,9 @@
 ## Decision
 - Large transfers run as a persisted JobScheduler UIDT job (Wi-Fi, charging, battery not low),
   started when the user opens the app. Daily items and audits run as WorkManager work.
+  Amended 2026-10-31 (ADR-014): everything runs as JobScheduler jobs, without WorkManager.
+  Automatic backup is a regular job on Wi-Fi and the charger; UIDT is only for backups the user
+  starts.
 - Every transfer is resumable and idempotent; Samsung may kill any of them at any time.
 - Permissions: `READ_MEDIA_IMAGES`, `READ_MEDIA_VIDEO`, `READ_MEDIA_VISUAL_USER_SELECTED`,
   `ACCESS_MEDIA_LOCATION`, `MANAGE_MEDIA`. Not `MANAGE_EXTERNAL_STORAGE`.

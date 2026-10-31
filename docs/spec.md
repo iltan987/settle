@@ -16,10 +16,12 @@ Play Store release later must stay possible, so Play-policy-forbidden permission
 
 | Setting | Default |
 |---|---|
-| Grace period before backup | 24 hours |
+| Grace period before backup | 24 hours, from when the file appeared on the phone |
 | Keep original on phone after verified backup | 30 days |
 | Trash retention (phone and Drive) | 30 days |
-| Backup network / power | Wi-Fi and charging for large backlogs; Wi-Fi for daily items |
+| Automatic backup | Wi-Fi and charging (in practice overnight), no notification |
+| "Back up now" | At once, Wi-Fi only; mobile data is a setting |
+| Network use | Polite: leaves room for others (R23) |
 | Folders backed up | Camera; others opt-in (Screenshots off) |
 | Folders shown in the timeline | All |
 
@@ -27,16 +29,23 @@ Play Store release later must stay possible, so Play-policy-forbidden permission
 
 ### Backup
 - R1. Originals are uploaded byte-for-byte. The SHA-256 of the bytes in Drive equals the SHA-256 of the file on the phone.
-- R2. A new item is not uploaded before its grace period ends. An item deleted during the grace period is never uploaded.
+- R2. A new item is not uploaded before its grace period ends. An item deleted during the grace period is never uploaded. The grace period counts from when the file appeared on the phone.
 - R3. The user can back up one item, a selection, or everything immediately.
 - R4. An interrupted upload resumes without re-sending confirmed bytes and without creating duplicate Drive files.
-- R5. Backup continues in the background without the app open, after a one-time setup.
+- R5. Backup continues in the background without the app open, after a one-time setup. New media
+  are noticed without opening the app. Settings shows each setup step (notifications, unrestricted
+  battery use, Samsung's Never sleeping apps) only while it is still needed.
 - R6. When Drive is full or sign-in needs the user, backup pauses and says why; nothing is lost.
 - R22. Google Drive is connected once in Settings by picking an account; Settings shows the account
   and its storage. Disconnecting withdraws access and never deletes anything in Drive or on the
   phone.
 - R23. Transfers adapt to the network: they leave bandwidth for other devices on the same network,
-  run several uploads at once when the connection allows, and slow down when it is poor.
+  run several uploads at once when the connection allows, and slow down when it is poor. Polite
+  mode stays below three quarters of the measured speed and backs off when the network's delay
+  rises; a fixed limit or no limit can be chosen instead.
+- R24. Each folder has a backup switch; only the camera folder is on by default. Automatic backup
+  can be turned off, and backup can be paused; "Back up everything now" skips the grace period
+  and the charger.
 
 ### Phone storage
 - R7. An original is removed from the phone only when its cloud copy is verified (ADR-004) and every eviction precondition holds (ADR-005).
@@ -47,7 +56,7 @@ Play Store release later must stay possible, so Play-policy-forbidden permission
 - R10. One timeline shows every item, on the phone or only in the cloud, ordered by date taken.
 - R10a. Every folder shows in the timeline by default. A folder can be hidden from the timeline and
   stays browsable under Folders.
-- R11. Every item shows exactly one status: waiting, queued, uploading, backed up, cloud only, in trash, or needs attention.
+- R11. Every item shows exactly one status: not backed up (its folder isn't chosen), waiting, queued, uploading, backed up, cloud only, in trash, or needs attention.
 
 ### Deletion and trash
 - R12. Deleting in Settle moves the item to the trash on the phone and in Drive. It can be restored until retention ends.
