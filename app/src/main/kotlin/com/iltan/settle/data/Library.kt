@@ -7,7 +7,6 @@ import android.os.Build
 import android.provider.MediaStore
 import android.util.Log
 import androidx.exifinterface.media.ExifInterface
-import com.iltan.settle.data.db.FolderSettingEntity
 import com.iltan.settle.data.db.FolderSummary
 import com.iltan.settle.data.db.LibraryDao
 import com.iltan.settle.data.db.MediaDetails
@@ -49,7 +48,7 @@ class Library(private val dao: LibraryDao, private val resolver: ContentResolver
     suspend fun details(id: String): MediaDetails? = dao.details(id)
 
     suspend fun setFolderHidden(relativePath: String, hidden: Boolean) =
-        dao.upsertFolderSetting(FolderSettingEntity(relativePath, hiddenFromTimeline = hidden))
+        dao.setFolderHidden(relativePath, hidden)
 
     /**
      * For a file on the phone, MediaStore's favourite flag is the truth (ADR-012): it is written

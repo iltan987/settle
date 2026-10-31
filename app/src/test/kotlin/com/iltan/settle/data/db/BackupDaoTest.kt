@@ -6,6 +6,7 @@ import androidx.sqlite.driver.AndroidSQLiteDriver
 import androidx.test.core.app.ApplicationProvider
 import com.iltan.settle.data.drive.RoomUploadStore
 import com.iltan.settle.domain.CloudState
+import com.iltan.settle.domain.LocalState
 import com.iltan.settle.domain.MediaItemId
 import com.iltan.settle.domain.backup.FileSnapshot
 import com.iltan.settle.domain.backup.UploadProblem
@@ -46,13 +47,16 @@ class BackupDaoTest {
 
     @After fun tearDown() = db.close()
 
-    private suspend fun insertItem(): MediaItemId {
+    private suspend fun insertItem(
+        path: String = "DCIM/Camera/",
+        dateAddedSeconds: Long = 0,
+    ): MediaItemId {
         val id = MediaItemId.generate(nowMillis = ++nextId)
         val row =
             ScanRow(
                 volume = "external_primary",
                 mediaStoreId = nextId,
-                relativePath = "DCIM/Camera/",
+                relativePath = path,
                 displayName = "IMG_$nextId.jpg",
                 mimeType = "image/jpeg",
                 kind = MediaKind.IMAGE,
@@ -67,6 +71,7 @@ class BackupDaoTest {
                 isFavorite = false,
                 isTrashed = false,
                 generationModified = nextId,
+                dateAddedSeconds = dateAddedSeconds,
             )
         db.libraryDao()
             .applyScan(
@@ -155,5 +160,57 @@ class BackupDaoTest {
 
         dao.deleteAccount()
         assertNull(dao.accountEmail())
+    }
+
+    @Test
+    fun backupCandidatesCarryFolderChoiceRetryAndRequest() = runTest {
+        val camera = insertItem(dateAddedSeconds = 1_700)
+        val screenshot = insertItem(path = "DCIM/Screenshots/")
+        val verified = insertItem()
+        db.libraryDao().setFolderBackUp("DCIM/Screenshots/", backUp = true)
+        store.save(record(camera, CloudState.UPLOADING, UploadProblem.OFFLINE))
+        dao.saveRetry(UploadRetryEntity(camera.value, attempts = 2, retryAtMs = 99))
+        dao.addRequests(listOf(BackupRequestEntity(screenshot.value, requestedAtMs = 42)))
+        store.save(record(verified, CloudState.VERIFIED))
+
+        val rows = dao.backupCandidates().associateBy { it.id }
+
+        assertEquals(setOf(camera.value, screenshot.value), rows.keys)
+        assertEquals(
+            BackupCandidateRow(
+                id = camera.value,
+                localState = LocalState.PRESENT,
+                sizeBytes = 100,
+                takenAtMs = 5_000,
+                dateAddedS = 1_700,
+                relativePath = "DCIM/Camera/",
+                backUp = null,
+                cloudState = CloudState.UPLOADING,
+                problem = UploadProblem.OFFLINE,
+                retryAtMs = 99,
+                attempts = 2,
+                requestedAtMs = null,
+            ),
+            rows.getValue(camera.value),
+        )
+        assertEquals(true, rows.getValue(screenshot.value).backUp)
+        assertEquals(42L, rows.getValue(screenshot.value).requestedAtMs)
+        assertEquals(1, dao.backedUpCount().first())
+    }
+
+    @Test
+    fun aRepeatedRequestKeepsItsFirstTimeAndVerifyingClearsRequestAndRetry() = runTest {
+        val id = insertItem()
+        dao.addRequests(listOf(BackupRequestEntity(id.value, requestedAtMs = 1)))
+        dao.addRequests(listOf(BackupRequestEntity(id.value, requestedAtMs = 2)))
+        dao.saveRetry(UploadRetryEntity(id.value, attempts = 1, retryAtMs = 5))
+        assertEquals(1L, dao.backupCandidates().single().requestedAtMs)
+
+        store.save(record(id, CloudState.VERIFIED))
+
+        assertEquals(emptyList<BackupCandidateRow>(), dao.backupCandidates())
+        assertNull(dao.retry(id.value))
+        store.save(record(id, CloudState.UPLOADING))
+        assertNull(dao.backupCandidates().single().requestedAtMs)
     }
 }

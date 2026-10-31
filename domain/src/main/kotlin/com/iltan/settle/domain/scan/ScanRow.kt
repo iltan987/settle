@@ -29,6 +29,8 @@ data class ScanRow(
     val isFavorite: Boolean,
     val isTrashed: Boolean,
     val generationModified: Long,
+    /** When the file appeared on the phone (MediaStore `DATE_ADDED`); 0 when unknown. */
+    val dateAddedSeconds: Long = 0,
 ) {
     /** The time the timeline sorts by: capture time, else the file's modification time. */
     val takenAtMillis: Long

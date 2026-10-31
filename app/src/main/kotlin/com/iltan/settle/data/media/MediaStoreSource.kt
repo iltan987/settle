@@ -97,6 +97,7 @@ class MediaStoreSource(private val context: Context) : MediaSource {
                 MediaColumns.SIZE,
                 MediaColumns.DATE_TAKEN,
                 MediaColumns.DATE_MODIFIED,
+                MediaColumns.DATE_ADDED,
                 MediaColumns.WIDTH,
                 MediaColumns.HEIGHT,
                 MediaColumns.ORIENTATION,
@@ -119,6 +120,7 @@ class MediaStoreSource(private val context: Context) : MediaSource {
         private val size = cursor.getColumnIndexOrThrow(MediaColumns.SIZE)
         private val taken = cursor.getColumnIndexOrThrow(MediaColumns.DATE_TAKEN)
         private val modified = cursor.getColumnIndexOrThrow(MediaColumns.DATE_MODIFIED)
+        private val added = cursor.getColumnIndexOrThrow(MediaColumns.DATE_ADDED)
         private val width = cursor.getColumnIndexOrThrow(MediaColumns.WIDTH)
         private val height = cursor.getColumnIndexOrThrow(MediaColumns.HEIGHT)
         private val orientation = cursor.getColumnIndexOrThrow(MediaColumns.ORIENTATION)
@@ -149,6 +151,7 @@ class MediaStoreSource(private val context: Context) : MediaSource {
                 isFavorite = c.getInt(favorite) != 0,
                 isTrashed = c.getInt(trashed) != 0,
                 generationModified = c.getLong(generation),
+                dateAddedSeconds = c.getLongOrNull(added) ?: 0,
             )
     }
 

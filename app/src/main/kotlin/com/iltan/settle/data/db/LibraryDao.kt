@@ -2,6 +2,7 @@ package com.iltan.settle.data.db
 
 import androidx.room3.Dao
 import androidx.room3.Insert
+import androidx.room3.OnConflictStrategy
 import androidx.room3.Query
 import androidx.room3.Transaction
 import androidx.room3.Upsert
@@ -78,7 +79,30 @@ interface LibraryDao {
 
     // User choices
 
-    @Upsert suspend fun upsertFolderSetting(setting: FolderSettingEntity)
+    /** Changes one folder choice and keeps the others. */
+    @Transaction
+    suspend fun setFolderHidden(relativePath: String, hidden: Boolean) {
+        insertFolderSetting(FolderSettingEntity(relativePath))
+        updateFolderHidden(relativePath, hidden)
+    }
+
+    @Transaction
+    suspend fun setFolderBackUp(relativePath: String, backUp: Boolean) {
+        insertFolderSetting(FolderSettingEntity(relativePath))
+        updateFolderBackUp(relativePath, backUp)
+    }
+
+    @Query("SELECT * FROM folder_setting WHERE relative_path = :path")
+    suspend fun folderSetting(path: String): FolderSettingEntity?
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertFolderSetting(setting: FolderSettingEntity)
+
+    @Query("UPDATE folder_setting SET hidden_from_timeline = :hidden WHERE relative_path = :path")
+    suspend fun updateFolderHidden(path: String, hidden: Boolean)
+
+    @Query("UPDATE folder_setting SET back_up = :backUp WHERE relative_path = :path")
+    suspend fun updateFolderBackUp(path: String, backUp: Boolean)
 
     @Query("UPDATE media_item SET is_favorite = :favorite WHERE id = :id")
     suspend fun setFavorite(id: String, favorite: Boolean)
@@ -205,4 +229,5 @@ private fun ScanRow.toLocalFile(itemId: String) =
         dateModifiedS = dateModifiedSeconds,
         generationModified = generationModified,
         localState = localState,
+        dateAddedS = dateAddedSeconds,
     )

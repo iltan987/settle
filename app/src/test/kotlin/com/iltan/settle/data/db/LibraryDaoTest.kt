@@ -107,12 +107,22 @@ class LibraryDaoTest {
     @Test
     fun timelineSkipsTrashedFilesAndHiddenFolders() = runTest {
         insert(row(1), row(2, trashed = true), row(3, path = "Pictures/WhatsApp/"))
-        dao.upsertFolderSetting(
-            FolderSettingEntity("Pictures/WhatsApp/", hiddenFromTimeline = true)
-        )
+        dao.setFolderHidden("Pictures/WhatsApp/", hidden = true)
 
         assertEquals(listOf(1L), dao.timeline().first().map { it.mediaStoreId })
         assertEquals(listOf(3L), dao.folder("Pictures/WhatsApp/").first().map { it.mediaStoreId })
+    }
+
+    @Test
+    fun hidingAFolderAndBackingItUpAreIndependentChoices() = runTest {
+        dao.setFolderBackUp("DCIM/Screenshots/", backUp = true)
+        dao.setFolderHidden("DCIM/Screenshots/", hidden = true)
+        dao.setFolderHidden("DCIM/Screenshots/", hidden = false)
+
+        assertEquals(
+            FolderSettingEntity("DCIM/Screenshots/", hiddenFromTimeline = false, backUp = true),
+            dao.folderSetting("DCIM/Screenshots/"),
+        )
     }
 
     @Test
@@ -122,7 +132,7 @@ class LibraryDaoTest {
             row(2, taken = 5_000),
             row(3, path = "DCIM/Screenshots/", taken = 3_000),
         )
-        dao.upsertFolderSetting(FolderSettingEntity("DCIM/Screenshots/", hiddenFromTimeline = true))
+        dao.setFolderHidden("DCIM/Screenshots/", hidden = true)
 
         val folders = dao.folders().first()
 

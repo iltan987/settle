@@ -98,4 +98,57 @@ class MigrationTest {
             db.close()
         }
     }
+
+    @Test
+    fun version2DataSurvivesTheUpgradeToVersion3() = runTest {
+        createDatabase(2)
+        AndroidSQLiteDriver().open(context.getDatabasePath(name).path).use {
+            it.execSQL(
+                """
+                INSERT INTO media_item (id, kind, taken_at_ms, mime_type, width, height,
+                    orientation, duration_ms, special_format, is_favorite, first_seen_at_ms,
+                    cloud_state)
+                VALUES ('01ITEM', 'IMAGE', 5, 'image/jpeg', 1, 1, 0, 0, 0, 0, 5, 'VERIFIED')
+                """
+            )
+            it.execSQL(
+                """
+                INSERT INTO local_file (item_id, volume, media_store_id, relative_path,
+                    display_name, size_bytes, date_modified_s, generation_modified, local_state)
+                VALUES ('01ITEM', 'external_primary', 7, 'DCIM/Screenshots/', 'IMG.jpg', 10, 1,
+                    1, 'PRESENT')
+                """
+            )
+            it.execSQL(
+                """
+                INSERT INTO folder_setting (relative_path, hidden_from_timeline)
+                VALUES ('DCIM/Screenshots/', 1)
+                """
+            )
+            it.execSQL(
+                """
+                INSERT INTO upload (item_id, drive_file_id, state, size_bytes, date_modified_s,
+                    confirmed_bytes, sha256, md5, verified_at_ms)
+                VALUES ('01ITEM', 'drive1', 'VERIFIED', 10, 1, 10, 'aa', 'bb', 9)
+                """
+            )
+        }
+
+        val db =
+            Room.databaseBuilder<SettleDatabase>(context, name)
+                .setDriver(AndroidSQLiteDriver())
+                .build()
+        try {
+            assertEquals(
+                FolderSettingEntity("DCIM/Screenshots/", hiddenFromTimeline = true, backUp = null),
+                db.libraryDao().folderSetting("DCIM/Screenshots/"),
+            )
+            assertEquals(CloudState.VERIFIED, db.backupDao().upload("01ITEM")?.state)
+            assertEquals(1, db.backupDao().backedUpCount().first())
+            assertNull(db.backupDao().settings())
+            assertNull(db.backupDao().retry("01ITEM"))
+        } finally {
+            db.close()
+        }
+    }
 }

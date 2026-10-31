@@ -17,9 +17,12 @@ import androidx.sqlite.driver.AndroidSQLiteDriver
             UploadEntity::class,
             DriveFolderEntity::class,
             DriveAccountEntity::class,
+            UploadRetryEntity::class,
+            BackupRequestEntity::class,
+            BackupSettingsEntity::class,
         ],
-    version = 2,
-    autoMigrations = [AutoMigration(from = 1, to = 2)],
+    version = 3,
+    autoMigrations = [AutoMigration(from = 1, to = 2), AutoMigration(from = 2, to = 3)],
 )
 abstract class SettleDatabase : RoomDatabase() {
     abstract fun libraryDao(): LibraryDao

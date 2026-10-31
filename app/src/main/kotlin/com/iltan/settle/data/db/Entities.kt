@@ -7,6 +7,7 @@ import androidx.room3.Index
 import androidx.room3.PrimaryKey
 import com.iltan.settle.domain.CloudState
 import com.iltan.settle.domain.LocalState
+import com.iltan.settle.domain.backup.BackupPause
 import com.iltan.settle.domain.backup.UploadProblem
 import com.iltan.settle.domain.scan.MediaKind
 
@@ -53,13 +54,18 @@ data class LocalFileEntity(
     @ColumnInfo(name = "date_modified_s") val dateModifiedS: Long,
     @ColumnInfo(name = "generation_modified") val generationModified: Long,
     @ColumnInfo(name = "local_state") val localState: LocalState,
+    /** When the file appeared on the phone; the grace period counts from here (R2). */
+    @ColumnInfo(name = "date_added_s", defaultValue = "0") val dateAddedS: Long = 0,
 )
 
 /** Per-folder choices. Only folders the user changed have a row; others use the defaults. */
 @Entity(tableName = "folder_setting")
 data class FolderSettingEntity(
     @PrimaryKey @ColumnInfo(name = "relative_path") val relativePath: String,
-    @ColumnInfo(name = "hidden_from_timeline") val hiddenFromTimeline: Boolean,
+    @ColumnInfo(name = "hidden_from_timeline", defaultValue = "0")
+    val hiddenFromTimeline: Boolean = false,
+    /** The user's backup switch; null means the default (only the camera folder backs up). */
+    @ColumnInfo(name = "back_up") val backUp: Boolean? = null,
 )
 
 /** Where the last scan of a MediaStore volume stopped. */
@@ -110,3 +116,60 @@ data class DriveFolderEntity(
 /** The connected Google account. At most one row. */
 @Entity(tableName = "drive_account")
 data class DriveAccountEntity(@PrimaryKey val id: Int = 0, val email: String)
+
+/** Automatic backup's waiting room after a failed try; removed once the item is verified. */
+@Entity(
+    tableName = "upload_retry",
+    foreignKeys =
+        [
+            ForeignKey(
+                entity = MediaItemEntity::class,
+                parentColumns = ["id"],
+                childColumns = ["item_id"],
+                onDelete = ForeignKey.CASCADE,
+            )
+        ],
+)
+data class UploadRetryEntity(
+    @PrimaryKey @ColumnInfo(name = "item_id") val itemId: String,
+    /** Failed tries since the last success. */
+    val attempts: Int,
+    /** Not before this time; null when only the user can unblock it. */
+    @ColumnInfo(name = "retry_at_ms") val retryAtMs: Long?,
+)
+
+/**
+ * "Back up now" for one item, kept until the item is verified so it survives process death (R3).
+ */
+@Entity(
+    tableName = "backup_request",
+    foreignKeys =
+        [
+            ForeignKey(
+                entity = MediaItemEntity::class,
+                parentColumns = ["id"],
+                childColumns = ["item_id"],
+                onDelete = ForeignKey.CASCADE,
+            )
+        ],
+)
+data class BackupRequestEntity(
+    @PrimaryKey @ColumnInfo(name = "item_id") val itemId: String,
+    @ColumnInfo(name = "requested_at_ms") val requestedAtMs: Long,
+)
+
+/** The user's backup settings and why backup is paused, if it is. At most one row. */
+@Entity(tableName = "backup_settings")
+data class BackupSettingsEntity(
+    @PrimaryKey val id: Int = 0,
+    val automatic: Boolean,
+    @ColumnInfo(name = "grace_ms") val graceMs: Long,
+    @ColumnInfo(name = "only_while_charging") val onlyWhileCharging: Boolean,
+    @ColumnInfo(name = "use_mobile_data") val useMobileData: Boolean,
+    val paused: Boolean,
+    /** POLITE, LIMIT or UNLIMITED (see `NetworkUse`). */
+    @ColumnInfo(name = "network_use") val networkUse: String,
+    @ColumnInfo(name = "limit_mbps") val limitMbps: Int,
+    /** Set when Drive stopped backup until the user acts: AUTH_NEEDED or QUOTA_FULL. */
+    val blocked: BackupPause?,
+)
