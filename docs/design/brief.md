@@ -11,7 +11,7 @@ are left to the engineer too.
 
 **How to use it:**
 1. Paste **Message 1** into a new Claude Design project, with no screenshots so it isn't anchored on today's UI.
-2. Pick one of its three directions.
+2. Pick one of its three directions (done: Tidepool, with changes; see Message 2).
 3. Send Messages 2–4 one at a time. Message 2 holds the screens built in Phase 4, which now exist
    in plain form.
 4. Export the HTML or React and the handoff sheet into `docs/design/`.
@@ -133,9 +133,26 @@ lines and go straight to the three directions.
 
 ## Message 2: the screens Phase 4 needs (after you pick a direction)
 
+The owner chose Tidepool (round 1 is in `turn1/`) with the changes below. They go at the top of
+Message 2, in place of its first line.
+
 ```
-Direction <name> it is. Now design these in full detail, every state as its own frame, light and
-dark, with the handoff notes for each.
+Direction Tidepool it is, with these changes:
+- Backed-up items carry no mark. Waiting and Queued badges show only in selection mode and on the
+  Backup tab; Needs attention, Not backed up and Cloud only always show.
+- Tighter grid: 2 dp gaps, 4 dp corner radius.
+- When all is safe, the status card collapses into a compact status chip in the top bar (tap opens
+  Backup); the full card appears only when something needs the user or backup is paused.
+- Keep the third tab as Backup; Settings moves behind the avatar.
+- The viewer is a black stage in light and dark themes alike, and the photo gets the whole screen:
+  no fixed bottom panel. Share, Favourite, Delete and Details sit in a slim floating toolbar (as
+  in Lightbox), with the backup status as a small chip (icon and text). Details, or swiping up,
+  opens Tidepool's bottom panel as a sheet: date, time and place, then everything in the Details
+  sheet below (file, size, resolution, folder, location with map, backup).
+- Borrow Ledger's voice in copy ("Nothing was lost") and its quieter day headings.
+
+Now design these in full detail, every state as its own frame, light and dark, with the handoff
+notes for each.
 
 B. Photos timeline
 - Day headers ("Today", "Yesterday", "Friday, 31 October"; other years add the year). A fast
