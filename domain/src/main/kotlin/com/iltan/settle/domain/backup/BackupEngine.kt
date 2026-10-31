@@ -7,6 +7,8 @@ import java.time.ZoneId
 import java.util.HexFormat
 import kotlin.random.Random
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 sealed interface BackupResult {
     data class Verified(val driveFileId: String) : BackupResult
@@ -37,7 +39,7 @@ const val SESSION_MAX_AGE_MILLIS = 6L * 24 * 60 * 60 * 1000
  * - a copy is VERIFIED only when Drive's size, SHA-256 and MD5 equal the bytes sent and the
  *   original didn't change while uploading.
  *
- * Not thread-safe: one upload at a time per engine.
+ * One upload at a time per engine; engines running at once share a folder lock.
  */
 class BackupEngine(
     private val drive: DriveApi,
@@ -54,6 +56,11 @@ class BackupEngine(
     private val jitterMillis: () -> Long = { Random.nextLong(0, 1_001) },
     /** Told about every failure the engine handles, for diagnosis. */
     private val log: (String) -> Unit = {},
+    /**
+     * Shared by engines that upload at the same time, so two of them never both create the same
+     * month's folder.
+     */
+    private val folderLock: Mutex = Mutex(),
 ) {
     init {
         require(chunkBytes > 0 && chunkBytes % CHUNK_GRANULARITY == 0) {
@@ -359,7 +366,7 @@ class BackupEngine(
     }
 
     /** The Drive folder for the item, found or created once and then cached. */
-    private suspend fun folderFor(item: BackupItem): String {
+    private suspend fun folderFor(item: BackupItem): String = folderLock.withLock {
         var parent: String? = null
         var path = ""
         for (name in mediaFolderPath(rootFolder, item.takenAtMillis, zone)) {
@@ -371,7 +378,7 @@ class BackupEngine(
                     }
             parent = id
         }
-        return checkNotNull(parent)
+        checkNotNull(parent)
     }
 
     private suspend fun createFolder(name: String, parent: String?): String {

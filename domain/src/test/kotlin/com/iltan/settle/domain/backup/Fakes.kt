@@ -4,6 +4,7 @@ import com.iltan.settle.domain.MediaItemId
 import java.io.ByteArrayOutputStream
 import java.security.MessageDigest
 import java.util.HexFormat
+import kotlinx.coroutines.yield
 
 /**
  * An in-memory Drive that behaves like the resumable upload protocol and can be told to fail. It
@@ -48,6 +49,8 @@ class FakeDrive : DriveApi {
     var beforeChunk: (offset: Long) -> Unit = {}
     /** Runs after a chunk is stored, before the answer is sent. */
     var afterChunk: (offset: Long) -> Unit = {}
+    /** Every call suspends first, so uploads running at once interleave as on a real network. */
+    var interleave = false
 
     val mediaFiles: List<StoredFile>
         get() = files.values.filter { !it.isFolder }
@@ -65,7 +68,8 @@ class FakeDrive : DriveApi {
 
     fun expireSessions() = sessions.values.forEach { it.expired = true }
 
-    private fun fault(call: String) {
+    private suspend fun fault(call: String) {
+        if (interleave) yield()
         val index = faults.indexOfFirst { it.first == call }
         if (index >= 0) throw DriveException(faults.removeAt(index).second)
     }

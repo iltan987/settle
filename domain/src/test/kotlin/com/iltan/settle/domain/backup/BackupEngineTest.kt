@@ -11,6 +11,11 @@ import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.types.shouldBeInstanceOf
 import java.time.ZoneOffset
 import kotlin.random.Random
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.AfterEach
@@ -27,10 +32,12 @@ class BackupEngineTest {
 
     /** 2026-10-15 in UTC. */
     private val october = 1_792_000_000_000L
+    /** 2026-11-15 in UTC. */
+    private val november = october + 31L * 24 * 60 * 60 * 1000
 
     private val chunk = CHUNK_GRANULARITY
 
-    private fun engine(chunkBytes: Int = chunk) =
+    private fun engine(chunkBytes: Int = chunk, folderLock: Mutex = Mutex()) =
         BackupEngine(
             drive = drive,
             originals = originals,
@@ -40,6 +47,7 @@ class BackupEngineTest {
             zone = ZoneOffset.UTC,
             chunkBytes = chunkBytes,
             jitterMillis = { 0 },
+            folderLock = folderLock,
         )
 
     private fun item(size: Int, takenAt: Long = october, name: String = "IMG.jpg"): MediaItemId {
@@ -90,6 +98,40 @@ class BackupEngineTest {
                 record.sha256 shouldBe sha256(original)
                 record.md5 shouldBe md5(original)
             }
+    }
+
+    @Test
+    fun uploadsRunningAtOnceCreateEachFolderAndFileOnce() = runTest {
+        drive.interleave = true
+        // Two months, so new folders are needed while other uploads are under way.
+        val ids =
+            List(12) { item(2 * chunk + it, takenAt = if (it % 2 == 0) october else november) }
+        val queue = Channel<MediaItemId>(Channel.UNLIMITED)
+        ids.forEach(queue::trySend)
+        queue.close()
+        val lock = Mutex()
+
+        val results = coroutineScope {
+            List(4) {
+                    async {
+                        val engine = engine(folderLock = lock)
+                        buildList { for (id in queue) add(engine.backUp(id)) }
+                    }
+                }
+                .awaitAll()
+                .flatten()
+        }
+
+        results.forEach { it.shouldBeInstanceOf<BackupResult.Verified>() }
+        drive.mediaFiles shouldHaveSize 12
+        drive.folders.map { "${drive.pathOf(it)}/${it.name}".trimStart('/') }.sorted() shouldBe
+            listOf(
+                "Settle (debug)",
+                "Settle (debug)/media",
+                "Settle (debug)/media/2026",
+                "Settle (debug)/media/2026/10",
+                "Settle (debug)/media/2026/11",
+            )
     }
 
     @Test
