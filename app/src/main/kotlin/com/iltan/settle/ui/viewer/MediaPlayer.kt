@@ -20,12 +20,17 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.media3.common.MediaItem
+import androidx.media3.common.MimeTypes
 import androidx.media3.common.Player
 import androidx.media3.common.util.ExperimentalApi
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.datasource.DefaultDataSource
+import androidx.media3.datasource.ResolvingDataSource
 import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.audio.AudioSink
+import androidx.media3.exoplayer.source.MediaSource
+import androidx.media3.exoplayer.source.ProgressiveMediaSource
 import androidx.media3.ui.compose.SURFACE_TYPE_SURFACE_VIEW
 import androidx.media3.ui.compose.SURFACE_TYPE_TEXTURE_VIEW
 import androidx.media3.ui.compose.material3.Player
@@ -37,12 +42,11 @@ import androidx.media3.ui.compose.material3.PlayerDefaults
  * Plays [uri] with Media3's Material 3 controls, shown while [showControls] is true, as long as
  * [play] is true.
  *
- * With [motionPhoto], plays the clip embedded in a motion photo's JPEG (Media3 reads the Motion
- * Photo XMP). Preparing it takes ~1.8 s on the S24 FE, so the viewer composes this as soon as a
- * motion photo is on screen with [play] false, and tapping play starts at once. The clip is muted,
- * as in other galleries, and has no audio output at all. It is drawn on a TextureView that stays
- * invisible until it plays, so the still photo underneath shows instead of a black SurfaceView.
- * When it ends it rewinds for the next play.
+ * With [motionPhoto], plays the clip embedded in a motion photo. Given [videoOffset] (see
+ * `MotionPhotos`), only the bytes from there on are read, as a plain MP4; without it Media3 walks
+ * the whole JPEG first, which took ~1.8 s on the S24 FE. The clip is muted, as in other galleries,
+ * and has no audio output at all. It is drawn on a TextureView that stays invisible until its first
+ * frame, so the still photo underneath shows instead of a black SurfaceView.
  */
 @OptIn(UnstableApi::class, ExperimentalApi::class)
 @Composable
@@ -53,6 +57,7 @@ fun MediaPlayer(
     modifier: Modifier = Modifier,
     play: Boolean = true,
     motionPhoto: Boolean = false,
+    videoOffset: Long? = null,
     onEnded: () -> Unit = {},
 ) {
     val context = LocalContext.current
@@ -66,8 +71,12 @@ fun MediaPlayer(
                 )
                 .build()
                 .apply {
-                    // Content URIs have no file extension; the MIME type spares format sniffing.
-                    setMediaItem(MediaItem.Builder().setUri(uri).setMimeType(mimeType).build())
+                    if (videoOffset != null) {
+                        setMediaSource(embeddedVideo(context, uri, videoOffset))
+                    } else {
+                        // Content URIs have no file extension; the MIME type spares sniffing.
+                        setMediaItem(MediaItem.Builder().setUri(uri).setMimeType(mimeType).build())
+                    }
                     prepare()
                 }
         }
@@ -127,4 +136,15 @@ private class SilentRenderers(context: android.content.Context) : DefaultRendere
         enableFloatOutput: Boolean,
         enableAudioOutputPlaybackParams: Boolean,
     ): AudioSink? = null
+}
+
+/** The MP4 that starts [offset] bytes into [uri], played as if it were its own file. */
+@OptIn(UnstableApi::class)
+private fun embeddedVideo(context: android.content.Context, uri: Uri, offset: Long): MediaSource {
+    val shifted =
+        ResolvingDataSource.Factory(DefaultDataSource.Factory(context)) { spec ->
+            spec.subrange(offset)
+        }
+    return ProgressiveMediaSource.Factory(shifted)
+        .createMediaSource(MediaItem.Builder().setUri(uri).setMimeType(MimeTypes.VIDEO_MP4).build())
 }

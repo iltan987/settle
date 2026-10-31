@@ -51,7 +51,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.zIndex
 import androidx.core.net.toUri
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
@@ -138,6 +137,7 @@ private fun Viewer(
                         playingMotion = playingMotion && settled,
                         onTap = { chromeVisible = !chromeVisible },
                         onMotionEnded = { playingMotion = false },
+                        motionVideoOffset = viewModel::motionVideoOffset,
                     )
             }
         }
@@ -194,6 +194,7 @@ private fun PhotoPage(
     playingMotion: Boolean,
     onTap: () -> Unit,
     onMotionEnded: () -> Unit,
+    motionVideoOffset: suspend (MediaEntry) -> Long?,
 ) {
     val context = LocalContext.current
     val zoomState = rememberZoomableImageState(rememberZoomableState())
@@ -214,20 +215,24 @@ private fun PhotoPage(
             modifier = Modifier.fillMaxSize(),
             onClick = { onTap() },
         )
-        if (settled && entry.specialFormat == SPECIAL_FORMAT_MOTION_PHOTO) {
-            // Prepared while the photo is on screen so playing starts at once; kept behind the
-            // photo (and its zoom gestures) until it plays.
-            MediaPlayer(
-                uri = entry.contentUri,
-                mimeType = entry.mimeType,
-                showControls = false,
-                play = playingMotion,
-                motionPhoto = true,
-                onEnded = onMotionEnded,
-                modifier =
-                    Modifier.zIndex(if (playingMotion) 1f else -1f)
-                        .clickable(enabled = playingMotion, onClick = onMotionEnded),
-            )
+        if (playingMotion) {
+            // Finding the clip reads only the XMP and a few bytes, so it happens on tap; the
+            // still stays visible until the clip's first frame.
+            val clip by
+                produceState<MotionClip?>(null, entry.id) {
+                    value = MotionClip(motionVideoOffset(entry))
+                }
+            clip?.let {
+                MediaPlayer(
+                    uri = entry.contentUri,
+                    mimeType = entry.mimeType,
+                    showControls = false,
+                    motionPhoto = true,
+                    videoOffset = it.offset,
+                    onEnded = onMotionEnded,
+                    modifier = Modifier.clickable(onClick = onMotionEnded),
+                )
+            }
         }
     }
 }
@@ -387,3 +392,6 @@ private fun share(context: android.content.Context, entry: MediaEntry) {
             .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
     context.startActivity(Intent.createChooser(send, null))
 }
+
+/** Where a motion photo's clip starts; a null offset means Media3 has to find it itself. */
+private class MotionClip(val offset: Long?)

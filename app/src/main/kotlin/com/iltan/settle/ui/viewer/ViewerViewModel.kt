@@ -24,6 +24,8 @@ class ViewerViewModel(private val library: Library, source: GridSource) : ViewMo
         viewModelScope.launch { library.setFavorite(entry, !entry.isFavorite) }
     }
 
+    suspend fun motionVideoOffset(entry: MediaEntry): Long? = library.motionVideoOffset(entry)
+
     suspend fun info(entry: MediaEntry): ItemInfo? =
         library.details(entry.id)?.let { ItemInfo(it, library.location(entry)) }
 }

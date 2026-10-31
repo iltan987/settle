@@ -50,13 +50,16 @@ Verified on the S24 FE:
     the original); the geo link resolves to the system app chooser.
   - Share opens the system sheet with a preview, so the read grant works.
 - **Motion photos.**
-  - Samsung's files carry Google Motion Photo v1 XMP next to the SEF trailer, and Media3 plays
-    them.
-  - Preparing one takes ~1.8 s; Media3's event log shows the time is spent reaching the embedded
-    MP4. It isn't audio setup, the image track or location redaction (each ruled out).
-  - So the clip is now prepared while the photo is on screen: tapping play starts at once, the
-    still stays visible (TextureView, hidden until playing), and the photo returns when the clip
-    ends.
+  - Samsung's files carry Google Motion Photo v1 XMP next to the SEF trailer.
+  - Letting Media3 open the whole JPEG took ~1.8 s before the clip started; its event log shows
+    the time goes into reaching the embedded MP4.
+  - Settle now does what the Motion Photo spec suggests and other galleries (e.g. Aves) do. It
+    reads `Item:Length` from the XMP, checks for an MP4 `ftyp` box at file size minus that length,
+    and plays only that byte range.
+  - Tap to first decoded frame: 221 ms the first time, ~117 ms after. Nothing is prepared in the
+    background.
+  - The clip is muted and drawn on a TextureView that shows only from its first frame, so the
+    still never turns black.
 - **Favourites** sync both ways with Samsung Gallery. A favourite set in Settle (written as
   `IS_FAVORITE=1`) showed in Samsung Gallery. The owner removed it there, and Settle updated.
 - **English.** Photos, Folders, Viewer and details render correctly; app language reset to system
@@ -79,9 +82,10 @@ Not done or deviations from the plan:
 - The bottom bar landed with Folders instead of with the timeline, to avoid a placeholder tab.
 
 Known issues:
-- Installs over adb sometimes sat in Google's package verification for minutes (183 s logged).
-  A timeout then abandoned the session and left the adb server wedged until `adb kill-server`.
-  The owner turned off "Verify apps over USB"; installs now verify in ~0.1 s.
+- `adb install` (streamed) stalls at random from WSL. Once it sat in Google's package
+  verification for 183 s, and other times it never reached the phone's installer. The owner
+  turned off "Verify apps over USB". Copying the APK with `adb push` and running `pm install`
+  takes ~1 s and has worked every time (see CLAUDE.md).
 - On API 35 devices favourites live only in Room (ADR-012).
 
 ## Phase 0 — Foundation (2026-10-30)

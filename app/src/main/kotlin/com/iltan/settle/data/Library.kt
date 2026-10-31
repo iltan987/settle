@@ -13,6 +13,7 @@ import com.iltan.settle.data.db.LibraryDao
 import com.iltan.settle.data.db.MediaDetails
 import com.iltan.settle.data.db.MediaEntry
 import com.iltan.settle.data.media.MediaThumbnail
+import com.iltan.settle.data.media.MotionPhotos
 import com.iltan.settle.domain.scan.MediaKind
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -63,6 +64,10 @@ class Library(private val dao: LibraryDao, private val resolver: ContentResolver
         }
         dao.setFavorite(entry.id, favorite)
     }
+
+    /** Byte offset of a motion photo's embedded video; see [MotionPhotos]. */
+    suspend fun motionVideoOffset(entry: MediaEntry): Long? =
+        withContext(Dispatchers.IO) { MotionPhotos.videoOffset(resolver, entry.contentUri) }
 
     /** Where a photo was taken, from its EXIF data; null if unknown or not allowed. */
     suspend fun location(entry: MediaEntry): Pair<Double, Double>? =

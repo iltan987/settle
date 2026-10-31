@@ -16,7 +16,10 @@ Read `docs/spec.md` for what it must do and `docs/decisions/` for why things are
 ./gradlew :app:testDebugUnitTest --tests 'com.iltan.settle.SettleAppTest.startsOnEmptyTimeline'
 ./gradlew :app:lintDebug                     # report: app/build/reports/lint-results-debug.txt
 ./gradlew ktfmtFormat                        # format; ktfmtCheck fails the build on drift
-./gradlew installDebug                       # build and install com.iltan.settle.debug over adb
+./gradlew assembleDebug && adb push app/build/outputs/apk/debug/app-debug.apk /data/local/tmp/s.apk \
+  && adb shell pm install -r /data/local/tmp/s.apk && adb shell rm /data/local/tmp/s.apk
+                                             # install com.iltan.settle.debug; `installDebug` and
+                                             # `adb install` stall at random from WSL
 ```
 
 Full check before calling anything done:
