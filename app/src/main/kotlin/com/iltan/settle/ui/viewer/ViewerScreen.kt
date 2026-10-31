@@ -1,9 +1,12 @@
 package com.iltan.settle.ui.viewer
 
+import android.Manifest
 import android.content.Intent
 import android.text.format.DateFormat
 import android.text.format.Formatter
 import androidx.activity.compose.LocalActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -21,6 +24,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
@@ -29,6 +33,10 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -48,8 +56,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.core.view.WindowCompat
@@ -60,7 +71,10 @@ import coil3.request.ImageRequest
 import com.iltan.settle.R
 import com.iltan.settle.data.contentUri
 import com.iltan.settle.data.db.MediaEntry
+import com.iltan.settle.data.drive.BackupOutcome
 import com.iltan.settle.data.thumbnail
+import com.iltan.settle.domain.backup.BackupResult
+import com.iltan.settle.domain.backup.UploadProblem
 import com.iltan.settle.domain.scan.MediaKind
 import com.iltan.settle.ui.grid.SPECIAL_FORMAT_MOTION_PHOTO
 import com.iltan.settle.ui.theme.SettleTheme
@@ -75,7 +89,12 @@ import me.saket.telephoto.zoomable.rememberZoomableState
  * frames, so Media3's controls and the info sheet read well on black.
  */
 @Composable
-fun ViewerScreen(viewModel: ViewerViewModel, initialId: String, onBack: () -> Unit) {
+fun ViewerScreen(
+    viewModel: ViewerViewModel,
+    initialId: String,
+    onBack: () -> Unit,
+    onOpenSettings: () -> Unit,
+) {
     val entries by viewModel.entries.collectAsStateWithLifecycle()
     val list = entries
     SettleTheme(darkTheme = true) {
@@ -83,7 +102,7 @@ fun ViewerScreen(viewModel: ViewerViewModel, initialId: String, onBack: () -> Un
             when {
                 list == null -> Box(Modifier.fillMaxSize().background(Color.Black))
                 list.isEmpty() -> LaunchedEffect(Unit) { onBack() }
-                else -> Viewer(list, initialId, viewModel, onBack)
+                else -> Viewer(list, initialId, viewModel, onBack, onOpenSettings)
             }
         }
     }
@@ -96,6 +115,7 @@ private fun Viewer(
     initialId: String,
     viewModel: ViewerViewModel,
     onBack: () -> Unit,
+    onOpenSettings: () -> Unit,
 ) {
     val context = LocalContext.current
     val currentEntries by rememberUpdatedState(entries)
@@ -109,6 +129,21 @@ private fun Viewer(
     var playingMotion by remember { mutableStateOf(false) }
     var showInfo by remember { mutableStateOf(false) }
     val current = entries.getOrNull(pagerState.currentPage) ?: return
+    val cloud by
+        remember(current.id) { viewModel.cloudStatus(current.id) }.collectAsStateWithLifecycle(null)
+    val snackbar = remember { SnackbarHostState() }
+    val askOriginalAccess =
+        rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+            if (granted) viewModel.backUp(current)
+        }
+    BackupMessages(
+        viewModel,
+        snackbar,
+        onOpenSettings,
+        onAskOriginalAccess = {
+            askOriginalAccess.launch(Manifest.permission.ACCESS_MEDIA_LOCATION)
+        },
+    )
 
     LaunchedEffect(pagerState.settledPage) { playingMotion = false }
     ImmersiveSystemBars(hidden = !chromeVisible)
@@ -150,6 +185,16 @@ private fun Viewer(
         ) {
             TopBar(
                 entry = current,
+                cloud = cloud,
+                onCloud = {
+                    when (cloud) {
+                        is CloudStatus.BackedUp -> showInfo = true
+                        CloudStatus.NotConnected -> onOpenSettings()
+                        is CloudStatus.Uploading,
+                        null -> {}
+                        else -> viewModel.backUp(current)
+                    }
+                },
                 onBack = onBack,
                 onFavorite = { viewModel.toggleFavorite(current) },
                 onShare = { share(context, current) },
@@ -180,12 +225,78 @@ private fun Viewer(
                 }
             }
         }
+
+        SnackbarHost(
+            snackbar,
+            Modifier.align(Alignment.BottomCenter).navigationBarsPadding().padding(bottom = 80.dp),
+        )
     }
 
     if (showInfo) {
-        ModalBottomSheet(onDismissRequest = { showInfo = false }) { InfoSheet(viewModel, current) }
+        ModalBottomSheet(onDismissRequest = { showInfo = false }) {
+            InfoSheet(viewModel, current, cloud)
+        }
     }
 }
+
+/** Short messages about how backups ended, with a way forward where there is one. */
+@Composable
+private fun BackupMessages(
+    viewModel: ViewerViewModel,
+    snackbar: SnackbarHostState,
+    onOpenSettings: () -> Unit,
+    onAskOriginalAccess: () -> Unit,
+) {
+    val resources = LocalResources.current
+    val openSettings by rememberUpdatedState(onOpenSettings)
+    val askAccess by rememberUpdatedState(onAskOriginalAccess)
+    LaunchedEffect(viewModel) {
+        viewModel.outcomes.collect { outcome ->
+            val (message, action) = outcome.message()
+            val result =
+                snackbar.showSnackbar(
+                    resources.getString(message),
+                    actionLabel = action?.let(resources::getString),
+                    duration = SnackbarDuration.Short,
+                )
+            if (result == SnackbarResult.ActionPerformed) {
+                when (action) {
+                    R.string.backup_allow -> askAccess()
+                    else -> openSettings()
+                }
+            }
+        }
+    }
+}
+
+/** The message and optional action label for a backup outcome. */
+private fun BackupOutcome.message(): Pair<Int, Int?> =
+    when (this) {
+        is BackupOutcome.NeedsOriginalAccess ->
+            R.string.backup_needs_location to R.string.backup_allow
+        is BackupOutcome.Done ->
+            when (val result = result) {
+                is BackupResult.Verified -> R.string.backup_done to null
+                is BackupResult.AwaitingChecksum -> R.string.backup_checking to null
+                is BackupResult.Stopped ->
+                    result.problem.text to
+                        R.string.settings_title.takeIf {
+                            result.problem == UploadProblem.AUTH_NEEDED
+                        }
+            }
+    }
+
+private val UploadProblem.text: Int
+    get() =
+        when (this) {
+            UploadProblem.AUTH_NEEDED -> R.string.backup_problem_auth
+            UploadProblem.QUOTA_FULL -> R.string.backup_problem_quota
+            UploadProblem.OFFLINE -> R.string.backup_problem_offline
+            UploadProblem.ORIGINAL_UNAVAILABLE -> R.string.backup_problem_original
+            UploadProblem.CHANGED_DURING_UPLOAD -> R.string.backup_problem_changed
+            UploadProblem.CHECKSUM_MISMATCH -> R.string.backup_problem_mismatch
+            UploadProblem.FAILED -> R.string.backup_problem_failed
+        }
 
 @Composable
 private fun PhotoPage(
@@ -269,6 +380,8 @@ private fun VideoPage(
 @Composable
 private fun TopBar(
     entry: MediaEntry,
+    cloud: CloudStatus?,
+    onCloud: () -> Unit,
     onBack: () -> Unit,
     onFavorite: () -> Unit,
     onShare: () -> Unit,
@@ -298,8 +411,39 @@ private fun TopBar(
             if (entry.isFavorite) R.string.viewer_unfavorite else R.string.viewer_favorite,
             onFavorite,
         )
+        cloud?.let { CloudButton(it, onCloud) }
         BarButton(R.drawable.ic_share, R.string.viewer_share, onShare)
         BarButton(R.drawable.ic_info, R.string.viewer_info, onInfo)
+    }
+}
+
+/** Backs up the item, shows upload progress, or shows that it is backed up. */
+@Composable
+fun CloudButton(status: CloudStatus, onClick: () -> Unit) {
+    when (status) {
+        is CloudStatus.Uploading ->
+            IconButton(onClick = onClick) {
+                val description = stringResource(R.string.backup_uploading)
+                val modifier = Modifier.size(24.dp).semantics { contentDescription = description }
+                val fraction = status.fraction
+                if (fraction == null) {
+                    CircularProgressIndicator(modifier, color = Color.White, strokeWidth = 2.dp)
+                } else {
+                    CircularProgressIndicator(
+                        progress = { fraction },
+                        modifier = modifier,
+                        color = Color.White,
+                        strokeWidth = 2.dp,
+                    )
+                }
+            }
+        is CloudStatus.BackedUp ->
+            BarButton(R.drawable.ic_cloud_done, R.string.backup_backed_up, onClick)
+        is CloudStatus.Problem ->
+            BarButton(R.drawable.ic_cloud_off, R.string.backup_try_again, onClick)
+        CloudStatus.NotConnected,
+        CloudStatus.NotBackedUp,
+        CloudStatus.Checking -> BarButton(R.drawable.ic_cloud_upload, R.string.backup_now, onClick)
     }
 }
 
@@ -311,7 +455,7 @@ private fun BarButton(icon: Int, description: Int, onClick: () -> Unit) {
 }
 
 @Composable
-private fun InfoSheet(viewModel: ViewerViewModel, entry: MediaEntry) {
+private fun InfoSheet(viewModel: ViewerViewModel, entry: MediaEntry, cloud: CloudStatus?) {
     val context = LocalContext.current
     val info by produceState<ItemInfo?>(null, entry.id) { value = viewModel.info(entry) }
     val details = info?.details ?: return
@@ -349,7 +493,53 @@ private fun InfoSheet(viewModel: ViewerViewModel, entry: MediaEntry) {
                 supportingContent = { Text(stringResource(R.string.viewer_open_map)) },
             )
         }
+        cloud?.let { BackupRow(it) }
     }
+}
+
+@Composable
+private fun BackupRow(status: CloudStatus) {
+    val context = LocalContext.current
+    val (icon, text) =
+        when (status) {
+            is CloudStatus.BackedUp -> R.drawable.ic_cloud_done to R.string.backup_backed_up
+            is CloudStatus.Uploading -> R.drawable.ic_cloud_upload to R.string.backup_uploading
+            CloudStatus.Checking -> R.drawable.ic_cloud_upload to R.string.backup_checking_short
+            CloudStatus.NotBackedUp -> R.drawable.ic_cloud_off to R.string.backup_not_backed_up
+            CloudStatus.NotConnected -> R.drawable.ic_cloud_off to R.string.backup_not_connected
+            is CloudStatus.Problem -> R.drawable.ic_cloud_off to status.problem.text
+        }
+    val driveFileId = (status as? CloudStatus.BackedUp)?.driveFileId
+    ListItem(
+        onClick = {
+            driveFileId?.let {
+                runCatching {
+                    context.startActivity(
+                        Intent(
+                            Intent.ACTION_VIEW,
+                            "https://drive.google.com/file/d/$it/view".toUri(),
+                        )
+                    )
+                }
+            }
+        },
+        enabled = driveFileId != null,
+        leadingContent = { Icon(painterResource(icon), null) },
+        content = { Text(stringResource(text)) },
+        supportingContent =
+            if (driveFileId != null) {
+                { Text(stringResource(R.string.backup_verified)) }
+            } else null,
+        trailingContent =
+            if (driveFileId != null) {
+                {
+                    Icon(
+                        painterResource(R.drawable.ic_open_in_new),
+                        stringResource(R.string.backup_open_in_drive),
+                    )
+                }
+            } else null,
+    )
 }
 
 /** Hides the status and navigation bars while the viewer's chrome is hidden. */

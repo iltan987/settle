@@ -20,6 +20,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -31,8 +32,8 @@ import com.iltan.settle.appGraph
 /** The Google Drive part of Settings, wired to the app. */
 @Composable
 fun DriveSettings(snackbar: SnackbarHostState) {
-    val context = LocalContext.current
-    val graph = context.appGraph
+    val graph = LocalContext.current.appGraph
+    val resources = LocalResources.current
     val viewModel = viewModel {
         DriveSettingsViewModel(
             dao = graph.database.backupDao(),
@@ -57,7 +58,7 @@ fun DriveSettings(snackbar: SnackbarHostState) {
     LaunchedEffect(state.notice) {
         state.notice?.let {
             viewModel.noticeShown()
-            snackbar.showSnackbar(context.getString(it.message))
+            snackbar.showSnackbar(resources.getString(it.message))
         }
     }
     DriveSection(

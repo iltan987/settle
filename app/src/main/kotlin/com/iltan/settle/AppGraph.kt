@@ -21,6 +21,7 @@ import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 import okhttp3.OkHttpClient
 
 /** The app's long-lived objects, wired by hand (ADR-007). One instance per process. */
@@ -86,6 +87,7 @@ class AppGraph(context: Context) {
     fun start() {
         librarySync.start(appScope)
         MediaChangeObserver { librarySync.requestScan() }.register(appContext.contentResolver)
-        cloudBackup.start(appScope)
+        // Building the Drive client stays off the main thread.
+        appScope.launch { cloudBackup.start(appScope) }
     }
 }

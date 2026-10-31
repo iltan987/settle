@@ -81,4 +81,26 @@
     <string name="drive_sandbox_reset_text">Moves “%1$s” to the Drive trash, where it can be restored for 30 days, and forgets every backup.</string>
     <string name="drive_sandbox_reset_done">Debug folder moved to the Drive trash</string>
     <string name="drive_sandbox_reset_failed">Couldn\'t reset the debug folder</string>
+
+    <string name="backup_now">Back up now</string>
+    <string name="backup_uploading">Uploading to Google Drive</string>
+    <string name="backup_backed_up">Backed up to Google Drive</string>
+    <string name="backup_try_again">Back up again</string>
+    <string name="backup_done">Backed up and verified</string>
+    <string name="backup_checking">Uploaded. Drive hasn\'t confirmed its checksum yet; back it up again later to check.</string>
+    <string name="backup_checking_short">Uploaded, waiting for Drive to confirm it</string>
+    <string name="backup_not_backed_up">Not backed up</string>
+    <string name="backup_not_connected">Not backed up · Google Drive not connected</string>
+    <string name="backup_verified">Size, SHA-256 and MD5 match the original</string>
+    <string name="backup_open_in_drive">Open in Google Drive</string>
+    <string name="backup_needs_location">Backing up originals needs access to photo locations</string>
+    <string name="backup_allow">Allow</string>
+    <string name="backup_problem_auth">Reconnect Google Drive in Settings</string>
+    <string name="backup_problem_quota">Your Google Drive is full</string>
+    <string name="backup_problem_offline">Can\'t reach Google Drive. Back up again later to continue where it stopped.</string>
+    <string name="backup_problem_original">The original couldn\'t be read</string>
+    <string name="backup_problem_changed">The file changed while uploading. Back it up again.</string>
+    <string name="backup_problem_mismatch">Drive\'s copy doesn\'t match the original. Back it up again.</string>
+    <string name="backup_problem_failed">Backup failed</string>
+    <string name="media_backed_up">Backed up</string>
 </resources>

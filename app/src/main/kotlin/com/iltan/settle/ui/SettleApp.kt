@@ -164,11 +164,19 @@ private fun Navigation() {
                         )
                     }
                     entry<Viewer> { key ->
-                        val viewModel = viewModel { ViewerViewModel(graph.library, key.source) }
+                        val viewModel = viewModel {
+                            ViewerViewModel(
+                                graph.library,
+                                key.source,
+                                graph.database.backupDao(),
+                                graph.cloudBackup,
+                            )
+                        }
                         ViewerScreen(
                             viewModel = viewModel,
                             initialId = key.itemId,
                             onBack = { backStack.removeLastOrNull() },
+                            onOpenSettings = { backStack.add(Settings) },
                         )
                     }
                     entry<Settings> { SettingsScreen(onBack = { backStack.removeLastOrNull() }) }

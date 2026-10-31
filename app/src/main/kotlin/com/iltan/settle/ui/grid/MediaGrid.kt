@@ -35,6 +35,7 @@ import coil3.compose.AsyncImage
 import com.iltan.settle.R
 import com.iltan.settle.data.db.MediaEntry
 import com.iltan.settle.data.thumbnail
+import com.iltan.settle.domain.CloudState
 import com.iltan.settle.domain.scan.MediaKind
 import com.iltan.settle.domain.timeline.DaySection
 import java.time.LocalDate
@@ -136,6 +137,11 @@ private fun MediaCell(entry: MediaEntry, onClick: () -> Unit) {
         if (entry.isFavorite) {
             Badge(Modifier.align(Alignment.BottomStart)) {
                 BadgeIcon(R.drawable.ic_favorite_filled, R.string.media_favorite)
+            }
+        }
+        if (entry.cloudState == CloudState.VERIFIED) {
+            Badge(Modifier.align(Alignment.TopStart)) {
+                BadgeIcon(R.drawable.ic_cloud_done_filled, R.string.media_backed_up)
             }
         }
     }

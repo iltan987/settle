@@ -76,4 +76,26 @@
     <string name="drive_sandbox_reset_text">“%1$s” klasörünü Drive çöp kutusuna taşır (30 gün boyunca geri yüklenebilir) ve tüm yedekleri unutur.</string>
     <string name="drive_sandbox_reset_done">Hata ayıklama klasörü Drive çöp kutusuna taşındı</string>
     <string name="drive_sandbox_reset_failed">Hata ayıklama klasörü sıfırlanamadı</string>
+
+    <string name="backup_now">Şimdi yedekle</string>
+    <string name="backup_uploading">Google Drive\'a yükleniyor</string>
+    <string name="backup_backed_up">Google Drive\'a yedeklendi</string>
+    <string name="backup_try_again">Yeniden yedekle</string>
+    <string name="backup_done">Yedeklendi ve doğrulandı</string>
+    <string name="backup_checking">Yüklendi. Drive sağlama toplamını henüz doğrulamadı; kontrol için daha sonra yeniden yedekle.</string>
+    <string name="backup_checking_short">Yüklendi, Drive\'ın doğrulaması bekleniyor</string>
+    <string name="backup_not_backed_up">Yedeklenmedi</string>
+    <string name="backup_not_connected">Yedeklenmedi · Google Drive bağlı değil</string>
+    <string name="backup_verified">Boyut, SHA-256 ve MD5 orijinalle aynı</string>
+    <string name="backup_open_in_drive">Google Drive\'da aç</string>
+    <string name="backup_needs_location">Orijinalleri yedeklemek için fotoğraf konumlarına erişim gerekli</string>
+    <string name="backup_allow">İzin ver</string>
+    <string name="backup_problem_auth">Google Drive\'ı Ayarlar\'dan yeniden bağla</string>
+    <string name="backup_problem_quota">Google Drive\'ın dolu</string>
+    <string name="backup_problem_offline">Google Drive\'a ulaşılamıyor. Kaldığı yerden devam etmek için daha sonra yeniden yedekle.</string>
+    <string name="backup_problem_original">Orijinal okunamadı</string>
+    <string name="backup_problem_changed">Dosya yüklenirken değişti. Yeniden yedekle.</string>
+    <string name="backup_problem_mismatch">Drive\'daki kopya orijinalle eşleşmiyor. Yeniden yedekle.</string>
+    <string name="backup_problem_failed">Yedekleme başarısız oldu</string>
+    <string name="media_backed_up">Yedeklendi</string>
 </resources>

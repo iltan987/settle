@@ -61,7 +61,13 @@ class TimelineScreenTest {
         val entries =
             listOf(
                 entry("a", now, kind = MediaKind.VIDEO, durationMs = 12_000),
-                entry("b", now - day, specialFormat = SPECIAL_FORMAT_MOTION_PHOTO, favorite = true),
+                entry(
+                    "b",
+                    now - day,
+                    specialFormat = SPECIAL_FORMAT_MOTION_PHOTO,
+                    favorite = true,
+                    cloudState = CloudState.VERIFIED,
+                ),
             )
         show(
             MediaGridState(
@@ -77,6 +83,7 @@ class TimelineScreenTest {
         compose.onNodeWithText("0:12").assertIsDisplayed()
         compose.onNodeWithContentDescription("Motion photo").assertIsDisplayed()
         compose.onNodeWithContentDescription("Favorite").assertIsDisplayed()
+        compose.onNodeWithContentDescription("Backed up").assertIsDisplayed()
     }
 
     @Test
