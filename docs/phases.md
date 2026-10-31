@@ -39,6 +39,10 @@ Verified on the S24 FE (debug build, `Settle (debug)/` in the owner's Drive):
   it without sending it again.
 - Asking to back up a verified item again makes no Drive request.
 - Chunk size: 8 MiB 4.8 / 4.6 MiB/s, 32 MiB 4.7 / 4.7 MiB/s on 120 MiB test files; 8 MiB kept.
+- Disconnect and reconnect (done by the owner): access was revoked and granted again; the account
+  and all 11 verified upload records survived, and backed-up items still show as backed up.
+- Test files in `Pictures/SettleTest/` were deleted afterwards; their Drive copies stay in
+  `Settle (debug)/` until the owner resets it.
 
 Findings:
 - One upload stream reaches about 5 MiB/s although the phone's Wi-Fi link is 2.4 Gbps and the
