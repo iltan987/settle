@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Settle's folder in My Drive (ADR-003); debug builds use their own (ADR-008). -->
+    <string name="drive_root_folder" translatable="false">Settle</string>
+    <!-- Debug builds may move their Drive folder to the trash to start tests over. -->
+    <bool name="drive_sandbox">false</bool>
+</resources>

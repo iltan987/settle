@@ -311,3 +311,10 @@ private class FileMetadata(
 private class ErrorDetail(val code: Int = 0, val errors: List<ErrorItem> = emptyList())
 
 @Serializable private class ErrorItem(val reason: String? = null)
+
+/** One known token, e.g. right after authorizing, before the account is stored. */
+class FixedToken(private val token: String) : DriveTokens {
+    override suspend fun token() = token
+
+    override suspend fun invalidate(token: String) {}
+}

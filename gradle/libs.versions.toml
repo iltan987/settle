@@ -19,6 +19,9 @@ androidx-test-core = "1.7.0"
 # ui-test-junit4 brings Espresso 3.5.0, which fails on API 37; pin the current stable.
 androidx-test-espresso = "3.7.0"
 
+# Google Play services: AuthorizationClient for Drive tokens (ADR-010).
+play-services-auth = "22.0.0"
+
 # Kotlin libraries
 kotlinx-serialization = "1.12.0"
 kotlinx-coroutines = "1.11.0"
@@ -61,6 +64,8 @@ kotlinx-serialization-core = { module = "org.jetbrains.kotlinx:kotlinx-serializa
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
 
+kotlinx-coroutines-play-services = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-play-services", version.ref = "kotlinx-coroutines" }
+play-services-auth = { module = "com.google.android.gms:play-services-auth", version.ref = "play-services-auth" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
 junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit-jupiter" }
 junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher" }

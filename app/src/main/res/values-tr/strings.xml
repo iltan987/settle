@@ -56,4 +56,24 @@
     <string name="folder_show_in_photos">Fotoğraflar\'da göster</string>
     <string name="folder_hidden">Fotoğraflar\'da gizli</string>
     <string name="folder_options">%s seçenekleri</string>
+
+    <string name="cancel">İptal</string>
+
+    <string name="settings_drive">Google Drive</string>
+    <string name="drive_not_connected">Bağlı değil</string>
+    <string name="drive_explainer">Orijinalleri kendi Google Drive\'ına yedekle. Settle orada yalnızca kendi oluşturduğu dosyaları görür.</string>
+    <string name="drive_connect">Google Drive\'ı bağla</string>
+    <string name="drive_storage">%2$s alanın %1$s kadarı kullanılıyor</string>
+    <string name="drive_storage_unlimited">%1$s kullanılıyor</string>
+    <string name="drive_storage_unknown">Depolama alanı bilinmiyor</string>
+    <string name="drive_folder">Klasör: %1$s</string>
+    <string name="drive_disconnect">Bağlantıyı kes</string>
+    <string name="drive_disconnect_title">Google Drive bağlantısı kesilsin mi?</string>
+    <string name="drive_disconnect_text">Drive\'daki dosyalar orada kalır. Yeniden bağlanana kadar yedekleme durur.</string>
+    <string name="drive_connect_failed">Google Drive\'a bağlanılamadı</string>
+    <string name="drive_sandbox_reset">Hata ayıklama Drive klasörünü sıfırla</string>
+    <string name="drive_sandbox_reset_action">Sıfırla</string>
+    <string name="drive_sandbox_reset_text">“%1$s” klasörünü Drive çöp kutusuna taşır (30 gün boyunca geri yüklenebilir) ve tüm yedekleri unutur.</string>
+    <string name="drive_sandbox_reset_done">Hata ayıklama klasörü Drive çöp kutusuna taşındı</string>
+    <string name="drive_sandbox_reset_failed">Hata ayıklama klasörü sıfırlanamadı</string>
 </resources>

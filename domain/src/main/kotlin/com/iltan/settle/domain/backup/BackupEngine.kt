@@ -52,6 +52,8 @@ class BackupEngine(
     /** How often a missing SHA-256 is asked for again before giving up for now. */
     private val checksumChecks: Int = 3,
     private val jitterMillis: () -> Long = { Random.nextLong(0, 1_001) },
+    /** Told about every failure the engine handles, for diagnosis. */
+    private val log: (String) -> Unit = {},
 ) {
     init {
         require(chunkBytes > 0 && chunkBytes % CHUNK_GRANULARITY == 0) {
@@ -79,6 +81,7 @@ class BackupEngine(
                 }
                 return attempt(itemId, onProgress)
             } catch (e: DriveException) {
+                log("$itemId: Drive ${e.failure}: ${e.message}")
                 when (e.failure) {
                     DriveFailure.AUTH_NEEDED -> return stop(itemId, UploadProblem.AUTH_NEEDED)
                     DriveFailure.QUOTA_FULL -> return stop(itemId, UploadProblem.QUOTA_FULL)
@@ -110,8 +113,10 @@ class BackupEngine(
                     }
                 }
             } catch (e: OriginalChangedException) {
+                log("$itemId: ${e.message}")
                 return stop(itemId, UploadProblem.CHANGED_DURING_UPLOAD)
             } catch (e: OriginalUnavailableException) {
+                log("$itemId: ${e.message} (${e.cause})")
                 return stop(itemId, UploadProblem.ORIGINAL_UNAVAILABLE)
             }
         }

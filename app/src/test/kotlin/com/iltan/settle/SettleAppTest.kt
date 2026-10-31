@@ -7,6 +7,7 @@ import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.test.core.app.ApplicationProvider
 import com.iltan.settle.ui.SettleApp
 import com.iltan.settle.ui.theme.SettleTheme
@@ -72,10 +73,13 @@ class SettleAppTest {
         compose.setContent { SettleTheme { SettleApp() } }
 
         compose.onNodeWithContentDescription("Settings").performClick()
+        compose.onNodeWithText("Google Drive").assertIsDisplayed()
+        compose.onNodeWithText("Connect Google Drive").assertIsDisplayed()
+        // Below the library and Drive sections.
+        compose.onNodeWithText("Türkçe").performScrollTo().assertIsDisplayed()
         compose.onNodeWithText("Language").assertIsDisplayed()
         compose.onNodeWithText("System default").assertIsDisplayed()
         compose.onNodeWithText("English").assertIsDisplayed()
-        compose.onNodeWithText("Türkçe").assertIsDisplayed()
 
         compose.onNodeWithContentDescription("Back").performClick()
         compose.onNodeWithContentDescription("Settings").assertIsDisplayed()

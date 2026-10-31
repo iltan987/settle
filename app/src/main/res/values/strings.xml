@@ -61,4 +61,24 @@
     <string name="folder_show_in_photos">Show in Photos</string>
     <string name="folder_hidden">Hidden from Photos</string>
     <string name="folder_options">Options for %s</string>
+
+    <string name="cancel">Cancel</string>
+
+    <string name="settings_drive">Google Drive</string>
+    <string name="drive_not_connected">Not connected</string>
+    <string name="drive_explainer">Back up originals to your own Google Drive. Settle only sees the files it creates there.</string>
+    <string name="drive_connect">Connect Google Drive</string>
+    <string name="drive_storage">%1$s of %2$s used</string>
+    <string name="drive_storage_unlimited">%1$s used</string>
+    <string name="drive_storage_unknown">Storage unknown</string>
+    <string name="drive_folder">Folder: %1$s</string>
+    <string name="drive_disconnect">Disconnect</string>
+    <string name="drive_disconnect_title">Disconnect Google Drive?</string>
+    <string name="drive_disconnect_text">Files already in Drive stay there. Backups stop until you connect again.</string>
+    <string name="drive_connect_failed">Couldn\'t connect to Google Drive</string>
+    <string name="drive_sandbox_reset">Reset debug Drive folder</string>
+    <string name="drive_sandbox_reset_action">Reset</string>
+    <string name="drive_sandbox_reset_text">Moves “%1$s” to the Drive trash, where it can be restored for 30 days, and forgets every backup.</string>
+    <string name="drive_sandbox_reset_done">Debug folder moved to the Drive trash</string>
+    <string name="drive_sandbox_reset_failed">Couldn\'t reset the debug folder</string>
 </resources>

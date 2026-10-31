@@ -91,6 +91,9 @@ dependencies {
     implementation(libs.kotlinx.serialization.json)
     // Drive REST client (ADR-010).
     implementation(libs.okhttp)
+    implementation(libs.play.services.auth)
+    // Task.await(); pinned to the app's coroutines version over the 1.8.0 Play services brings.
+    implementation(libs.kotlinx.coroutines.play.services)
     implementation(libs.androidx.room3.runtime)
     implementation(libs.coil.compose)
     implementation(libs.telephoto.zoomable.image.coil3)
