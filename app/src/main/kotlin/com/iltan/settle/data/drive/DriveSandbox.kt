@@ -12,9 +12,15 @@ class DriveSandbox(
     private val rootFolder: String,
 ) {
     suspend fun reset() {
-        check(rootFolder.endsWith("(debug)")) { "Only the debug folder may be reset" }
+        check(isSandboxFolder(rootFolder)) { "Only a debug build's own folder may be reset" }
         val id = dao.folderId(rootFolder) ?: drive.findFolder(rootFolder, parentId = null)
         if (id != null) drive.trash(id)
         dao.forgetAllUploads()
+    }
+
+    companion object {
+        /** The phone's and the emulator's debug folders; never the real `Settle/`. */
+        fun isSandboxFolder(name: String): Boolean =
+            name == "Settle (debug)" || name == "Settle (emulator)"
     }
 }
