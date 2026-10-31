@@ -10,6 +10,9 @@ import androidx.compose.material3.ShortNavigationBarItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -52,10 +55,10 @@ import kotlinx.serialization.Serializable
 
 /** Root of the UI: onboarding until media access is granted, then one Navigation 3 back stack. */
 @Composable
-fun SettleApp(openSettings: Boolean = false) {
+fun SettleApp(openSettings: Boolean = false, reconnect: Boolean = false) {
     val context = LocalContext.current
     MediaAccessGate(onAccessGranted = { context.appGraph.librarySync.requestScan() }) {
-        Navigation(openSettings)
+        Navigation(openSettings, reconnect)
     }
 }
 
@@ -76,7 +79,9 @@ private fun NavBackStack<NavKey>.select(tab: Tab) {
 }
 
 @Composable
-private fun Navigation(openSettings: Boolean) {
+private fun Navigation(openSettings: Boolean, reconnect: Boolean) {
+    // Started once, from the notification that opened Settle, not on every visit to Settings.
+    var reconnectPending by rememberSaveable { mutableStateOf(reconnect) }
     val context = LocalContext.current
     val graph = context.appGraph
     // A backup notification that needs the user opens Settings over the timeline.
@@ -185,7 +190,13 @@ private fun Navigation(openSettings: Boolean) {
                             onOpenSettings = { backStack.add(Settings) },
                         )
                     }
-                    entry<Settings> { SettingsScreen(onBack = { backStack.removeLastOrNull() }) }
+                    entry<Settings> {
+                        SettingsScreen(
+                            onBack = { backStack.removeLastOrNull() },
+                            reconnect = reconnectPending,
+                            onReconnectStarted = { reconnectPending = false },
+                        )
+                    }
                 },
         )
     }

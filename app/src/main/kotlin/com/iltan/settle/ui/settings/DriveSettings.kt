@@ -33,7 +33,12 @@ import kotlinx.coroutines.flow.map
 
 /** The Google Drive part of Settings, wired to the app. */
 @Composable
-fun DriveSettings(snackbar: SnackbarHostState) {
+fun DriveSettings(
+    snackbar: SnackbarHostState,
+    /** Opened from the "reconnect" notification: start Google's account picker at once. */
+    reconnect: Boolean = false,
+    onReconnectStarted: () -> Unit = {},
+) {
     val graph = LocalContext.current.appGraph
     val resources = LocalResources.current
     val viewModel = viewModel {
@@ -46,6 +51,8 @@ fun DriveSettings(snackbar: SnackbarHostState) {
             onAccountChanged = { connected ->
                 if (connected && graph.backupPreferences.unblock(BackupPause.AUTH_NEEDED)) {
                     graph.backupNotifications.clearPause()
+                    // Backups the user asked for continue now, while Settle is in front.
+                    graph.cloudBackup.backUpNow(emptyList())
                 }
                 graph.backupScheduler.reschedule()
             },
@@ -59,6 +66,12 @@ fun DriveSettings(snackbar: SnackbarHostState) {
         rememberLauncherForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) {
             viewModel.onConsentResult(it.resultCode, it.data)
         }
+    LaunchedEffect(reconnect, state.needsReconnect) {
+        if (reconnect && state.needsReconnect) {
+            onReconnectStarted()
+            viewModel.connect()
+        }
+    }
     LaunchedEffect(consent) {
         consent?.let {
             viewModel.consentLaunched()

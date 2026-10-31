@@ -57,7 +57,7 @@ class BackupNotifications(private val context: Context) {
             .setOngoing(true)
             .setOnlyAlertOnce(true)
             .setSilent(true)
-            .setContentIntent(openApp(openSettings = false))
+            .setContentIntent(openApp(openSettings = false, reconnect = false))
             .addAction(
                 0,
                 context.getString(R.string.notification_pause),
@@ -89,7 +89,9 @@ class BackupNotifications(private val context: Context) {
                 .setContentTitle(context.getString(title))
                 .setContentText(context.getString(text))
                 .setStyle(NotificationCompat.BigTextStyle().bigText(context.getString(text)))
-                .setContentIntent(openApp(openSettings = true))
+                .setContentIntent(
+                    openApp(openSettings = true, reconnect = reason == BackupPause.AUTH_NEEDED)
+                )
                 .setAutoCancel(true)
                 .build(),
         )
@@ -108,13 +110,14 @@ class BackupNotifications(private val context: Context) {
         }
     }
 
-    private fun openApp(openSettings: Boolean): PendingIntent =
+    private fun openApp(openSettings: Boolean, reconnect: Boolean): PendingIntent =
         PendingIntent.getActivity(
             context,
-            if (openSettings) 1 else 0,
+            (if (openSettings) 1 else 0) + (if (reconnect) 2 else 0),
             Intent(context, MainActivity::class.java)
                 .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
-                .putExtra(MainActivity.EXTRA_OPEN_SETTINGS, openSettings),
+                .putExtra(MainActivity.EXTRA_OPEN_SETTINGS, openSettings)
+                .putExtra(MainActivity.EXTRA_RECONNECT, reconnect),
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
         )
 

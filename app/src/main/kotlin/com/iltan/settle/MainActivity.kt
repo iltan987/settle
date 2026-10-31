@@ -14,12 +14,16 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         val openSettings = intent.getBooleanExtra(EXTRA_OPEN_SETTINGS, false)
-        setContent { SettleTheme { SettleApp(openSettings) } }
+        val reconnect = intent.getBooleanExtra(EXTRA_RECONNECT, false)
+        setContent { SettleTheme { SettleApp(openSettings, reconnect) } }
     }
 
     companion object {
         /** Set by backup notifications that need the user in Settings. */
         const val EXTRA_OPEN_SETTINGS = "com.iltan.settle.OPEN_SETTINGS"
+
+        /** Set by the "reconnect" notification: Settings starts Google's account picker. */
+        const val EXTRA_RECONNECT = "com.iltan.settle.RECONNECT"
     }
 
     override fun onResume() {

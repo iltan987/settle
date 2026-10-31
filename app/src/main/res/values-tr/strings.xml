@@ -178,4 +178,5 @@
     <string name="media_needs_attention">Yedekleme ilgilenmeni bekliyor</string>
     <string name="drive_reconnect">Yeniden bağlan</string>
     <string name="drive_reconnect_text">Google\'da yeniden oturum açman gerekiyor. O zamana kadar yedekleme duraklatıldı; hiçbir şey kaybolmadı.</string>
+    <string name="backup_status_reconnect">Yedekleme duraklatıldı: Google Drive\'ı yukarıdan yeniden bağla</string>
 </resources>

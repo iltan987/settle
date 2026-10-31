@@ -34,7 +34,11 @@ import com.iltan.settle.appGraph
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsScreen(onBack: () -> Unit) {
+fun SettingsScreen(
+    onBack: () -> Unit,
+    reconnect: Boolean = false,
+    onReconnectStarted: () -> Unit = {},
+) {
     val context = LocalContext.current
     var language by remember { mutableStateOf(AppLanguage.current(context)) }
     val versionName = remember {
@@ -63,7 +67,7 @@ fun SettingsScreen(onBack: () -> Unit) {
             SectionTitle(R.string.settings_library)
             LibrarySection()
             SectionTitle(R.string.settings_drive)
-            DriveSettings(snackbar)
+            DriveSettings(snackbar, reconnect, onReconnectStarted)
             SectionTitle(R.string.settings_backup)
             BackupSettings()
             SectionTitle(R.string.settings_language)

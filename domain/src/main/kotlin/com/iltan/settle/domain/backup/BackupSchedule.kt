@@ -30,7 +30,11 @@ data class BackupPlan(
     val pause: BackupPause?,
     /** Items to upload now, in order: explicit requests first, then newest first. */
     val queue: List<BackupCandidate>,
-    /** The automatic run: now if anything is ready, else when the next grace period ends. */
+    /**
+     * The automatic run: now if anything is ready, else when the next grace period ends. It also
+     * takes requests the user-initiated run couldn't finish, e.g. after a pause or a Task Manager
+     * stop, so none is left behind.
+     */
     val automatic: PlannedRun?,
     /** The run the user asked for, which ignores grace periods and the charger. */
     val requested: PlannedRun?,
@@ -78,7 +82,7 @@ fun planBackup(
     val requested = queue.filter { it.requestedAtMillis != null }
     val automatic =
         when {
-            queue.size > requested.size ->
+            queue.isNotEmpty() ->
                 PlannedRun(
                     notBeforeMillis = nowMillis,
                     conditions = RunConditions(unmetered, settings.onlyWhileCharging),

@@ -168,7 +168,7 @@ fun BackupSection(
     if (state.pause == BackupPause.NOT_CONNECTED) return
 
     val settings = state.choices.settings
-    if (!settings.paused && state.queued + state.waiting > 0) {
+    if (state.pause == null && state.queued + state.waiting > 0) {
         ListItem(
             onClick = actions.backUpEverythingNow,
             leadingContent = { Icon(painterResource(R.drawable.ic_cloud_upload), null) },
@@ -236,7 +236,7 @@ private fun Status(state: BackupSettingsState, actions: BackupActions) {
             BackupPause.BY_USER ->
                 stringResource(R.string.backup_status_paused) to
                     (R.string.backup_resume to { actions.setPaused(false) })
-            BackupPause.AUTH_NEEDED -> stringResource(R.string.backup_problem_auth) to null
+            BackupPause.AUTH_NEEDED -> stringResource(R.string.backup_status_reconnect) to null
             BackupPause.QUOTA_FULL ->
                 stringResource(R.string.backup_problem_quota) to
                     (R.string.backup_try_again to actions.retryAfterFull)

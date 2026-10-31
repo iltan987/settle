@@ -190,7 +190,8 @@ class BackupPlanTest {
         val requested = candidate(size = 7, requestedAt = now)
         val plan = planBackup(listOf(requested), settings, null, now)
         plan.requested shouldBe PlannedRun(now, RunConditions(true, charging = false), 7)
-        plan.automatic.shouldBeNull()
+        // The automatic run takes it too, if the requested run never got to finish it.
+        plan.automatic shouldBe PlannedRun(now, RunConditions(true, charging = true), 7)
         planBackup(listOf(requested), settings.copy(useMobileData = true), null, now)
             .requested
             ?.conditions shouldBe RunConditions(unmeteredNetwork = false, charging = false)

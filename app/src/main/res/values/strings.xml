@@ -183,4 +183,5 @@
     <string name="media_needs_attention">Backup needs attention</string>
     <string name="drive_reconnect">Reconnect</string>
     <string name="drive_reconnect_text">Google needs you to sign in again. Backup is paused until then; nothing was lost.</string>
+    <string name="backup_status_reconnect">Backup is paused: reconnect Google Drive above</string>
 </resources>

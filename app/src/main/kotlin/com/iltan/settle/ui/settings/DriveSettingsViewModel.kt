@@ -24,6 +24,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 /** Something the Drive section reports once. */
@@ -60,6 +61,7 @@ class DriveSettingsViewModel(
     private val about = MutableStateFlow<DriveAbout?>(null)
     private val busy = MutableStateFlow(false)
     private val notice = MutableStateFlow<DriveNotice?>(null)
+    private val aboutReads = MutableStateFlow(0)
 
     private val _consent = MutableStateFlow<PendingIntent?>(null)
     /** Google's account chooser and consent screen, for the UI to launch once. */
@@ -87,9 +89,11 @@ class DriveSettingsViewModel(
 
     init {
         viewModelScope.launch {
-            dao.account()
-                .map { it?.email }
-                .distinctUntilChanged()
+            // Read again after reconnecting the same account, which leaves the email unchanged.
+            combine(dao.account().map { it?.email }.distinctUntilChanged(), aboutReads) { email, _
+                    ->
+                    email
+                }
                 .collectLatest { email ->
                     about.value = null
                     if (email != null) {
@@ -140,7 +144,10 @@ class DriveSettingsViewModel(
     private fun handle(step: ConnectStep) {
         when (step) {
             is ConnectStep.NeedsUser -> _consent.value = step.intent
-            is ConnectStep.Connected -> viewModelScope.launch { onAccountChanged(true) }
+            is ConnectStep.Connected -> {
+                aboutReads.update { it + 1 }
+                viewModelScope.launch { onAccountChanged(true) }
+            }
             is ConnectStep.Failed -> {
                 Log.w(TAG, "Connecting Drive failed: ${step.reason}")
                 notice.value = DriveNotice.CONNECT_FAILED
