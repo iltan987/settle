@@ -72,6 +72,29 @@ class BackupNotifications(private val context: Context) {
             .build()
     }
 
+    /** The progress notification of a restore the user started (ADR-015). */
+    fun restoreProgress(items: Int, receivedBytes: Long, totalBytes: Long): Notification {
+        val percent = if (totalBytes > 0) (receivedBytes * 100 / totalBytes).toInt() else 0
+        return NotificationCompat.Builder(context, PROGRESS)
+            .setSmallIcon(R.drawable.ic_cloud_download)
+            .setContentTitle(
+                context.resources.getQuantityString(R.plurals.notification_restoring, items, items)
+            )
+            .setContentText(
+                context.getString(
+                    R.string.notification_progress,
+                    Formatter.formatShortFileSize(context, receivedBytes),
+                    Formatter.formatShortFileSize(context, totalBytes),
+                )
+            )
+            .setProgress(100, percent, totalBytes <= 0)
+            .setOngoing(true)
+            .setOnlyAlertOnce(true)
+            .setSilent(true)
+            .setContentIntent(openApp(openSettings = false, reconnect = false))
+            .build()
+    }
+
     /** Tells the user why backup stopped, if it needs them. */
     fun showPause(reason: BackupPause) {
         val (title, text) =
@@ -123,6 +146,7 @@ class BackupNotifications(private val context: Context) {
         private const val PROGRESS = "backup_progress"
         private const val PROBLEMS = "backup_problems"
         const val PROGRESS_ID = 1
+        const val RESTORE_ID = 3
         private const val PROBLEM_ID = 2
     }
 }

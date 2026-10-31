@@ -106,6 +106,10 @@
         <item quantity="one">%d öge yedekleniyor</item>
         <item quantity="other">%d öge yedekleniyor</item>
     </plurals>
+    <plurals name="notification_restoring">
+        <item quantity="one">Google Drive\'dan %d öge geri yükleniyor</item>
+        <item quantity="other">Google Drive\'dan %d öge geri yükleniyor</item>
+    </plurals>
     <string name="notification_progress">%1$s / %2$s</string>
     <string name="notification_pause">Duraklat</string>
     <string name="notification_reconnect_title">Google Drive\'ı yeniden bağla</string>

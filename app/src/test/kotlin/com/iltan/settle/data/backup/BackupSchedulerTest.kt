@@ -20,6 +20,7 @@ import com.iltan.settle.domain.scan.ScanRow
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
@@ -66,8 +67,22 @@ class BackupSchedulerTest {
                 measureDelay = { null },
                 clock = { now },
             )
-        return BackupScheduler(context, dao, planner, runner, { now }, { it in executing })
+        return BackupScheduler(
+            context,
+            dao,
+            planner,
+            runner,
+            { now },
+            { it in executing },
+            nextDriveChangeAt = { nextDriveChange },
+        )
     }
+
+    /** When the next queued Drive change is due, as the trash queue would say. */
+    private var nextDriveChange: Long? = null
+
+    private val driveChanges
+        get() = jobs.getPendingJob(BackupScheduler.DRIVE_CHANGES_JOB)
 
     private suspend fun item(addedAtMillis: Long) {
         val id = MediaItemId.generate(nowMillis = ++nextId)
@@ -164,5 +179,47 @@ class BackupSchedulerTest {
         scheduler.reschedule()
 
         assertNull(automatic)
+    }
+
+    @Test
+    fun aQueuedDriveChangeArmsItsJobForWhenItIsDueOnAnyNetwork() = runTest {
+        nextDriveChange = now + 60_000
+
+        scheduler().reschedule()
+
+        val job = checkNotNull(driveChanges)
+        assertEquals(60_000L, job.minLatencyMillis)
+        assertTrue(job.isPersisted)
+        assertFalse(job.isRequireCharging)
+        assertFalse(
+            job.requiredNetwork!!.hasCapability(NetworkCapabilities.NET_CAPABILITY_NOT_METERED)
+        )
+    }
+
+    @Test
+    fun anEmptyQueueCancelsTheDriveChangesJob() = runTest {
+        nextDriveChange = now
+        val scheduler = scheduler()
+        scheduler.reschedule()
+
+        nextDriveChange = null
+        scheduler.reschedule()
+
+        assertNull(driveChanges)
+    }
+
+    @Test
+    fun aRunningDriveChangesJobIsNotReplacedUntilItFinishes() = runTest {
+        nextDriveChange = now + 60_000
+        val scheduler = scheduler()
+        scheduler.reschedule()
+        executing += BackupScheduler.DRIVE_CHANGES_JOB
+        nextDriveChange = now
+
+        scheduler.reschedule()
+        assertEquals(60_000L, driveChanges!!.minLatencyMillis)
+
+        scheduler.reschedule(finishingJob = BackupScheduler.DRIVE_CHANGES_JOB)
+        assertEquals(0L, driveChanges!!.minLatencyMillis)
     }
 }

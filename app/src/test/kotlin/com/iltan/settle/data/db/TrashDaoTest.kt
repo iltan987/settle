@@ -259,7 +259,13 @@ class TrashDaoTest {
         dao.addRestoreRequests(listOf(RestoreRequestEntity(id.value, 3)))
         store.savePendingDownload(id, "content://media/external/images/media/77")
 
-        dao.restored(id.value, mediaStoreId = 77, sizeBytes = 100, dateModifiedS = 99)
+        dao.restored(
+            id.value,
+            "external_primary",
+            mediaStoreId = 77,
+            sizeBytes = 100,
+            dateModifiedS = 99,
+        )
 
         val item = store.items(listOf(id)).single()
         assertEquals(LocalState.PRESENT, item.localState)

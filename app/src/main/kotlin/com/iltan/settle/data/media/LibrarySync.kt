@@ -4,6 +4,8 @@ import android.util.Log
 import com.iltan.settle.data.db.LibraryDao
 import com.iltan.settle.data.db.ScanCursorEntity
 import com.iltan.settle.domain.MediaItemId
+import com.iltan.settle.domain.deletion.TrashChanges
+import com.iltan.settle.domain.scan.ScanPlan
 import com.iltan.settle.domain.scan.VolumeScan
 import com.iltan.settle.domain.scan.reconcileScan
 import kotlin.time.Duration.Companion.milliseconds
@@ -26,6 +28,13 @@ class LibrarySync(
     private val dao: LibraryDao,
     private val hasFullAccess: () -> Boolean,
     private val now: () -> Long = System::currentTimeMillis,
+    /**
+     * What the trash rules make of a scan (ADR-015), read before it is applied and written in the
+     * same transaction.
+     */
+    private val trashRules: suspend (plan: ScanPlan, nowMillis: Long) -> TrashChanges = { _, _ ->
+        TrashChanges()
+    },
     /** Called after a scan that changed the index. */
     private val onChanged: suspend () -> Unit = {},
 ) {
@@ -63,6 +72,12 @@ class LibrarySync(
             }
         }
     }
+
+    /**
+     * Runs [block] between scans, for changes to the index that a scan running at the same time
+     * would otherwise overwrite, such as Settle's own deletions.
+     */
+    suspend fun <T> betweenScans(block: suspend () -> T): T = mutex.withLock { block() }
 
     /** Scans every volume now. Does nothing without full media access. */
     suspend fun scan(full: Boolean = false) = mutex.withLock {
@@ -102,20 +117,19 @@ class LibrarySync(
             reconcileScan(known, VolumeScan(volume, rows, ids, idsTrusted)) {
                 MediaItemId.generate(now())
             }
-        dao.applyScan(plan, ScanCursorEntity(volume, version, generation, now()), now())
+        val trash = trashRules(plan, now())
+        dao.applyScan(plan, ScanCursorEntity(volume, version, generation, now()), now(), trash)
 
         Log.i(
             TAG,
             "Scanned $volume (${if (full) "full" else "incremental"}, ${now() - started} ms): " +
                 "${plan.inserts.size} new, ${plan.updates.size} updated, " +
-                "${plan.forgets.size} forgotten, ${plan.missing.size} missing" +
-                if (plan.breakerTripped) ", circuit breaker tripped" else "",
+                "${plan.forgets.size} forgotten, ${plan.missing.size} missing, " +
+                "${plan.expired.size} expired from the trash" +
+                (if (plan.breakerTripped) ", circuit breaker tripped" else "") +
+                if (trash.isEmpty) "" else ", trash: $trash",
         )
-        val changed =
-            plan.inserts.isNotEmpty() ||
-                plan.updates.isNotEmpty() ||
-                plan.forgets.isNotEmpty() ||
-                plan.missing.isNotEmpty()
+        val changed = !plan.isEmpty || !trash.isEmpty
         return VolumeResult(plan.breakerTripped, changed)
     }
 

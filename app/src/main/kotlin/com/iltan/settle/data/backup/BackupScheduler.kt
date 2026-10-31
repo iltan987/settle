@@ -28,6 +28,10 @@ class BackupScheduler(
     private val clock: () -> Long = System::currentTimeMillis,
     /** Whether the system is running the job with this ID right now; replaced in tests. */
     isExecuting: ((jobId: Int) -> Boolean)? = null,
+    /** When the next queued Drive change is due (ADR-015), or null when none is queued. */
+    private val nextDriveChangeAt: suspend () -> Long? = { null },
+    /** Restore downloads may use mobile data (the backup setting). */
+    private val restoreOnMobileData: suspend () -> Boolean = { false },
 ) {
     private val jobs = context.getSystemService(JobScheduler::class.java)
     private val service = ComponentName(context, BackupJobService::class.java)
@@ -49,6 +53,7 @@ class BackupScheduler(
         if (jobs.getPendingJob(MAINTENANCE_JOB)?.intervalMillis != MAINTENANCE_EVERY_MILLIS) {
             jobs.schedule(maintenanceJob())
         }
+        scheduleDriveChanges(finishingJob)
         // A run under way plans its own next step when it ends; scheduling the automatic job's ID
         // again would stop it. When the automatic job starts Settle's process, the app's own
         // start-up planning can get here before the runner has begun, so JobScheduler is asked
@@ -93,6 +98,31 @@ class BackupScheduler(
             jobs.canRunUserInitiatedJobs() &&
                 jobs.schedule(requestedJob(run)) == JobScheduler.RESULT_SUCCESS
         if (scheduled) NowResult.STARTED else NowResult.DEFERRED
+    }
+
+    /**
+     * Arms the job that runs queued Drive changes for when the next one is due. Rescheduling a job
+     * that is running would stop it, so a running one arms the next itself as it finishes.
+     */
+    private suspend fun scheduleDriveChanges(finishingJob: Int?) {
+        if (finishingJob != DRIVE_CHANGES_JOB && isExecuting(DRIVE_CHANGES_JOB)) return
+        val dueAt = nextDriveChangeAt()
+        if (dueAt == null) {
+            jobs.cancel(DRIVE_CHANGES_JOB)
+        } else {
+            jobs.schedule(driveChangesJob(dueAt))
+        }
+    }
+
+    /**
+     * Downloads the items the user asked to restore, in a user-initiated job (ADR-015). Only works
+     * while Settle is visible; returns false if Android refused, and the requests are kept.
+     */
+    suspend fun startRestore(): Boolean = lock.withLock {
+        if (jobs.getPendingJob(RESTORE_JOB) != null) return@withLock true
+        jobs.canRunUserInitiatedJobs() &&
+            jobs.schedule(restoreJob(unmetered = !restoreOnMobileData())) ==
+                JobScheduler.RESULT_SUCCESS
     }
 
     /** Stops both upload jobs, for "Pause"; records stay resumable. */
@@ -152,6 +182,23 @@ class BackupScheduler(
             .setPersisted(true)
             .build()
 
+    /** Small metadata requests; any network will do, and they must not wait for the charger. */
+    private fun driveChangesJob(dueAtMillis: Long) =
+        JobInfo.Builder(DRIVE_CHANGES_JOB, service)
+            .setRequiredNetwork(network(unmetered = false))
+            .setMinimumLatency((dueAtMillis - clock()).coerceAtLeast(0L))
+            .setEstimatedNetworkBytes(SMALL_REQUEST_BYTES, SMALL_REQUEST_BYTES)
+            .setPersisted(true)
+            .build()
+
+    private fun restoreJob(unmetered: Boolean) =
+        JobInfo.Builder(RESTORE_JOB, service)
+            .setUserInitiated(true)
+            .setRequiredNetwork(network(unmetered))
+            .setEstimatedNetworkBytes(UNKNOWN_BYTES, UNKNOWN_BYTES)
+            .setPersisted(true)
+            .build()
+
     private fun network(unmetered: Boolean) =
         NetworkRequest.Builder()
             .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
@@ -169,6 +216,9 @@ class BackupScheduler(
         const val REQUESTED_JOB = 2
         const val MEDIA_JOB = 3
         const val MAINTENANCE_JOB = 4
+        const val DRIVE_CHANGES_JOB = 5
+        const val RESTORE_JOB = 6
+        private const val SMALL_REQUEST_BYTES = 4_096L
         private val MAINTENANCE_EVERY_MILLIS = TimeUnit.HOURS.toMillis(6)
     }
 }

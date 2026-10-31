@@ -65,6 +65,21 @@ data class VanishedEntry(
     @ColumnInfo(name = "since_ms") val sinceMs: Long,
 )
 
+/** Where an item's phone file is in MediaStore, trashed or not. */
+data class PhoneFileRow(
+    val id: String,
+    val kind: MediaKind,
+    val volume: String,
+    @ColumnInfo(name = "media_store_id") val mediaStoreId: Long,
+)
+
+private const val IN_TRASH =
+    """
+    FROM media_item m JOIN local_file f ON f.item_id = m.id
+    LEFT JOIN trash_entry t ON t.item_id = m.id
+    WHERE (t.item_id IS NOT NULL OR f.local_state = 'TRASHED')
+    """
+
 private const val TRASH_ITEM_COLUMNS =
     """
     SELECT m.id, f.local_state, f.media_store_id, m.cloud_state, u.drive_file_id,
@@ -86,6 +101,30 @@ interface TrashDao {
     @Query("SELECT * FROM superseded_file WHERE item_id IN (:ids)")
     suspend fun supersededOf(ids: List<String>): List<SupersededFileEntity>
 
+    @Query(
+        """
+        SELECT m.id, m.kind, f.volume, f.media_store_id
+        FROM media_item m JOIN local_file f ON f.item_id = m.id
+        WHERE m.id IN (:ids) AND f.media_store_id IS NOT NULL
+        """
+    )
+    suspend fun phoneFiles(ids: List<String>): List<PhoneFileRow>
+
+    /** IDs of every item in the trash, for "Empty trash". */
+    @Query("SELECT m.id $IN_TRASH") suspend fun trashIds(): List<String>
+
+    @Query("SELECT EXISTS(SELECT 1 $IN_TRASH AND m.id = :itemId)")
+    suspend fun isInTrash(itemId: String): Boolean
+
+    /** The item's current Drive file, if Drive has created it. */
+    @Query(
+        """
+        SELECT drive_file_id FROM upload
+        WHERE item_id = :itemId AND state IN ('UPLOADED', 'VERIFIED', 'SUSPECT')
+        """
+    )
+    suspend fun createdDriveFile(itemId: String): String?
+
     /** Items in Settle's trash whose time is over. */
     @Query("$TRASH_ITEM_COLUMNS WHERE t.expires_at_ms <= :nowMs")
     suspend fun expiredTrash(nowMs: Long): List<TrashItemRow>
@@ -100,7 +139,7 @@ interface TrashDao {
         FROM media_item m JOIN local_file f ON f.item_id = m.id
         LEFT JOIN trash_entry t ON t.item_id = m.id
         LEFT JOIN restore_request r ON r.item_id = m.id
-        WHERE t.item_id IS NOT NULL OR f.local_state = 'TRASHED'
+        WHERE (t.item_id IS NOT NULL OR f.local_state = 'TRASHED')
         ORDER BY COALESCE(t.trashed_at_ms, 0) DESC, m.taken_at_ms DESC
         """
     )
@@ -210,7 +249,14 @@ interface TrashDao {
 
     // Restoring
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    /** Asks for these downloads; a request that stopped before is tried again, resuming. */
+    @Transaction
+    suspend fun requestRestore(itemIds: List<String>, nowMs: Long) {
+        addRestoreRequests(itemIds.map { RestoreRequestEntity(it, nowMs) })
+        itemIds.forEach { setRestoreProblem(it, null) }
+    }
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun addRestoreRequests(requests: List<RestoreRequestEntity>)
 
     @Query("SELECT * FROM restore_request ORDER BY requested_at_ms, rowid")
@@ -230,26 +276,39 @@ interface TrashDao {
      * the trash, in one step, so a scan can't take the new row for a new item.
      */
     @Transaction
-    suspend fun restored(itemId: String, mediaStoreId: Long, sizeBytes: Long, dateModifiedS: Long) {
-        clearMediaStoreId(mediaStoreId)
-        linkRestored(itemId, mediaStoreId, sizeBytes, dateModifiedS)
+    suspend fun restored(
+        itemId: String,
+        volume: String,
+        mediaStoreId: Long,
+        sizeBytes: Long,
+        dateModifiedS: Long,
+    ) {
+        clearMediaStoreId(volume, mediaStoreId)
+        linkRestored(itemId, volume, mediaStoreId, sizeBytes, dateModifiedS)
         deleteEntry(itemId)
         deleteVanished(itemId)
         deleteRestoreRequest(itemId)
     }
 
-    @Query("UPDATE local_file SET media_store_id = NULL WHERE media_store_id = :mediaStoreId")
-    suspend fun clearMediaStoreId(mediaStoreId: Long)
+    @Query(
+        """
+        UPDATE local_file SET media_store_id = NULL
+        WHERE volume = :volume AND media_store_id = :mediaStoreId
+        """
+    )
+    suspend fun clearMediaStoreId(volume: String, mediaStoreId: Long)
 
     @Query(
         """
-        UPDATE local_file SET media_store_id = :mediaStoreId, size_bytes = :sizeBytes,
-            date_modified_s = :dateModifiedS, generation_modified = 0, local_state = 'PRESENT'
+        UPDATE local_file SET volume = :volume, media_store_id = :mediaStoreId,
+            size_bytes = :sizeBytes, date_modified_s = :dateModifiedS, generation_modified = 0,
+            local_state = 'PRESENT'
         WHERE item_id = :itemId
         """
     )
     suspend fun linkRestored(
         itemId: String,
+        volume: String,
         mediaStoreId: Long,
         sizeBytes: Long,
         dateModifiedS: Long,
@@ -257,4 +316,19 @@ interface TrashDao {
 
     @Query("DELETE FROM restore_request WHERE item_id = :itemId")
     suspend fun deleteRestoreRequest(itemId: String)
+
+    /**
+     * A copy that couldn't be taken out of Drive's trash because Drive no longer has it: the item
+     * isn't backed up any more, and backup takes it again.
+     */
+    @Transaction
+    suspend fun forgetLostCopy(itemId: String, driveFileId: String) {
+        if (deleteUploadOf(itemId, driveFileId) > 0) setCloudStateNone(itemId)
+    }
+
+    @Query("DELETE FROM upload WHERE item_id = :itemId AND drive_file_id = :driveFileId")
+    suspend fun deleteUploadOf(itemId: String, driveFileId: String): Int
+
+    @Query("UPDATE media_item SET cloud_state = 'NONE' WHERE id = :itemId")
+    suspend fun setCloudStateNone(itemId: String)
 }

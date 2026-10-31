@@ -84,6 +84,8 @@ class BackupRunner(
     private val pacerConfig: PacerConfig = PacerConfig(),
     private val workerDispatcher: CoroutineDispatcher = Dispatchers.IO,
     private val log: (String) -> Unit = {},
+    /** Told when an item's upload ended, however it ended (for items deleted meanwhile). */
+    private val onUploadEnded: suspend (itemId: String) -> Unit = {},
 ) {
     private val runLock = Mutex()
     private val pacerLock = Any()
@@ -232,6 +234,7 @@ class BackupRunner(
         val id = done.item.itemId.value
         val result = done.result
         log("$id: $result")
+        onUploadEnded(id)
         if (done.item.requestedAtMillis != null) _outcomes.emit(BackupOutcome.Done(id, result))
         val requested = kind == RunKind.REQUESTED || done.item.requestedAtMillis != null
         val problem =

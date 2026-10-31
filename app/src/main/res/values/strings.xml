@@ -111,6 +111,10 @@
         <item quantity="one">Backing up %d item</item>
         <item quantity="other">Backing up %d items</item>
     </plurals>
+    <plurals name="notification_restoring">
+        <item quantity="one">Restoring %d item from Google Drive</item>
+        <item quantity="other">Restoring %d items from Google Drive</item>
+    </plurals>
     <string name="notification_progress">%1$s of %2$s</string>
     <string name="notification_pause">Pause</string>
     <string name="notification_reconnect_title">Reconnect Google Drive</string>

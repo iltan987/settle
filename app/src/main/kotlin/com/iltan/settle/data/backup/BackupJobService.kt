@@ -29,14 +29,22 @@ class BackupJobService : JobService() {
 
     override fun onStartJob(params: JobParameters): Boolean {
         val graph = appGraph
-        if (params.jobId == BackupScheduler.REQUESTED_JOB) {
-            // Android requires the notification within seconds of the start.
-            setNotification(
-                params,
-                BackupNotifications.PROGRESS_ID,
-                graph.backupNotifications.progress(0, 0, 0),
-                JOB_END_NOTIFICATION_POLICY_REMOVE,
-            )
+        // User-initiated jobs: Android requires the notification within seconds of the start.
+        when (params.jobId) {
+            BackupScheduler.REQUESTED_JOB ->
+                setNotification(
+                    params,
+                    BackupNotifications.PROGRESS_ID,
+                    graph.backupNotifications.progress(0, 0, 0),
+                    JOB_END_NOTIFICATION_POLICY_REMOVE,
+                )
+            BackupScheduler.RESTORE_JOB ->
+                setNotification(
+                    params,
+                    BackupNotifications.RESTORE_ID,
+                    graph.backupNotifications.restoreProgress(0, 0, 0),
+                    JOB_END_NOTIFICATION_POLICY_REMOVE,
+                )
         }
         val work: suspend () -> Unit =
             when (params.jobId) {
@@ -44,6 +52,8 @@ class BackupJobService : JobService() {
                 BackupScheduler.REQUESTED_JOB -> ({ runRequested(params) })
                 BackupScheduler.MEDIA_JOB -> ({ graph.librarySync.scan() })
                 BackupScheduler.MAINTENANCE_JOB -> ({ graph.backupMaintenance.run() })
+                BackupScheduler.DRIVE_CHANGES_JOB -> ({ graph.trashWork.runDriveChanges() })
+                BackupScheduler.RESTORE_JOB -> ({ runRestores(params) })
                 else -> return false
             }
         if (params.jobId in UPLOAD_JOBS) graph.backupRunner.onNetworkChanged(params.network)
@@ -100,6 +110,27 @@ class BackupJobService : JobService() {
         }
     }
 
+    /** Downloads what the user asked to restore, with progress in the notification. */
+    private suspend fun runRestores(params: JobParameters) {
+        val graph = appGraph
+        var lastPosted = 0L
+        graph.trashWork.runRestores { progress ->
+            val now = System.currentTimeMillis()
+            if (now - lastPosted < PROGRESS_EVERY_MILLIS) return@runRestores
+            lastPosted = now
+            setNotification(
+                params,
+                BackupNotifications.RESTORE_ID,
+                graph.backupNotifications.restoreProgress(
+                    progress.itemsLeft,
+                    progress.receivedBytes,
+                    progress.totalBytes,
+                ),
+                JOB_END_NOTIFICATION_POLICY_REMOVE,
+            )
+        }
+    }
+
     /**
      * After uploads, tells the user if backup now waits for them; then plans the next run. Planning
      * comes last: scheduling this job's own ID again stops this run.
@@ -122,7 +153,8 @@ class BackupJobService : JobService() {
             // Re-armed by the next reschedule.
             BackupScheduler.MEDIA_JOB -> false
             // Stopped by the user in Task Manager: they start it again themselves.
-            BackupScheduler.REQUESTED_JOB -> params.stopReason != JobParameters.STOP_REASON_USER
+            BackupScheduler.REQUESTED_JOB,
+            BackupScheduler.RESTORE_JOB -> params.stopReason != JobParameters.STOP_REASON_USER
             else -> true
         }
     }

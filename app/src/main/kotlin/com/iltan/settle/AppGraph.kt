@@ -25,7 +25,15 @@ import com.iltan.settle.data.media.LibrarySync
 import com.iltan.settle.data.media.MediaAccess
 import com.iltan.settle.data.media.MediaChangeObserver
 import com.iltan.settle.data.media.MediaStoreSource
+import com.iltan.settle.data.trash.Deletion
+import com.iltan.settle.data.trash.MediaStoreTrash
+import com.iltan.settle.data.trash.TrashStore
+import com.iltan.settle.data.trash.TrashWork
 import com.iltan.settle.domain.backup.BackupEngine
+import com.iltan.settle.domain.deletion.DriveChanges
+import com.iltan.settle.domain.deletion.EXTERNAL_DELETION_WAIT_MILLIS
+import com.iltan.settle.domain.deletion.RestoreDownload
+import com.iltan.settle.domain.deletion.afterScan
 import java.time.ZoneId
 import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.CoroutineScope
@@ -54,9 +62,25 @@ class AppGraph(context: Context) {
             source = MediaStoreSource(appContext),
             dao = database.libraryDao(),
             hasFullAccess = { MediaAccess.of(appContext) == MediaAccess.FULL },
-            // New or deleted media change what waits for backup.
+            trashRules = { plan, now ->
+                val ids = plan.missing + plan.updates.map { it.itemId }
+                afterScan(
+                    plan,
+                    trashStore.items(ids).associateBy { it.itemId },
+                    backupPreferences.current().externalDeletion,
+                    now,
+                    externalDeletionWaitMillis,
+                )
+            },
+            // New or deleted media change what waits for backup and what Drive must hear.
             onChanged = { backupScheduler.reschedule() },
         )
+
+    private val trashStore = TrashStore(database.trashDao())
+
+    /** An hour, or a minute in debug builds so deletions made elsewhere can be tried (ADR-015). */
+    private val externalDeletionWaitMillis
+        get() = if (debuggable) 60_000L else EXTERNAL_DELETION_WAIT_MILLIS
 
     val http by lazy {
         // Timeouts apply per read or write, not per chunk, so slow networks still finish.
@@ -130,7 +154,7 @@ class AppGraph(context: Context) {
         BackupPlanner(database.backupDao(), backupPreferences, originals::canReadOriginals)
     }
 
-    val backupRunner by lazy {
+    val backupRunner: BackupRunner by lazy {
         val store = RoomUploadStore(database.backupDao())
         BackupRunner(
             dao = database.backupDao(),
@@ -151,17 +175,61 @@ class AppGraph(context: Context) {
             meter = uploadMeter,
             measureDelay = HandshakeProbe()::millis,
             log = { Log.i("BackupRunner", it) },
+            onUploadEnded = { deletion.uploadEnded(it) },
         )
     }
 
-    val backupScheduler by lazy {
-        BackupScheduler(appContext, database.backupDao(), backupPlanner, backupRunner)
+    val backupScheduler: BackupScheduler by lazy {
+        BackupScheduler(
+            appContext,
+            database.backupDao(),
+            backupPlanner,
+            backupRunner,
+            nextDriveChangeAt = { database.trashDao().nextOpDueAt() },
+            restoreOnMobileData = { backupPreferences.current().settings.useMobileData },
+        )
+    }
+
+    private val mediaStoreTrash by lazy { MediaStoreTrash(appContext) }
+
+    val deletion: Deletion by lazy {
+        Deletion(
+            dao = database.trashDao(),
+            store = trashStore,
+            phone = mediaStoreTrash,
+            preferences = backupPreferences,
+            betweenScans = { librarySync.betweenScans(it) },
+            reschedule = { backupScheduler.reschedule() },
+            startRestore = { backupScheduler.startRestore() },
+        )
+    }
+
+    val trashWork by lazy {
+        TrashWork(
+            dao = database.trashDao(),
+            store = trashStore,
+            driveChanges =
+                DriveChanges(drive, trashStore, { System.currentTimeMillis() }) {
+                    Log.w("DriveChanges", it)
+                },
+            restoreDownload =
+                RestoreDownload(
+                    drive = drive,
+                    target = mediaStoreTrash,
+                    uploads = RoomUploadStore(database.backupDao()),
+                    downloads = trashStore,
+                    log = { Log.w("RestoreDownload", it) },
+                ),
+            preferences = backupPreferences,
+            betweenScans = { librarySync.betweenScans(it) },
+            log = { Log.i("TrashWork", it) },
+        )
     }
 
     val backupNotifications by lazy { BackupNotifications(appContext).also { it.createChannels() } }
 
     val backupMaintenance by lazy {
-        BackupMaintenance(drive, backupPreferences, backupNotifications)
+        BackupMaintenance(drive, backupPreferences, backupNotifications, trashWork)
     }
 
     val cloudBackup by lazy {
