@@ -96,38 +96,64 @@ class UploadPacerTest {
     fun `when someone else fills the network, polite backs off quickly and recovers slowly`() {
         val pacer = UploadPacer(NetworkUse.Polite, config, startMillis = 0)
         var now = 0L
-        // Quiet network: measures 6 MiB/s at a 40 ms delay.
-        repeat(4) {
+        fun tick(bytesPerSecond: Long, delay: Long) {
             now += tick
-            pacer.onTick(now, 6 * mib * tick / 1000, delayMillis = 40)
+            pacer.onTick(now, bytesPerSecond * tick / 1000, delay)
         }
-        now += 20_000
-        pacer.onTick(now, 6 * mib * tick / 1000, 40)
+        // Quiet network: measures 6 MiB/s at a 40 ms delay, then settles at the ceiling.
+        repeat(config.measureTicks) { tick(6 * mib, 40) }
+        repeat(10) { tick(4 * mib, 40) }
         val before = pacer.pace.capBytesPerSecond!!
+        before shouldBe 6 * mib * 3 / 4
 
         // A video call starts: delay jumps by 250 ms. The last three samples must all show it (the
         // filter ignores one-off spikes), then each tick backs off further.
-        repeat(5) {
-            now += tick
-            pacer.onTick(now, 4 * mib * tick / 1000, delayMillis = 290)
-        }
-        val backedOff = pacer.pace.capBytesPerSecond!!
-        backedOff shouldBeLessThan before / 2
+        repeat(5) { tick(4 * mib, 290) }
+        pacer.pace.capBytesPerSecond!! shouldBeLessThan before / 2
 
         // The call ends; the cap creeps back up and doesn't jump straight to the ceiling.
-        now += tick
-        pacer.onTick(now, mib, 40)
-        repeat(2) {
-            now += tick
-            pacer.onTick(now, mib, 40)
-        }
-        val oneStep = pacer.pace.capBytesPerSecond!!
-        oneStep shouldBeLessThan before
-        repeat(40) {
-            now += tick
-            pacer.onTick(now, mib, 40)
-        }
+        repeat(3) { tick(mib, 40) }
+        pacer.pace.capBytesPerSecond!! shouldBeLessThan before
+        repeat(40) { tick(mib, 40) }
         pacer.pace.capBytesPerSecond shouldBe before
+    }
+
+    @Test
+    fun `measuring uses enough uploads to see the line, not small files' gaps`() {
+        val pacer = UploadPacer(NetworkUse.Polite, config.copy(startSlots = 1), startMillis = 0)
+        pacer.pace shouldBe Pace(config.measureSlots, null)
+        var now = 0L
+        repeat(config.measureTicks) {
+            now += tick
+            pacer.onTick(now, 4 * mib * tick / 1000, 40)
+        }
+        pacer.pace shouldBe Pace(1, 4 * mib * 3 / 4)
+        UploadPacer(NetworkUse.Polite, config.copy(maxSlots = 2), startMillis = 0)
+            .pace
+            .slots shouldBe 2
+    }
+
+    @Test
+    fun `ticks without uploads change nothing, however noisy the delay`() {
+        val pacer = UploadPacer(NetworkUse.Polite, config, startMillis = 0)
+        var now = 0L
+        repeat(config.measureTicks) {
+            now += tick
+            pacer.onTick(now, 4 * mib * tick / 1000, 40)
+        }
+        val settled = pacer.pace
+        repeat(30) {
+            now += tick
+            pacer.onTick(now, 0, delayMillis = 500)
+        }
+        pacer.pace shouldBe settled
+    }
+
+    @Test
+    fun `an empty first measurement doesn't end it`() {
+        val pacer = UploadPacer(NetworkUse.Polite, config, startMillis = 0)
+        repeat(10) { pacer.onTick((it + 1) * tick, 0, 40) }
+        pacer.pace.capBytesPerSecond.shouldBeNull()
     }
 
     @Test
@@ -192,24 +218,24 @@ class UploadPacerTest {
         val pacer = UploadPacer(NetworkUse.Polite, config, startMillis = 0)
         val end = run(pacer, Link(2 * mib, 2 * mib), 0, ticks = 30)
         pacer.onNetworkChanged(end)
-        pacer.pace.capBytesPerSecond.shouldBeNull()
-        pacer.pace.slots shouldBe config.startSlots
+        // Measuring again, with enough uploads to see the new connection.
+        pacer.pace shouldBe Pace(config.measureSlots, null)
     }
 
     @Test
-    fun `the cap never falls to nothing`() {
+    fun `the cap never falls below a quarter of the measured throughput`() {
         val pacer = UploadPacer(NetworkUse.Polite, config, startMillis = 0)
         var now = 0L
-        repeat(3) {
+        repeat(config.measureTicks) {
             now += tick
-            pacer.onTick(now, mib, 40)
+            pacer.onTick(now, 4 * mib * tick / 1000, 40)
         }
         // Shorter than the 10-minute window: after that a lasting delay becomes the new normal.
         repeat(100) {
             now += tick
-            pacer.onTick(now, 1_000, 2_000)
+            pacer.onTick(now, mib, 2_000)
         }
-        pacer.pace.capBytesPerSecond shouldBe config.minBytesPerSecond
+        pacer.pace.capBytesPerSecond shouldBe mib
         pacer.pace.slots shouldBe config.minSlots
     }
 }

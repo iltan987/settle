@@ -113,7 +113,7 @@ class BackupJobService : JobService() {
     }
 
     override fun onNetworkChanged(params: JobParameters) {
-        appGraph.backupRunner.onNetworkChanged()
+        appGraph.backupRunner.onNetworkChanged(params.network)
     }
 
     override fun onDestroy() {

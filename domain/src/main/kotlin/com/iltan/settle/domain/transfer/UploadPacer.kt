@@ -19,20 +19,27 @@ data class PacerConfig(
     val minSlots: Int = 1,
     val maxSlots: Int = 6,
     val startSlots: Int = 2,
+    /**
+     * Uploads at once while measuring what the connection can do: enough that small files' fixed
+     * per-file delay doesn't hide the connection's speed (4 reached 95% of the line on the phone).
+     */
+    val measureSlots: Int = 4,
     /** Polite never sends faster than this share of the throughput measured uncapped. */
     val ceilingShare: Double = 0.75,
+    /** Nor slower than this share of it, so backup keeps moving whatever the delay says. */
+    val floorShare: Double = 0.25,
     /** Queueing delay above the network's quiet delay that counts as "others feel it". */
     val delayTargetMillis: Long = 100,
     /** The quiet delay is the lowest one seen in this long. */
     val baseDelayWindowMillis: Long = 10 * 60_000,
     /** The current delay is the lowest of this many recent samples, to ignore one-off spikes. */
     val delayFilterSamples: Int = 3,
-    /** How long uploads run uncapped to measure what the connection can do. */
-    val measureMillis: Long = 20_000,
+    /** Ticks with traffic that a measurement of the connection takes. */
+    val measureTicks: Int = 4,
     /** How often that measurement is repeated, since other traffic comes and goes. */
     val remeasureEveryMillis: Long = 30 * 60_000,
-    /** How long a slot count runs before its throughput is judged. */
-    val slotTrialMillis: Long = 30_000,
+    /** Ticks with traffic a slot count runs before its throughput is judged. */
+    val slotTrialTicks: Int = 6,
     /** A slot is kept only if total throughput rose by at least this share. */
     val slotGain: Double = 0.10,
     /** Multiplies the cap when the network's delay rises or Drive asks to slow down. */
@@ -40,7 +47,7 @@ data class PacerConfig(
     /** Each calm tick raises the cap by this share of the measured throughput. */
     val recoveryShare: Double = 0.05,
     /** The cap never goes below this, so backup always makes some progress. */
-    val minBytesPerSecond: Long = 64 * 1024,
+    val minBytesPerSecond: Long = 256 * 1024,
 )
 
 /** What uploads may do until the next tick. */
@@ -59,11 +66,12 @@ data class Pace(
  *   the router, which everyone else on the network feels as lag;
  * - while that queueing delay stays under a target the cap grows slowly, and once it rises the cap
  *   shrinks at once;
- * - Polite also never exceeds a share of the throughput measured uncapped, which is measured again
- *   every so often.
+ * - Polite also stays between a quarter and three quarters of the throughput measured uncapped,
+ *   which is measured again every so often.
  *
  * More uploads at once mainly hide Drive's fixed delay at the end of every file, so a slot is added
- * only while it raises total throughput.
+ * only while it raises total throughput. Ticks without traffic change nothing: there is nothing to
+ * learn from them.
  *
  * Pure and fed with time, so whole network histories can be replayed in tests.
  */
@@ -75,12 +83,13 @@ class UploadPacer(
     private var slots = config.startSlots.coerceIn(config.minSlots, config.maxSlots)
     private var cap: Double? = null
     private var peak = 0.0
-    private var measuringSince: Long? = startMillis
+    /** Ticks with traffic left in the current measurement; 0 when not measuring. */
+    private var measuring = if (use == NetworkUse.Polite) config.measureTicks else 0
     private var lastMeasureAt = startMillis
     private val delays = ArrayDeque<Pair<Long, Long>>()
 
     // The running trial of the current slot count, and the throughput of the one before.
-    private var trialStart = startMillis
+    private var trialTicks = 0
     private var trialBytes = 0L
     private var previousRate: Double? = null
     private var ramping = true
@@ -88,7 +97,13 @@ class UploadPacer(
     private var trialAdded = false
 
     val pace: Pace
-        get() = Pace(slots, cap?.toLong())
+        get() =
+            when {
+                measuring > 0 ->
+                    Pace(maxOf(slots, config.measureSlots).coerceAtMost(config.maxSlots), null)
+                use is NetworkUse.Limit -> Pace(slots, use.bytesPerSecond)
+                else -> Pace(slots, cap?.toLong())
+            }
 
     /**
      * One tick: [bytesSent] since the last tick, an optional round-trip [delayMillis] sample, and
@@ -100,26 +115,28 @@ class UploadPacer(
         delayMillis: Long?,
         rateLimited: Boolean = false,
     ): Pace {
-        val rate = bytesSent * 1000.0 / config.tickMillis
         if (delayMillis != null) recordDelay(nowMillis, delayMillis)
-        val crowded = queueingMillis()?.let { it > config.delayTargetMillis } ?: false
+        if (bytesSent <= 0 && !rateLimited) return pace
 
-        trialBytes += bytesSent
+        val rate = bytesSent * 1000.0 / config.tickMillis
+        val crowded = use == NetworkUse.Polite && (queueingMillis() ?: 0) > config.delayTargetMillis
+
         when {
             rateLimited -> {
                 slots = (slots / 2).coerceAtLeast(config.minSlots)
-                ramping = false
-                restartTrial(nowMillis)
+                stopRamping()
             }
-            crowded && use == NetworkUse.Polite -> {
+            crowded -> {
                 if (slots > config.minSlots) slots--
-                ramping = false
-                restartTrial(nowMillis)
+                stopRamping()
             }
-            nowMillis - trialStart >= config.slotTrialMillis -> judgeTrial(nowMillis)
+            measuring == 0 -> {
+                trialTicks++
+                trialBytes += bytesSent
+                if (trialTicks >= config.slotTrialTicks) judgeTrial()
+            }
         }
-
-        updateCap(nowMillis, rate, crowded, rateLimited)
+        if (use == NetworkUse.Polite) updateCap(nowMillis, rate, crowded || rateLimited)
         return pace
     }
 
@@ -129,82 +146,76 @@ class UploadPacer(
     /** A different network: everything learned about the old one is dropped. */
     fun onNetworkChanged(nowMillis: Long) {
         delays.clear()
-        peak = 0.0
-        previousRate = null
-        ramping = true
         slots = config.startSlots.coerceIn(config.minSlots, config.maxSlots)
-        startMeasuring(nowMillis)
-        restartTrial(nowMillis)
+        startOver(nowMillis)
     }
 
-    private fun updateCap(nowMillis: Long, rate: Double, crowded: Boolean, rateLimited: Boolean) {
-        when (use) {
-            NetworkUse.Unlimited -> cap = null
-            is NetworkUse.Limit -> cap = use.bytesPerSecond.toDouble()
-            NetworkUse.Polite -> {
-                val since = measuringSince
-                if (since != null) {
-                    peak = maxOf(peak, rate)
-                    if (crowded || rateLimited) {
-                        // The connection is full already: what got through is the measurement.
-                        endMeasuring(nowMillis, startAt = peak * config.backoff)
-                    } else if (nowMillis - since >= config.measureMillis) {
-                        endMeasuring(nowMillis, startAt = peak * config.ceilingShare)
-                    }
-                    return
-                }
-                if (nowMillis - lastMeasureAt >= config.remeasureEveryMillis) {
-                    // Files and other traffic change: try more slots again as well.
-                    ramping = true
-                    previousRate = null
-                    restartTrial(nowMillis)
-                    startMeasuring(nowMillis)
-                    return
-                }
-                val ceiling = peak * config.ceilingShare
-                val current = cap ?: ceiling
-                cap =
-                    if (crowded || rateLimited) current * config.backoff
-                    else minOf(ceiling, current + peak * config.recoveryShare)
-                cap = cap?.coerceAtLeast(config.minBytesPerSecond.toDouble())
+    private fun updateCap(nowMillis: Long, rate: Double, slowDown: Boolean) {
+        if (measuring > 0) {
+            peak = maxOf(peak, rate)
+            measuring--
+            when {
+                // The connection is full already: what got through is the measurement.
+                slowDown -> endMeasuring(peak * config.backoff)
+                measuring == 0 -> endMeasuring(peak * config.ceilingShare)
             }
+            return
         }
+        if (nowMillis - lastMeasureAt >= config.remeasureEveryMillis) {
+            // Files and other traffic change: try more slots again as well.
+            startOver(nowMillis)
+            return
+        }
+        val current = cap ?: (peak * config.ceilingShare)
+        val next =
+            if (slowDown) current * config.backoff
+            else minOf(peak * config.ceilingShare, current + peak * config.recoveryShare)
+        cap = next.coerceAtLeast(floor())
     }
 
-    private fun startMeasuring(nowMillis: Long) {
-        if (use != NetworkUse.Polite) return
-        measuringSince = nowMillis
+    private fun startOver(nowMillis: Long) {
         lastMeasureAt = nowMillis
         peak = 0.0
         cap = null
+        measuring = if (use == NetworkUse.Polite) config.measureTicks else 0
+        previousRate = null
+        ramping = true
+        restartTrial()
     }
 
-    private fun endMeasuring(nowMillis: Long, startAt: Double) {
-        measuringSince = null
-        lastMeasureAt = nowMillis
-        cap = startAt.coerceAtLeast(config.minBytesPerSecond.toDouble())
+    private fun endMeasuring(startAt: Double) {
+        measuring = 0
+        cap = startAt.coerceAtLeast(floor())
+        restartTrial()
     }
+
+    private fun floor() = maxOf(config.minBytesPerSecond.toDouble(), peak * config.floorShare)
 
     /** Keeps a new slot only if it paid off; otherwise goes back and stops adding. */
-    private fun judgeTrial(nowMillis: Long) {
-        val rate = trialBytes * 1000.0 / (nowMillis - trialStart)
+    private fun judgeTrial() {
+        val rate = trialBytes * 1000.0 / (trialTicks * config.tickMillis)
         val before = previousRate
-        if (trialAdded && before != null && rate < before * (1 + config.slotGain)) {
+        val added = trialAdded
+        restartTrial()
+        if (added && before != null && rate < before * (1 + config.slotGain)) {
             slots--
             ramping = false
-            restartTrial(nowMillis)
             return
         }
         previousRate = rate
-        restartTrial(nowMillis)
         if (ramping && slots < config.maxSlots) {
             slots++
             trialAdded = true
         }
     }
 
-    private fun restartTrial(nowMillis: Long) {
-        trialStart = nowMillis
+    private fun stopRamping() {
+        ramping = false
+        restartTrial()
+    }
+
+    private fun restartTrial() {
+        trialTicks = 0
         trialBytes = 0
         trialAdded = false
     }

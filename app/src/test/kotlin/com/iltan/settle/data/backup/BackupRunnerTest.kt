@@ -159,7 +159,7 @@ class BackupRunnerTest {
                 )
             },
             meter = UploadMeter(),
-            ping = {},
+            measureDelay = { 40 },
             clock = clock,
             pacerConfig = pacer,
             workerDispatcher = StandardTestDispatcher(testScheduler),

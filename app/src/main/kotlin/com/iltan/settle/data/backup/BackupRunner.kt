@@ -14,6 +14,7 @@ import com.iltan.settle.domain.transfer.UploadPacer
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
@@ -25,9 +26,10 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.selects.onTimeout
+import kotlinx.coroutines.selects.select
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import kotlinx.coroutines.withTimeoutOrNull
 
 /** Bytes sent so far of one upload. */
 data class UploadProgress(val sentBytes: Long, val totalBytes: Long)
@@ -64,6 +66,7 @@ enum class RunEnd {
  *
  * One run at a time: a second job waits and then usually finds its items done.
  */
+@OptIn(ExperimentalCoroutinesApi::class) // select's onTimeout
 class BackupRunner(
     private val dao: BackupDao,
     private val planner: BackupPlanner,
@@ -71,10 +74,8 @@ class BackupRunner(
     /** A new engine for one upload slot; engines running at once share the folder lock. */
     private val newEngine: (folderLock: Mutex) -> BackupEngine,
     private val meter: UploadMeter,
-    /**
-     * One small Drive request, timed for the pacer's delay signal; not over an upload connection.
-     */
-    private val ping: suspend () -> Unit,
+    /** The network's round trip to Drive in milliseconds, for the pacer; null if it failed. */
+    private val measureDelay: suspend () -> Long?,
     private val clock: () -> Long = System::currentTimeMillis,
     private val pacerConfig: PacerConfig = PacerConfig(),
     private val workerDispatcher: CoroutineDispatcher = Dispatchers.IO,
@@ -83,6 +84,7 @@ class BackupRunner(
     private val runLock = Mutex()
     private val pacerLock = Any()
     @Volatile private var pacer: UploadPacer? = null
+    private var network: Any? = null
 
     private val _progress = MutableStateFlow<Map<String, UploadProgress>>(emptyMap())
     /** Uploads under way, by item ID. */
@@ -94,9 +96,17 @@ class BackupRunner(
     private val _running = MutableStateFlow(false)
     val running: StateFlow<Boolean> = _running.asStateFlow()
 
-    /** The job moved to another network: what the pacer learned no longer holds. */
-    fun onNetworkChanged() {
-        synchronized(pacerLock) { pacer?.onNetworkChanged(clock()) }
+    /**
+     * The job's network, as Android reports it. Android calls this for capability changes too, so
+     * the pacer starts over only when the network itself is a different one.
+     */
+    fun onNetworkChanged(network: Any?) {
+        synchronized(pacerLock) {
+            if (network == this.network) return
+            val first = this.network == null
+            this.network = network
+            if (!first) pacer?.onNetworkChanged(clock())
+        }
     }
 
     suspend fun run(kind: RunKind): RunEnd = runLock.withLock {
@@ -176,7 +186,12 @@ class BackupRunner(
             }
             if (running == 0) break
             // Wait for an upload to end, or wake up to see whether the pacer allows another.
-            val done = withTimeoutOrNull(WAKE_MILLIS) { finished.receive() } ?: continue
+            // select takes either the result or the timeout, never loses a result to the timeout.
+            val done =
+                select<Finished?> {
+                    finished.onReceive { it }
+                    onTimeout(WAKE_MILLIS) { null }
+                } ?: continue
             running--
             idleEngines.addLast(done.slot)
             if (handle(kind, done)) end = RunEnd.PAUSED
@@ -233,17 +248,14 @@ class BackupRunner(
         return false
     }
 
-    private suspend fun pingMillis(): Long? {
-        val started = System.nanoTime()
-        return try {
-            ping()
-            (System.nanoTime() - started) / 1_000_000
+    private suspend fun pingMillis(): Long? =
+        try {
+            measureDelay()
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
             null
         }
-    }
 
     private companion object {
         const val IDLE_SAMPLES = 3

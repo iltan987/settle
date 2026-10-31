@@ -16,6 +16,7 @@ import com.iltan.settle.data.drive.DriveAuth
 import com.iltan.settle.data.drive.DriveRest
 import com.iltan.settle.data.drive.DriveSandbox
 import com.iltan.settle.data.drive.FixedToken
+import com.iltan.settle.data.drive.HandshakeProbe
 import com.iltan.settle.data.drive.MediaStoreOriginals
 import com.iltan.settle.data.drive.RoomUploadStore
 import com.iltan.settle.data.drive.UploadMeter
@@ -138,7 +139,7 @@ class AppGraph(context: Context) {
                 )
             },
             meter = uploadMeter,
-            ping = { drive.ping() },
+            measureDelay = HandshakeProbe()::millis,
             log = { Log.i("BackupRunner", it) },
         )
     }
