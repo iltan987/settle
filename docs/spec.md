@@ -59,9 +59,16 @@ Play Store release later must stay possible, so Play-policy-forbidden permission
 - R11. Every item shows exactly one status: not backed up (its folder isn't chosen), waiting, queued, uploading, backed up, cloud only, in trash, or needs attention.
 
 ### Deletion and trash
-- R12. Deleting in Settle moves the item to the trash on the phone and in Drive. It can be restored until retention ends.
-- R13. A backed-up item deleted in another app is handled by the external-deletion policy (ADR-006). Default: move the cloud copy to Drive trash.
-- R14. A mass disappearance of files (circuit breaker, ADR-006) never deletes anything in Drive without confirmation.
+- R12. Deleting in Settle, one item or a selection, moves the item to the trash on the phone and
+  in Drive, with Undo. It can be restored until retention ends. Delete forever and Empty trash
+  remove items from the phone and Drive at once, only after a confirmation that names the count.
+- R13. A backed-up item deleted in another app is handled by the external-deletion policy (ADR-006,
+  ADR-015). Default: it enters Settle's trash and its Drive copy moves to Drive trash an hour after
+  it vanished, unless it comes back first; "Ask me first" waits for the user. Restoring it
+  downloads the Drive copy into its folder and publishes it only if its SHA-256 matches.
+- R14. A mass disappearance of files (circuit breaker, ADR-006) never moves or deletes anything in
+  Drive without confirmation, also when it reaches Settle spread over several scans. The question
+  stays until it is answered.
 
 ### Library survival
 - R15. After a phone reset or reinstall, signing in restores items, albums, folders, favourites and pins from Drive.

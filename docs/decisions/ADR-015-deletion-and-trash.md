@@ -22,7 +22,8 @@
     on the screen that `Settings.ACTION_REQUEST_MANAGE_MEDIA` opens, with `package:` as data.
     `MediaStore.canManageMedia` checks it.
   - In AOSP's `PermissionUtils.checkPermissionManageMedia`, the check is the app-op alone. The
-    guide names `READ_EXTERNAL_STORAGE` too, so this is to be confirmed on the API 37 emulator.
+    guide names `READ_EXTERNAL_STORAGE` too. On the API 37 emulator, granting the app-op was
+    enough: no prompt for trash, untrash or delete.
 - **Drive.**
   - `files.update {trashed: true|false}` moves a file into or out of the trash. Drive deletes
     trashed files after 30 days.
@@ -71,6 +72,10 @@
   - Keep in cloud waits for cloud-only items in the timeline.
   - A circuit-breaker batch always goes to `vanished`, and nothing happens in Drive until the user
     chooses "Move Drive copies to trash" or "Keep Drive copies".
+  - Live scans can take a large deletion in slices; on the emulator, 205 files arrived as 11 scans.
+    So the hour's wait is also the breaker's window. A scan's disappearances count together with
+    the deletions elsewhere whose Drive trash hasn't run. Past the limit, all of them become one
+    batch and their queued Drive changes are dropped.
   - Rows that vanish from the phone's trash have expired. They don't count toward the breaker.
 - **Restoring.**
   - When the original is still in the phone's trash, Settle untrashes it with `createTrashRequest`

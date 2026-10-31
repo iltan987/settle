@@ -3,6 +3,95 @@
 Each phase ends with something that runs on the phone, a build, tests, and a check-in before the
 next phase. Newest first.
 
+## Phase 4 — Deletion and the trash (2026-10-31)
+
+Delivered:
+- **Research first (ADR-015).** From the API 37 framework sources:
+  - `createTrashRequest(…, false)` untrashes, through the same prompt;
+  - `DATE_EXPIRES` is set by the system, typically 30 days for trashed rows;
+  - at most 2000 URIs per request;
+  - AOSP checks `MANAGE_MEDIA` as an app-op alone.
+- **`:domain` rules** (`deletion/`):
+  - `afterScan` follows the phone after each scan;
+  - deleting, restoring, deleting forever, the user's decision, and expiry;
+  - `DriveChanges` runs the idempotent queue;
+  - `RestoreDownload` downloads into a pending file, resumes, and publishes only matching
+    SHA-256/MD5;
+  - expired trash no longer counts toward the circuit breaker;
+  - invariant tests: no Drive copy is trashed while its original is on the phone unless the user
+    deleted it, and nothing outside the trash is deleted for good.
+- **Room schema v5**: `trash_entry`, `vanished`, `drive_op`, `restore_request`, and the deletion
+  policy. A scan and its trash changes are written in one transaction.
+- **`DriveRest`**: trash, untrash, delete, ranged download.
+- **Jobs**: 5 runs queued Drive changes on any network; 6 is a user-initiated restore download
+  with a notification. Maintenance runs the queue and expiry.
+- **UI** (plain Material 3 until the Claude Design pass):
+  - multi-select in the grids: long-press, drag, a day's header; share, back up now, delete;
+  - Delete in the viewer, with Undo;
+  - Trash (from Folders): days left, deleted elsewhere, restoring and why it stopped, Restore,
+    Delete forever, Empty trash behind confirmations;
+  - the mass-disappearance notice on the timeline;
+  - Settings → Deletion (policy, optional Media management);
+  - grid badges from `deriveStatus`;
+  - English and Turkish.
+- `docs/design/brief.md`: the handoff prompts for Claude Design.
+- 145 domain tests and 144 app tests, including an end-to-end deletion test on Room with fakes for
+  MediaStore and Drive.
+
+Verified on the emulator (`settle_api37`, `Settle (emulator)/`, generated PNGs in
+`Pictures/SettleTest/` only):
+- **Delete from the viewer without Media management.** Android asked "Allow Settle to move this
+  photo to trash?". Deny changed nothing. Allow trashed the phone file, Drive answered 200 to the
+  trash PATCH, and the snackbar offered Undo.
+- **A file that wasn't backed up.** The message said it is deleted for good after 30 days. Undo
+  asked "move this photo out of trash?" and brought it back.
+- **Media management** (granted with `appops`). Trash, untrash and delete ran with no prompt, on
+  `READ_MEDIA_*` alone.
+- **Multi-select.** A long-press and drag selected two items, which were deleted together.
+- **Trash screen.** Thumbnails of trashed files load, and each shows 30 days left. Restore untrashed
+  the file on the phone and in Drive. Delete forever and Empty trash asked first, then removed the
+  files from the phone and from Drive (204) and from the library.
+- **Deleted in another app** (`content delete` on a backed-up test row). The item entered Settle's
+  trash at once. Its Drive copy was trashed when the debug wait (a minute) had passed.
+- **Restore of that item.** Drive untrash, then a download into `Pictures/SettleTest/`. The
+  restored file's SHA-256 equals the original's, it was linked to the same item, and its record
+  took the new modification time, so no re-upload followed.
+- **Offline.** A deletion in airplane mode trashed the phone file at once and queued the Drive
+  change. It ran 2 s after the network returned.
+- **Media management link.** The Settings row opens Android's "Media management apps" page for
+  Settle.
+
+Findings, fixed:
+- **Breaker in slices.** Deleting 205 files at once reached Settle as 11 live scans of 10–49 files,
+  so the per-scan circuit breaker never tripped. Backed up, those files would have gone to the Drive
+  trash an hour later without asking. The hour's wait is now also the breaker's window (ADR-015).
+- **Selection jumped.** A long-press swapped the large top bar for a small one, the grid jumped
+  under the finger, and dragging selected nothing. The selection bar now keeps the height.
+- **Gestures.** A long-press also opened the photo under it, because the cell's click handler took
+  the touch. The grid now handles taps and long-presses itself. Its hit test had ignored the top
+  content padding; tests caught that.
+- **Two runs at once.** The restore job and the change job sent the same untrash request at the
+  same moment, and a finishing change job cancelled itself. The queue now runs under one lock.
+
+Not done or deviations from the plan:
+- **Not on the phone yet.** Samsung Gallery's view of a MediaStore-trashed file, and a deletion made
+  in Samsung Gallery reaching `Settle (debug)/`, need the owner's approval and test files on the
+  phone.
+- **Not tried on the emulator; covered by tests:**
+  - the breaker window with backed-up files, which would mean uploading 200+ files to Drive;
+  - a killed download resuming.
+- **Keep in Drive** (`KEEP_IN_CLOUD`) waits for cloud-only items in the timeline.
+- **Undo lost.** Deleting the only item open in the viewer closes it, and the Undo with it.
+- **Privacy policy.** It must say Settle now trashes, deletes and downloads its own Drive files and
+  moves phone files to the trash. It is updated on the local `gh-pages` branch and not pushed;
+  publishing is the owner's call.
+- The UI is plain Material 3 and is redone in the design pass.
+
+Left on the emulator:
+- `del_1`, `del_5` (backed up) and `del_6` in `Pictures/SettleTest/`, and the Drive copies of
+  `del_1` and `del_5` in `Settle (emulator)/`.
+- Media management reset to default.
+
 ## Review fixes after Phase 3 (2026-10-31)
 
 A code review of Phases 0–3 found these; each has its own commit and tests:

@@ -29,10 +29,11 @@ Debug-build helpers on the phone:
 - `adb shell am broadcast -a com.iltan.settle.debug.MEASURE -p com.iltan.settle.debug --es ids
   <id,id,...> --ei parallel <n> --es protocol h1|h2` uploads test items N at a time and logs
   throughput and delay (`DebugMeasure`). It refuses anything outside `Pictures/SettleTest/`.
-- `adb logcat -s DriveHttp BackupRunner BackupScheduler BackupJobs BackupEngine LibrarySync` shows
-  each Drive request, the plan, every run with its pace (slots, cap, delay), and failures.
+- `adb logcat -s DriveHttp BackupRunner BackupScheduler BackupJobs BackupEngine LibrarySync
+  TrashWork DriveChanges RestoreDownload` shows each Drive request, the plan, every run with its
+  pace (slots, cap, delay), each scan with what the trash rules made of it, and failures.
 - Jobs: `adb shell dumpsys jobscheduler com.iltan.settle.debug` (IDs 1 automatic, 2 requested,
-  3 media trigger, 4 maintenance). `adb shell dumpsys battery unplug` / `reset` simulates the
+  3 media trigger, 4 maintenance, 5 queued Drive changes, 6 restore downloads). `adb shell dumpsys battery unplug` / `reset` simulates the
   charger for the automatic job; always `reset` afterwards. Settings has a 1-minute grace period in
   debug builds.
 - Test media: push generated files to `/sdcard/Pictures/SettleTest/`, then send
@@ -41,6 +42,10 @@ Debug-build helpers on the phone:
   `_` matches any character and once picked real screenshots.
 - Settle's database: `adb exec-out run-as com.iltan.settle.debug cat databases/settle.db` (copy
   `-wal` and `-shm` too).
+- Deleting: on the emulator, `adb shell appops set com.iltan.settle.debug MANAGE_MEDIA allow`
+  (and `default` to undo) stands in for the user's Media management grant. `adb shell content
+  delete --uri content://media/external/images/media/<id>` deletes a test row the way another
+  app would. In debug builds a deletion elsewhere reaches Drive after a minute instead of an hour.
 
 Full check before calling anything done:
 `./gradlew :domain:test :app:testDebugUnitTest :app:lintDebug assembleDebug ktfmtCheck`
@@ -81,6 +86,11 @@ harmless "user 150" SecurityException.
   folder (ADR-008).
 - Drive: `DriveAuth` (AuthorizationClient, `drive.file` only, no tokens stored), `DriveRest` (OkHttp
   REST client), `BackupEngine` in `:domain` (ADR-013).
+- Deletion and the trash (ADR-015): pure rules in `:domain` `deletion/` (`afterScan`,
+  `trashedInSettle`, `planRestore`, `planDeleteForever`, `DriveChanges`, `RestoreDownload`).
+  `Deletion` is the facade for screens, `TrashWork` runs the jobs, and `MediaStoreTrash` sends
+  MediaStore's own requests. Settle's records change only once Android confirms. Drive changes
+  go through the `drive_op` queue.
 - Background backup (ADR-014): the pure `planBackup` (`:domain`) decides what and when, and
   `BackupScheduler` turns that into JobScheduler jobs run by `BackupJobService`. `BackupRunner`
   runs one engine per upload slot, paced by `UploadPacer` (`:domain`) through `UploadMeter`'s shared
