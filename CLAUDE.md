@@ -45,7 +45,14 @@ Debug-build helpers on the phone:
 Full check before calling anything done:
 `./gradlew :domain:test :app:testDebugUnitTest :app:lintDebug assembleDebug ktfmtCheck`
 
-The phone is usually attached over USB and reachable with `adb` from WSL. Screenshots:
+The phone is usually attached over USB and reachable with `adb` from WSL (serial `R5CY649XR5B`).
+An emulator `settle_api37` (Android 17 / API 37, Google Play image, Pixel 8 profile) holds no real
+photos and is signed in to a throwaway Google account: use it for anything that deletes files or
+needs real device tests, and the phone for Samsung behaviour and final checks. Start it with
+`sg kvm -c "$HOME/Android/Sdk/emulator/emulator -avd settle_api37 -gpu swiftshader_indirect -no-boot-anim" &`
+(plain `emulator …` once WSL has restarted since the `kvm` group change); its window opens on the
+Windows desktop through WSLg. With both attached, every adb command needs `-s R5CY649XR5B` or
+`-s emulator-5554`. Screenshots:
 `adb exec-out screencap -p > shot.png`. Samsung's Secure Folder makes some `pm` commands print a
 harmless "user 150" SecurityException.
 
