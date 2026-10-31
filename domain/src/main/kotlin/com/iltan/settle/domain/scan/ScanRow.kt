@@ -39,3 +39,13 @@ data class ScanRow(
     val localState: LocalState
         get() = if (isTrashed) LocalState.TRASHED else LocalState.PRESENT
 }
+
+/**
+ * The folder a trashed file belongs to. Samsung's One UI moves trashed files under
+ * `.trash-storage/` and reports that as their folder; stock Android keeps the folder. Kept as the
+ * original so a restore puts the file back where it was (seen on the S24 FE, 2026-10-31).
+ */
+fun folderBeforeTrash(relativePath: String): String =
+    relativePath.removePrefix(SAMSUNG_TRASH_FOLDER)
+
+private const val SAMSUNG_TRASH_FOLDER = ".trash-storage/"

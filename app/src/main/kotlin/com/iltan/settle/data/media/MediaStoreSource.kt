@@ -10,6 +10,7 @@ import android.provider.MediaStore.Files.FileColumns
 import android.provider.MediaStore.MediaColumns
 import com.iltan.settle.domain.scan.MediaKind
 import com.iltan.settle.domain.scan.ScanRow
+import com.iltan.settle.domain.scan.folderBeforeTrash
 
 /** Read access to the phone's media index, behind an interface so sync logic can be tested. */
 interface MediaSource {
@@ -130,11 +131,13 @@ class MediaStoreSource(private val context: Context) : MediaSource {
         private val generation = cursor.getColumnIndexOrThrow(MediaColumns.GENERATION_MODIFIED)
         private val specialFormat = SPECIAL_FORMAT_COLUMN?.let(cursor::getColumnIndexOrThrow) ?: -1
 
-        fun read(c: Cursor, volume: String) =
-            ScanRow(
+        fun read(c: Cursor, volume: String): ScanRow {
+            val isTrashed = c.getInt(trashed) != 0
+            val folder = c.getStringOrNull(path).orEmpty()
+            return ScanRow(
                 volume = volume,
                 mediaStoreId = c.getLong(id),
-                relativePath = c.getStringOrNull(path).orEmpty(),
+                relativePath = if (isTrashed) folderBeforeTrash(folder) else folder,
                 displayName = c.getStringOrNull(name).orEmpty(),
                 mimeType = c.getStringOrNull(mime).orEmpty(),
                 kind =
@@ -149,10 +152,11 @@ class MediaStoreSource(private val context: Context) : MediaSource {
                 durationMillis = c.getLong(duration),
                 specialFormat = if (specialFormat >= 0) c.getInt(specialFormat) else 0,
                 isFavorite = c.getInt(favorite) != 0,
-                isTrashed = c.getInt(trashed) != 0,
+                isTrashed = isTrashed,
                 generationModified = c.getLong(generation),
                 dateAddedSeconds = c.getLongOrNull(added) ?: 0,
             )
+        }
     }
 
     private companion object {

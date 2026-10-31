@@ -311,4 +311,10 @@ class ReconcileScanTest {
         row(1, taken = 0).copy(dateModifiedSeconds = 1_234).takenAtMillis shouldBe 1_234_000
         row(1).copy(dateTakenMillis = null, dateModifiedSeconds = 5).takenAtMillis shouldBe 5_000
     }
+
+    @Test
+    fun `a file Samsung moved into its trash folder keeps its own folder`() {
+        folderBeforeTrash(".trash-storage/Pictures/SettleTest/") shouldBe "Pictures/SettleTest/"
+        folderBeforeTrash("DCIM/Camera/") shouldBe "DCIM/Camera/"
+    }
 }

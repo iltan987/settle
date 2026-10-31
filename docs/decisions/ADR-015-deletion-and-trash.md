@@ -38,6 +38,9 @@
   - Samsung Gallery moves deleted files into its own private trash, and their MediaStore rows
     disappear (ADR-006).
   - Apps that use MediaStore's trash instead leave the row with `IS_TRASHED = 1`.
+  - Seen on the S24 FE: One UI moves a MediaStore-trashed file under `.trash-storage/` and reports
+    that as its folder. Samsung Gallery's trash shows those files too, so a file Settle trashes can
+    also be restored from there.
 
 ## Decision
 - **Settle's trash is the phone's trash plus Drive's trash.** Settle keeps a `trash_entry` per

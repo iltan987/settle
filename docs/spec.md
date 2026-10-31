@@ -92,8 +92,9 @@ existing Google Photos library.
 
 Owner's ideas from 2026-10-31, to research when scheduled:
 - **Galaxy AI from Settle.** Samsung's photo editor accepts no standard `ACTION_EDIT`; Samsung
-  Gallery does accept `ACTION_VIEW` for a photo. Try an "Open in Samsung Gallery" action and check
-  whether its AI button is offered there; "Edit in Google Photos" works through `ACTION_EDIT`.
+  Gallery does accept `ACTION_VIEW` for a photo, and opened that way it shows its AI edit button
+  (seen 2026-10-31). An "Open in Samsung Gallery" action is the way in; "Edit in Google Photos"
+  works through `ACTION_EDIT`.
   Circle to Search is system-wide and already works on Settle's screens.
 - **Places.** In the details sheet, an address instead of raw coordinates and a small map; a map
   of the library with photos placed where they were taken.

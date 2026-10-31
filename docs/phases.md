@@ -35,7 +35,7 @@ Delivered:
   - grid badges from `deriveStatus`;
   - English and Turkish.
 - `docs/design/brief.md`: the handoff prompts for Claude Design.
-- 145 domain tests and 144 app tests, including an end-to-end deletion test on Room with fakes for
+- 146 domain tests and 144 app tests, including an end-to-end deletion test on Room with fakes for
   MediaStore and Drive.
 
 Verified on the emulator (`settle_api37`, `Settle (emulator)/`, generated PNGs in
@@ -73,10 +73,35 @@ Findings, fixed:
 - **Two runs at once.** The restore job and the change job sent the same untrash request at the
   same moment, and a finishing change job cancelled itself. The queue now runs under one lock.
 
+Verified on the S24 FE (owner approved; four generated test files in `Pictures/SettleTest/` only,
+debug build, `Settle (debug)/`):
+- **Migration.** The phone's debug database went from schema v3 to v5 on real data. The same 595
+  present and 120 missing items; no trash entries, decisions or Drive changes were created.
+- **Deleting in Settle.** Samsung's own dialog ("Settle uygulamasının bu fotoğrafı çöp kutusuna
+  taşımasına izin verilsin mi?") showed the one test file. After Allow, the Drive copy was trashed.
+- **Samsung Gallery's trash** says it shows items deleted from Gallery, My Files and other apps. The
+  file Settle trashed appeared there ("29 gün"), and was gone from Gallery's timeline. Restoring it
+  there would bring it back in Settle too.
+- **Deleting in Samsung Gallery** (opened on the one test file through `ACTION_VIEW`). Samsung's
+  delete removes the MediaStore row; its trash is its own, as ADR-006 says. Settle noticed while in
+  the background, put the item in its trash as "deleted in another app", and trashed its Drive copy
+  about a minute later.
+- **Restoring both from Settle's trash.** The one deleted in Samsung Gallery was downloaded into
+  `Pictures/SettleTest/`. The one Settle trashed came out of the phone's trash after Samsung's
+  untrash dialog. Both are byte-identical to the originals (SHA-256).
+- **Galaxy AI.** Samsung Gallery opened through `ACTION_VIEW` from another app shows its AI edit
+  button, which answers the spec's open question about "Open in Samsung Gallery".
+- **The owner's media is untouched.** The MediaStore listing outside the test folder (IDs, names,
+  folders, sizes of all 595 items) is identical before and after. Media management stayed off on
+  the phone, and Empty trash was not used there.
+
+Found on the phone, fixed:
+- **Samsung's trash folder.** One UI moves a trashed file under `.trash-storage/` and MediaStore
+  reports `.trash-storage/Pictures/SettleTest/` as its folder. Settle stored that, so a restore by
+  download after the phone's copy expired would have gone into the hidden folder. A trashed row
+  now keeps its original folder.
+
 Not done or deviations from the plan:
-- **Not on the phone yet.** Samsung Gallery's view of a MediaStore-trashed file, and a deletion made
-  in Samsung Gallery reaching `Settle (debug)/`, need the owner's approval and test files on the
-  phone.
 - **Not tried on the emulator; covered by tests:**
   - the breaker window with backed-up files, which would mean uploading 200+ files to Drive;
   - a killed download resuming.
@@ -86,6 +111,14 @@ Not done or deviations from the plan:
   moves phone files to the trash. It is updated on the local `gh-pages` branch and not pushed;
   publishing is the owner's call.
 - The UI is plain Material 3 and is redone in the design pass.
+
+Left on the phone:
+- Samsung Gallery's trash holds the test file `ph_2.png`, a noise image, until Samsung deletes it
+  after 30 days.
+- Settle's trash lists `ph_1`–`ph_3`, deleted in another app, until they expire. Their Drive copies
+  are in the Drive trash, from `Settle (debug)/`.
+- `Pictures/SettleTest/` is removed. The debug build is installed with the folder fix. Media
+  management is off.
 
 Left on the emulator:
 - `del_1`, `del_5` (backed up) and `del_6` in `Pictures/SettleTest/`, and the Drive copies of
