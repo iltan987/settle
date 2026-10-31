@@ -11,5 +11,13 @@
                 <action android:name="com.iltan.settle.debug.BACK_UP" />
             </intent-filter>
         </receiver>
+        <receiver
+            android:name=".DebugMeasureReceiver"
+            android:exported="true"
+            android:permission="android.permission.DUMP">
+            <intent-filter>
+                <action android:name="com.iltan.settle.debug.MEASURE" />
+            </intent-filter>
+        </receiver>
     </application>
 </manifest>
