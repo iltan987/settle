@@ -7,6 +7,8 @@ import com.iltan.settle.domain.backup.BackupSettings
 import com.iltan.settle.domain.transfer.NetworkUse
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 /** The user's backup choices, and whether Drive stopped backup until the user acts. */
 data class BackupChoices(
@@ -22,8 +24,14 @@ data class BackupChoices(
     }
 }
 
-/** Reads and changes [BackupChoices], kept in Room's single settings row. */
+/**
+ * Reads and changes [BackupChoices], kept in Room's single settings row. One instance per process:
+ * changes are read, edited and written under one lock, so a run blocking backup and the user
+ * changing a setting at the same moment can't undo each other.
+ */
 class BackupPreferences(private val dao: BackupDao) {
+
+    private val lock = Mutex()
 
     val choices: Flow<BackupChoices> =
         dao.observeSettings().map { it?.toChoices() ?: BackupChoices() }
@@ -31,16 +39,17 @@ class BackupPreferences(private val dao: BackupDao) {
     suspend fun current(): BackupChoices = dao.settings()?.toChoices() ?: BackupChoices()
 
     suspend fun update(change: (BackupChoices) -> BackupChoices) {
-        dao.saveSettings(change(current()).toEntity())
+        lock.withLock { dao.saveSettings(change(current()).toEntity()) }
     }
 
     suspend fun block(reason: BackupPause) = update { it.copy(blocked = reason) }
 
     /** Clears [reason] if that is what blocks backup; returns whether it did. */
-    suspend fun unblock(reason: BackupPause): Boolean {
-        if (current().blocked != reason) return false
-        update { it.copy(blocked = null) }
-        return true
+    suspend fun unblock(reason: BackupPause): Boolean = lock.withLock {
+        val choices = current()
+        if (choices.blocked != reason) return@withLock false
+        dao.saveSettings(choices.copy(blocked = null).toEntity())
+        true
     }
 
     private fun BackupSettingsEntity.toChoices() =
