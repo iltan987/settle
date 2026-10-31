@@ -26,10 +26,17 @@ class BackupScheduler(
     private val planner: BackupPlanner,
     private val runner: BackupRunner,
     private val clock: () -> Long = System::currentTimeMillis,
+    /** Whether the system is running the job with this ID right now; replaced in tests. */
+    isExecuting: ((jobId: Int) -> Boolean)? = null,
 ) {
     private val jobs = context.getSystemService(JobScheduler::class.java)
     private val service = ComponentName(context, BackupJobService::class.java)
     private val lock = Mutex()
+    private val isExecuting =
+        isExecuting
+            ?: { id ->
+                jobs.getPendingJobReason(id) == JobScheduler.PENDING_JOB_REASON_EXECUTING
+            }
 
     /**
      * Brings the automatic, media-watching and maintenance jobs in line with the plan. A job that
@@ -42,8 +49,12 @@ class BackupScheduler(
         if (jobs.getPendingJob(MAINTENANCE_JOB)?.intervalMillis != MAINTENANCE_EVERY_MILLIS) {
             jobs.schedule(maintenanceJob())
         }
-        // A run under way plans its own next step when it ends; rescheduling would stop it.
-        if (runner.running.value) return@withLock
+        // A run under way plans its own next step when it ends; scheduling the automatic job's ID
+        // again would stop it. When the automatic job starts Settle's process, the app's own
+        // start-up planning can get here before the runner has begun, so JobScheduler is asked
+        // too, except by the automatic job itself as it finishes.
+        val automaticRunning = finishingJob != AUTOMATIC_JOB && isExecuting(AUTOMATIC_JOB)
+        if (runner.running.value || automaticRunning) return@withLock
         val plan = planner.plan()
         val automatic = plan.automatic
         if (automatic == null) {
