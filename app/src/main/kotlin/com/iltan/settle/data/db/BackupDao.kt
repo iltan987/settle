@@ -54,6 +54,9 @@ interface BackupDao {
     @Query("SELECT * FROM upload WHERE item_id = :itemId")
     suspend fun upload(itemId: String): UploadEntity?
 
+    @Query("SELECT item_id FROM local_file WHERE media_store_id = :mediaStoreId")
+    suspend fun itemIdForMediaStoreId(mediaStoreId: Long): String?
+
     @Query("SELECT * FROM upload WHERE item_id = :itemId")
     fun observeUpload(itemId: String): Flow<UploadEntity?>
 

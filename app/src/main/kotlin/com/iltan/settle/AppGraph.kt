@@ -1,6 +1,7 @@
 package com.iltan.settle
 
 import android.content.Context
+import android.content.pm.ApplicationInfo
 import android.util.Log
 import com.iltan.settle.data.Library
 import com.iltan.settle.data.db.SettleDatabase
@@ -22,7 +23,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import okhttp3.Interceptor
 import okhttp3.OkHttpClient
+import okhttp3.Response
 
 /** The app's long-lived objects, wired by hand (ADR-007). One instance per process. */
 class AppGraph(context: Context) {
@@ -48,7 +51,25 @@ class AppGraph(context: Context) {
             .connectTimeout(20, TimeUnit.SECONDS)
             .readTimeout(60, TimeUnit.SECONDS)
             .writeTimeout(60, TimeUnit.SECONDS)
+            .apply { if (debuggable) addNetworkInterceptor(::logTiming) }
             .build()
+    }
+
+    private val debuggable =
+        appContext.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE != 0
+
+    /** Debug builds: one line per Drive request, for measuring. Query strings stay out of logs. */
+    private fun logTiming(chain: Interceptor.Chain): Response {
+        val request = chain.request()
+        val started = System.nanoTime()
+        val response = chain.proceed(request)
+        val ms = (System.nanoTime() - started) / 1_000_000
+        Log.d(
+            "DriveHttp",
+            "${request.method} ${request.url.encodedPath} -> ${response.code} " +
+                "(${request.body?.contentLength() ?: 0} B up) in $ms ms",
+        )
+        return response
     }
 
     /** Settle's Drive folder: `Settle`, or `Settle (debug)` in debug builds (ADR-008). */
