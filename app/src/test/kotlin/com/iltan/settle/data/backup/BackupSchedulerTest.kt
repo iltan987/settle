@@ -1,5 +1,6 @@
 package com.iltan.settle.data.backup
 
+import android.app.Application
 import android.app.job.JobScheduler
 import android.content.Context
 import android.net.NetworkCapabilities
@@ -26,8 +27,11 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
 
+// A plain Application: Settle's own would plan backup at start-up and race these tests.
 @RunWith(RobolectricTestRunner::class)
+@Config(application = Application::class)
 class BackupSchedulerTest {
 
     private val context = ApplicationProvider.getApplicationContext<Context>()
