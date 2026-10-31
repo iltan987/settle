@@ -46,13 +46,24 @@ data class ScanPlan(
     val updates: List<IndexedRow>,
     /** Items to drop from the index: they vanished before anything reached the cloud. */
     val forgets: List<MediaItemId>,
-    /** Items whose file vanished but must not be forgotten. */
+    /** Items whose file vanished from the phone but must not be forgotten. */
     val missing: List<MediaItemId>,
     /** True when so many files vanished at once that nothing was forgotten (ADR-006). */
     val breakerTripped: Boolean,
+    /**
+     * Items whose file vanished from the phone's trash, which is how trashed files expire. They are
+     * marked missing too, but they don't count toward the breaker and aren't deletions made in
+     * another app (ADR-015).
+     */
+    val expired: List<MediaItemId> = emptyList(),
 ) {
     val isEmpty: Boolean
-        get() = inserts.isEmpty() && updates.isEmpty() && forgets.isEmpty() && missing.isEmpty()
+        get() =
+            inserts.isEmpty() &&
+                updates.isEmpty() &&
+                forgets.isEmpty() &&
+                missing.isEmpty() &&
+                expired.isEmpty()
 }
 
 data class IndexedRow(val itemId: MediaItemId, val row: ScanRow)
@@ -67,9 +78,11 @@ const val BREAKER_MIN_FILES = 200
  *   after a move or a MediaStore rebuild, and keeps its item ID.
  * - Any other new row becomes a new item.
  * - A vanished file is forgotten if it never reached the cloud, otherwise marked missing.
+ * - A file that vanishes from the phone's trash has expired: forgotten without a cloud copy,
+ *   otherwise reported in [ScanPlan.expired] (ADR-015).
  * - If more than max([BREAKER_MIN_FILES], 10 %) of the files on the phone vanish at once (a
  *   permission or storage problem, not the user deleting), nothing is forgotten: all are marked
- *   missing.
+ *   missing. Expired files don't count.
  */
 fun reconcileScan(
     known: List<KnownFile>,
@@ -123,18 +136,26 @@ fun reconcileScan(
 
     // Files that were already missing stay missing; only files that were here are newly lost.
     val lost = unaccounted.filter { it.itemId !in matched && it.localState != LocalState.MISSING }
-    val onPhone = candidates.count { it.localState != LocalState.MISSING }
-    val breakerTripped = lost.size > maxOf(BREAKER_MIN_FILES, onPhone / 10)
+    // A trashed file vanishing is the trash expiring, so it says nothing about the phone's health.
+    val (lostFromTrash, lostFromPhone) = lost.partition { it.localState == LocalState.TRASHED }
+    val onPhone = candidates.count { it.localState == LocalState.PRESENT }
+    val breakerTripped = lostFromPhone.size > maxOf(BREAKER_MIN_FILES, onPhone / 10)
     val (forgets, missing) =
-        if (breakerTripped) emptyList<KnownFile>() to lost
-        else lost.partition { it.cloudState == CloudState.NONE }
+        if (breakerTripped) emptyList<KnownFile>() to lostFromPhone
+        else lostFromPhone.partition { it.cloudState == CloudState.NONE }
+    // Without a cloud copy nothing of an expired file is left anywhere. While the breaker is
+    // tripped nothing is forgotten, not even these.
+    val (expiredForgets, expired) =
+        if (breakerTripped) emptyList<KnownFile>() to lostFromTrash
+        else lostFromTrash.partition { it.cloudState == CloudState.NONE }
 
     return ScanPlan(
         inserts = inserts,
         updates = updates,
-        forgets = forgets.map { it.itemId },
+        forgets = (forgets + expiredForgets).map { it.itemId },
         missing = missing.map { it.itemId },
         breakerTripped = breakerTripped,
+        expired = expired.map { it.itemId },
     )
 }
 

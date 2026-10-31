@@ -192,6 +192,44 @@ class ReconcileScanTest {
     }
 
     @Test
+    fun `a file vanishing from the trash has expired and is not a deletion elsewhere`() {
+        val backedUp = row(1, trashed = true).known(cloud = CloudState.VERIFIED)
+        val localOnly = row(2, trashed = true).known()
+        val scan = VolumeScan(volume, rows = emptyList(), presentIds = emptySet())
+
+        val plan = reconcile(listOf(backedUp, localOnly), scan)
+
+        plan.expired shouldContainExactly listOf(backedUp.itemId)
+        plan.forgets shouldContainExactly listOf(localOnly.itemId)
+        plan.missing.shouldBeEmpty()
+    }
+
+    @Test
+    fun `expiring trash never trips the breaker`() {
+        val trashed = (1L..300L).map { row(it, trashed = true).known(cloud = CloudState.VERIFIED) }
+        val onPhone = (301L..400L).map { row(it).known() }
+        val scan = VolumeScan(volume, emptyList(), presentIds = (301L..400L).toSet())
+
+        val plan = reconcile(trashed + onPhone, scan)
+
+        plan.breakerTripped shouldBe false
+        plan.expired.size shouldBe 300
+    }
+
+    @Test
+    fun `while the breaker is tripped expired files are not forgotten either`() {
+        val onPhone = (1L..300L).map { row(it).known() }
+        val trashed = row(301, trashed = true).known()
+        val scan = VolumeScan(volume, rows = emptyList(), presentIds = emptySet())
+
+        val plan = reconcile(onPhone + trashed, scan)
+
+        plan.breakerTripped shouldBe true
+        plan.forgets.shouldBeEmpty()
+        plan.expired shouldContainExactly listOf(trashed.itemId)
+    }
+
+    @Test
     fun `missing file found again becomes present`() {
         val old = row(1).known(state = LocalState.MISSING)
         val plan = reconcile(listOf(old), full(row(1)))

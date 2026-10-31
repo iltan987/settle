@@ -135,8 +135,9 @@ interface LibraryDao {
         plan.forgets.forEach { deleteItem(it.value) }
         // Release MediaStore IDs before reassigning them: after a MediaStore rebuild two files can
         // swap IDs, which would break the unique index halfway through.
-        (plan.updates.map { it.itemId } + plan.missing).forEach { releaseMediaStoreId(it.value) }
-        plan.missing.forEach { markMissing(it.value) }
+        val gone = plan.missing + plan.expired
+        (plan.updates.map { it.itemId } + gone).forEach { releaseMediaStoreId(it.value) }
+        gone.forEach { markMissing(it.value) }
         for ((itemId, row) in plan.updates) {
             updateItem(
                 id = itemId.value,
