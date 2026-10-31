@@ -7,6 +7,7 @@ import androidx.room3.Query
 import androidx.room3.Transaction
 import androidx.room3.Upsert
 import com.iltan.settle.domain.CloudState
+import com.iltan.settle.domain.deletion.TrashChanges
 import com.iltan.settle.domain.scan.ScanPlan
 import com.iltan.settle.domain.scan.ScanRow
 import kotlinx.coroutines.flow.Flow
@@ -27,7 +28,7 @@ private const val ON_PHONE =
 private const val NEWEST_FIRST = "ORDER BY m.taken_at_ms DESC, m.id DESC"
 
 @Dao
-interface LibraryDao {
+interface LibraryDao : TrashDao {
 
     // Timeline and collections
 
@@ -129,9 +130,17 @@ interface LibraryDao {
 
     @Query("SELECT MAX(last_scan_at_ms) FROM scan_cursor") fun lastScanAt(): Flow<Long?>
 
-    /** Applies one volume's scan result and moves its cursor, all or nothing. */
+    /**
+     * Applies one volume's scan result, what the trash rules made of it, and moves its cursor, all
+     * or nothing.
+     */
     @Transaction
-    suspend fun applyScan(plan: ScanPlan, cursor: ScanCursorEntity, nowMs: Long) {
+    suspend fun applyScan(
+        plan: ScanPlan,
+        cursor: ScanCursorEntity,
+        nowMs: Long,
+        trash: TrashChanges = TrashChanges(),
+    ) {
         plan.forgets.forEach { deleteItem(it.value) }
         // Release MediaStore IDs before reassigning them: after a MediaStore rebuild two files can
         // swap IDs, which would break the unique index halfway through.
@@ -157,10 +166,9 @@ interface LibraryDao {
             insertItem(row.toMediaItem(itemId.value, nowMs))
             upsertLocalFile(row.toLocalFile(itemId.value))
         }
+        applyTrashChanges(trash)
         upsertCursor(cursor)
     }
-
-    @Query("DELETE FROM media_item WHERE id = :id") suspend fun deleteItem(id: String)
 
     @Query("UPDATE local_file SET media_store_id = NULL WHERE item_id = :id")
     suspend fun releaseMediaStoreId(id: String)

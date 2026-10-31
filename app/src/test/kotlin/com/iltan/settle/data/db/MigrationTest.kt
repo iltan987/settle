@@ -6,6 +6,7 @@ import androidx.sqlite.driver.AndroidSQLiteDriver
 import androidx.sqlite.execSQL
 import androidx.test.core.app.ApplicationProvider
 import com.iltan.settle.domain.CloudState
+import com.iltan.settle.domain.deletion.ExternalDeletionPolicy
 import java.io.File
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
@@ -180,6 +181,45 @@ class MigrationTest {
         try {
             assertEquals("drive1", db.backupDao().upload("01ITEM")?.driveFileId)
             assertEquals(emptyList<SupersededFileEntity>(), db.backupDao().superseded("01ITEM"))
+        } finally {
+            db.close()
+        }
+    }
+
+    @Test
+    fun version4DataSurvivesTheUpgradeToVersion5() = runTest {
+        createDatabase(4)
+        AndroidSQLiteDriver().open(context.getDatabasePath(name).path).use {
+            it.execSQL(
+                """
+                INSERT INTO media_item (id, kind, taken_at_ms, mime_type, width, height,
+                    orientation, duration_ms, special_format, is_favorite, first_seen_at_ms,
+                    cloud_state)
+                VALUES ('01ITEM', 'IMAGE', 5, 'image/jpeg', 1, 1, 0, 0, 0, 0, 5, 'VERIFIED')
+                """
+            )
+            it.execSQL(
+                """
+                INSERT INTO backup_settings (id, automatic, grace_ms, only_while_charging,
+                    use_mobile_data, paused, network_use, limit_mbps, blocked)
+                VALUES (0, 1, 60000, 0, 1, 0, 'POLITE', 20, NULL)
+                """
+            )
+        }
+
+        val db =
+            Room.databaseBuilder<SettleDatabase>(context, name)
+                .setDriver(AndroidSQLiteDriver())
+                .build()
+        try {
+            val settings = checkNotNull(db.backupDao().settings())
+            assertEquals(60_000L, settings.graceMs)
+            assertEquals(
+                ExternalDeletionPolicy.MOVE_DRIVE_COPY_TO_TRASH,
+                settings.externalDeletion,
+            )
+            assertEquals(emptyList<TrashedEntry>(), db.trashDao().observeTrash().first())
+            assertNull(db.trashDao().nextOpDueAt())
         } finally {
             db.close()
         }

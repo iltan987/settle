@@ -4,13 +4,14 @@ import com.iltan.settle.data.db.BackupDao
 import com.iltan.settle.data.db.BackupSettingsEntity
 import com.iltan.settle.domain.backup.BackupPause
 import com.iltan.settle.domain.backup.BackupSettings
+import com.iltan.settle.domain.deletion.ExternalDeletionPolicy
 import com.iltan.settle.domain.transfer.NetworkUse
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
-/** The user's backup choices, and whether Drive stopped backup until the user acts. */
+/** The user's backup and deletion choices, and whether Drive stopped backup until the user acts. */
 data class BackupChoices(
     val settings: BackupSettings = BackupSettings(),
     val networkUse: NetworkUse = NetworkUse.Polite,
@@ -18,6 +19,8 @@ data class BackupChoices(
     val limitMbps: Int = DEFAULT_LIMIT_MBPS,
     /** AUTH_NEEDED or QUOTA_FULL, set by a run that hit it. */
     val blocked: BackupPause? = null,
+    /** What happens to the Drive copy of an item deleted in another app (R13). */
+    val externalDeletion: ExternalDeletionPolicy = ExternalDeletionPolicy.MOVE_DRIVE_COPY_TO_TRASH,
 ) {
     companion object {
         const val DEFAULT_LIMIT_MBPS = 20
@@ -70,6 +73,7 @@ class BackupPreferences(private val dao: BackupDao) {
                 },
             limitMbps = limitMbps,
             blocked = blocked,
+            externalDeletion = externalDeletion,
         )
 
     private fun BackupChoices.toEntity() =
@@ -90,6 +94,7 @@ class BackupPreferences(private val dao: BackupDao) {
                     (it.bytesPerSecond / BYTES_PER_MBPS).toInt()
                 } ?: limitMbps,
             blocked = blocked,
+            externalDeletion = externalDeletion,
         )
 
     private companion object {

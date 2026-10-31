@@ -21,19 +21,26 @@ import androidx.sqlite.driver.AndroidSQLiteDriver
             BackupRequestEntity::class,
             BackupSettingsEntity::class,
             SupersededFileEntity::class,
+            TrashEntryEntity::class,
+            VanishedEntity::class,
+            DriveOpEntity::class,
+            RestoreRequestEntity::class,
         ],
-    version = 4,
+    version = 5,
     autoMigrations =
         [
             AutoMigration(from = 1, to = 2),
             AutoMigration(from = 2, to = 3),
             AutoMigration(from = 3, to = 4),
+            AutoMigration(from = 4, to = 5),
         ],
 )
 abstract class SettleDatabase : RoomDatabase() {
     abstract fun libraryDao(): LibraryDao
 
     abstract fun backupDao(): BackupDao
+
+    abstract fun trashDao(): TrashDao
 
     companion object {
         // The framework SQLite driver: no native library to ship, and the same engine the

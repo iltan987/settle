@@ -9,6 +9,11 @@ import com.iltan.settle.domain.CloudState
 import com.iltan.settle.domain.LocalState
 import com.iltan.settle.domain.backup.BackupPause
 import com.iltan.settle.domain.backup.UploadProblem
+import com.iltan.settle.domain.deletion.DriveOpKind
+import com.iltan.settle.domain.deletion.ExternalDeletionPolicy
+import com.iltan.settle.domain.deletion.RestoreProblem
+import com.iltan.settle.domain.deletion.TrashOrigin
+import com.iltan.settle.domain.deletion.VanishedReason
 import com.iltan.settle.domain.scan.MediaKind
 
 /** One photo or video in the library, wherever its bytes are (ADR-001, ADR-002). */
@@ -182,4 +187,83 @@ data class BackupSettingsEntity(
     @ColumnInfo(name = "limit_mbps") val limitMbps: Int,
     /** Set when Drive stopped backup until the user acts: AUTH_NEEDED or QUOTA_FULL. */
     val blocked: BackupPause?,
+    /** What happens to the Drive copy of an item deleted in another app (R13). */
+    @ColumnInfo(name = "external_deletion", defaultValue = "MOVE_DRIVE_COPY_TO_TRASH")
+    val externalDeletion: ExternalDeletionPolicy = ExternalDeletionPolicy.MOVE_DRIVE_COPY_TO_TRASH,
+)
+
+/** An item in Settle's trash (ADR-015); see `TrashEntry`. */
+@Entity(
+    tableName = "trash_entry",
+    foreignKeys =
+        [
+            ForeignKey(
+                entity = MediaItemEntity::class,
+                parentColumns = ["id"],
+                childColumns = ["item_id"],
+                onDelete = ForeignKey.CASCADE,
+            )
+        ],
+)
+data class TrashEntryEntity(
+    @PrimaryKey @ColumnInfo(name = "item_id") val itemId: String,
+    val origin: TrashOrigin,
+    @ColumnInfo(name = "trashed_at_ms") val trashedAtMs: Long,
+    @ColumnInfo(name = "expires_at_ms") val expiresAtMs: Long,
+)
+
+/** A backed-up item that left the phone without Settle and waits for the user (R13, R14). */
+@Entity(
+    tableName = "vanished",
+    foreignKeys =
+        [
+            ForeignKey(
+                entity = MediaItemEntity::class,
+                parentColumns = ["id"],
+                childColumns = ["item_id"],
+                onDelete = ForeignKey.CASCADE,
+            )
+        ],
+)
+data class VanishedEntity(
+    @PrimaryKey @ColumnInfo(name = "item_id") val itemId: String,
+    @ColumnInfo(name = "since_ms") val sinceMs: Long,
+    val reason: VanishedReason,
+    /** The user chose to keep the Drive copy. */
+    val kept: Boolean,
+)
+
+/**
+ * A queued change to one Drive file (ADR-015); see `DriveOp`. No foreign key: a permanent delete
+ * must still run after the item left the library.
+ */
+@Entity(tableName = "drive_op", indices = [Index("item_id"), Index("not_before_ms")])
+data class DriveOpEntity(
+    @PrimaryKey @ColumnInfo(name = "drive_file_id") val driveFileId: String,
+    @ColumnInfo(name = "item_id") val itemId: String,
+    val kind: DriveOpKind,
+    @ColumnInfo(name = "not_before_ms") val notBeforeMs: Long,
+    val attempts: Int,
+)
+
+/** "Restore" for an item whose phone file is gone: downloaded from Drive, kept until it is done. */
+@Entity(
+    tableName = "restore_request",
+    foreignKeys =
+        [
+            ForeignKey(
+                entity = MediaItemEntity::class,
+                parentColumns = ["id"],
+                childColumns = ["item_id"],
+                onDelete = ForeignKey.CASCADE,
+            )
+        ],
+)
+data class RestoreRequestEntity(
+    @PrimaryKey @ColumnInfo(name = "item_id") val itemId: String,
+    @ColumnInfo(name = "requested_at_ms") val requestedAtMs: Long,
+    /** The unfinished download's pending MediaStore item. */
+    @ColumnInfo(name = "pending_uri") val pendingUri: String? = null,
+    /** Why the last try stopped; null while it waits or runs. */
+    val problem: RestoreProblem? = null,
 )
