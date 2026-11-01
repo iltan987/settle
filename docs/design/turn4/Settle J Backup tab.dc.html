@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Roboto:wght@500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,300..500,0..1,0&display=block">
+<style>html,body{margin:0;background:#DFE5E3;-webkit-font-smoothing:antialiased;}a{color:#1F6A64;}a:hover{color:#0E3F3B;}</style>
+</helmet>
+<section style="display:flex;flex-direction:column;gap:64px;padding:64px;font-family:Figtree,sans-serif;color:#141D1B;">
+  <div style="display:flex;flex-direction:column;gap:12px;max-width:1200px;">
+    <div style="font:600 14px/1 Figtree,sans-serif;color:#3F4D49;">Settle · Tidepool · Round 3, part 3 of 3</div>
+    <div style="font:700 52px/1.05 Figtree,sans-serif;letter-spacing:-0.02em;">J Backup tab</div>
+    <div style="font:400 18px/1.5 Figtree,sans-serif;color:#3F4D49;text-wrap:pretty;">The status chip and every backup NoticeCard open this tab. It shows state and actions; preferences live in <a href="Settle I Settings.dc.html#I6">Settings → Backup</a>. Other parts: <a href="Settle A-H Onboarding and Folders.dc.html">A–H</a> · <a href="Settle I Settings.dc.html">I Settings</a>.</div>
+    <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;margin-top:12px;font:400 15px/1.5 Figtree,sans-serif;color:#2B3533;">
+      <div style="display:flex;flex-direction:column;gap:4px;"><b>Order, top to bottom</b><span style="text-wrap:pretty;">BackupStatusHeader (one sentence, one action), then Back up everything now, then restores from trash in progress, then items needing attention, then Uploading, Waiting and Queued. Empty sections don't render.</span></div>
+      <div style="display:flex;flex-direction:column;gap:4px;"><b>BackupStatusHeader</b><span style="text-wrap:pretty;">Radius 28, a 44 dp icon tile, title 20/600, body 14/400, an optional 8 dp progress bar and one action pill. Tone matches the chip and NoticeCards: c1 for ok and busy, wc for paused, ec for attention.</span></div>
+      <div style="display:flex;flex-direction:column;gap:4px;"><b>Badges</b><span style="text-wrap:pretty;">This is the one place outside selection where Waiting and Queued badges show on cells. Section meta says when they go, so no cell needs its own countdown.</span></div>
+    </div>
+  </div>
+
+  <div style="display:flex;flex-wrap:wrap;gap:72px 64px;">
+    <sc-for list="{{ pages }}" as="p" hint-placeholder-count="3">
+      <div id="{{ p.id }}" style="display:flex;flex-direction:column;gap:16px;width:788px;">
+        <div style="display:flex;align-items:center;gap:12px;"><a href="#{{ p.id }}" style="font:700 14px/1 Figtree,sans-serif;background:#141D1B;color:#fff;padding:7px 11px;border-radius:999px;text-decoration:none;">{{ p.id }}</a><span style="font:600 22px/1.2 Figtree,sans-serif;">{{ p.name }}</span></div>
+        <div style="display:flex;gap:28px;">
+          <sc-for list="{{ themes }}" as="m" hint-placeholder-count="2"><div style="{{ m.vars }}">
+            <div style="position:relative;width:380px;height:824px;border-radius:36px;overflow:hidden;background:var(--bg);box-shadow:0 0 0 1px rgba(0,0,0,.14),0 24px 48px -24px rgba(0,0,0,.35);">
+              <div style="position:absolute;top:100px;left:0;right:0;bottom:0;overflow:hidden;">
+                <dc-import name="BackupStatusHeader" tone="{{ p.h.tone }}" icon="{{ p.h.icon }}" title="{{ p.h.title }}" body="{{ p.h.body }}" action="{{ p.h.action }}" action-icon="{{ p.h.actionIcon }}" progress="{{ p.h.progress }}" progress-label="{{ p.h.progressLabel }}" progress-meta="{{ p.h.progressMeta }}" hint-size="100%,160px"></dc-import>
+                <sc-if value="{{ p.hasNow }}">
+                  <div style="margin:0 12px 6px;border-radius:20px;background:var(--surf);min-height:64px;box-sizing:border-box;padding:8px 10px 8px 16px;display:flex;align-items:center;gap:14px;">
+                    <span style="font:400 24px/1 'Material Symbols Rounded';color:var(--ink2);">bolt</span>
+                    <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;"><span style="font:500 15px/1.3 Figtree,sans-serif;color:var(--ink);">Back up everything now</span><span style="font:400 13px/1.35 Figtree,sans-serif;color:var(--ink2);">Skips the waiting time and the charger</span></div>
+                    <span style="min-height:48px;display:flex;align-items:center;"><span style="min-height:40px;padding:0 16px;border-radius:20px;background:var(--pc);color:var(--onpc);display:flex;align-items:center;font:600 14px/1.2 Figtree,sans-serif;">Start</span></span>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ p.hasRestore }}">
+                  <div style="margin:2px 12px 6px;border-radius:20px;background:var(--surf);padding:14px 16px 12px;display:flex;flex-direction:column;gap:10px;">
+                    <div style="display:flex;align-items:center;gap:12px;">
+                      <div style="display:flex;"><sc-for list="{{ p.restoreThumbs }}" as="t" hint-placeholder-count="4"><img src="{{ t }}" alt="" style="width:32px;height:32px;border-radius:6px;object-fit:cover;margin-right:-8px;box-shadow:0 0 0 2px var(--surf);"></sc-for></div>
+                      <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;padding-left:12px;"><span style="font:600 14.5px/1.3 Figtree,sans-serif;color:var(--ink);">Restoring from trash · 2 of 4</span><span style="font:400 13px/1.35 Figtree,sans-serif;color:var(--ink2);">Downloading from Drive and checking each file</span></div>
+                    </div>
+                    <div style="height:6px;border-radius:3px;background:var(--c2);overflow:hidden;"><div style="height:100%;width:52%;background:var(--pri);border-radius:3px;"></div></div>
+                    <div style="display:flex;justify-content:space-between;align-items:center;"><span style="font:500 12.5px/1.3 Figtree,sans-serif;color:var(--ink2);white-space:nowrap;">18 MB of 36 MB</span><span style="min-height:40px;padding:0 4px;display:flex;align-items:center;font:600 14px/1 Figtree,sans-serif;color:var(--pri);">View in Trash</span></div>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ p.hasAttention }}">
+                  <div style="padding:10px 16px 6px 20px;font:600 14px/1.3 Figtree,sans-serif;color:var(--ink);">Needs attention</div>
+                  <div style="margin:0 12px 6px;border-radius:20px;background:var(--surf);display:flex;flex-direction:column;overflow:hidden;">
+                    <sc-for list="{{ p.att }}" as="a" hint-placeholder-count="2">
+                      <div style="padding:12px 12px 4px 12px;display:flex;gap:12px;align-items:flex-start;border-top:{{ a.border }};">
+                        <div style="position:relative;flex:none;"><img src="{{ a.src }}" alt="" style="width:56px;height:56px;border-radius:8px;object-fit:cover;display:block;"><span style="position:absolute;right:-4px;bottom:-4px;width:20px;height:20px;border-radius:50%;background:var(--err);color:var(--onerr);box-shadow:0 0 0 2px var(--surf);display:flex;align-items:center;justify-content:center;font:600 14px/1 'Material Symbols Rounded';">priority_high</span></div>
+                        <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;">
+                          <span style="font:600 14.5px/1.3 Figtree,sans-serif;color:var(--ink);">{{ a.title }}</span>
+                          <span style="font:400 13px/1.45 Figtree,sans-serif;color:var(--ink2);text-wrap:pretty;">{{ a.sub }}</span>
+                          <span style="align-self:flex-start;min-height:44px;display:flex;align-items:center;font:700 14px/1 Figtree,sans-serif;color:var(--pri);">{{ a.action }}</span>
+                        </div>
+                      </div>
+                    </sc-for>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ p.hasGrid }}"><dc-import name="PhotoGrid" sections="{{ p.grid }}" cols="{{ 4 }}" hint-size="100%,400px"></dc-import></sc-if>
+                <sc-if value="{{ p.hasEmpty }}">
+                  <div style="padding:40px 40px 0;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;">
+                    <span style="width:64px;height:64px;border-radius:22px;background:var(--c1);color:var(--pri);display:flex;align-items:center;justify-content:center;font:300 32px/1 'Material Symbols Rounded';">{{ p.emptyIcon }}</span>
+                    <span style="font:600 17px/1.3 Figtree,sans-serif;color:var(--ink);">{{ p.emptyTitle }}</span>
+                    <span style="font:400 14px/1.5 Figtree,sans-serif;color:var(--ink2);text-wrap:pretty;">{{ p.emptyBody }}</span>
+                  </div>
+                </sc-if>
+              </div>
+              <dc-import name="TopBar" title="Backup" no-account="{{ p.noAccount }}" style="position:absolute;top:36px;left:0;right:0;z-index:10;" hint-size="100%,64px"></dc-import>
+              <dc-import name="NavBar" active="backup" backup-dot="{{ p.dot }}" style="position:absolute;left:0;right:0;bottom:0;z-index:10;" hint-size="100%,104px"></dc-import>
+              <dc-import name="SystemBars" style="position:absolute;inset:0;z-index:30;pointer-events:none;" hint-size="100%,100%"></dc-import>
+            </div>
+          </div></sc-for>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;font:400 14px/1.55 Figtree,sans-serif;color:#2B3533;">
+          <div style="text-wrap:pretty;"><b>Notes.</b> {{ p.comp }}</div>
+          <div style="text-wrap:pretty;"><b>Strings.</b> {{ p.str }}</div>
+        </div>
+      </div>
+    </sc-for>
+
+    <div id="J8" style="display:flex;flex-direction:column;gap:16px;width:788px;">
+      <div style="display:flex;align-items:center;gap:12px;"><a href="#J8" style="font:700 14px/1 Figtree,sans-serif;background:#141D1B;color:#fff;padding:7px 11px;border-radius:999px;text-decoration:none;">J8</a><span style="font:600 22px/1.2 Figtree,sans-serif;">BackupStatusHeader, every state</span></div>
+      <div style="display:flex;gap:28px;">
+        <sc-for list="{{ themes }}" as="m" hint-placeholder-count="2"><div style="{{ m.vars }}">
+          <div style="width:380px;box-sizing:border-box;padding:16px 12px;border-radius:28px;background:var(--bg);box-shadow:0 0 0 1px rgba(0,0,0,.14);display:flex;flex-direction:column;gap:12px;">
+            <sc-for list="{{ states }}" as="s" hint-placeholder-count="8">
+              <div style="display:flex;flex-direction:column;gap:6px;">
+                <span style="padding:0 8px;font:600 12px/1 Figtree,sans-serif;color:var(--ink2);">{{ s.label }}</span>
+                <dc-import name="BackupStatusHeader" flush="{{ true }}" tone="{{ s.tone }}" icon="{{ s.icon }}" title="{{ s.title }}" body="{{ s.body }}" action="{{ s.action }}" action-icon="{{ s.actionIcon }}" progress="{{ s.progress }}" progress-label="{{ s.progressLabel }}" progress-meta="{{ s.progressMeta }}" hint-size="100%,150px"></dc-import>
+              </div>
+            </sc-for>
+          </div>
+        </div></sc-for>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;font:400 14px/1.55 Figtree,sans-serif;color:#2B3533;">
+        <div style="text-wrap:pretty;"><b>One source of truth.</b> One BackupState drives the chip, the NoticeCards and this header. Priority when several apply: needs attention › signed out › Drive full › Drive not connected › location access › paused by you › backing up › all in Drive. Only the top state shows; the others appear as rows lower on the tab. The location state refers to Android's "access media location" permission; without it, uploaded originals would lose their GPS data, so Settle pauses instead of uploading stripped copies.</div>
+        <div style="text-wrap:pretty;"><b>Turkish.</b> Tümü Drive'da · 40 öğeden 12'si yedekleniyor · Duraklat · Yedekleme sizin tarafınızdan duraklatıldı · Devam et · Yedekleme kapalı · Bağlan · Duraklatıldı: Google Drive dolu · Depolamayı yönet · Duraklatıldı: Google'da tekrar oturum açın · Oturum aç · Duraklatıldı: konum erişimi gerekiyor · İzin ver · 2 öğe ilgi bekliyor · İncele.</div>
+      </div>
+    </div>
+  </div>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() {
+    if (!this._v) this._v = this.build();
+    return this._v;
+  }
+  build() {
+    const L = { '--bg': '#F4F8F7', '--surf': '#FFFFFF', '--c1': '#E6EFEC', '--c2': '#D6E4E0', '--c3': '#C2D4CF', '--ink': '#141D1B', '--ink2': '#3F4D49', '--line': '#CBD8D4', '--pri': '#1F6A64', '--onpri': '#FFFFFF', '--pc': '#BFEDE6', '--onpc': '#00201D', '--wc': '#FFDDAE', '--onwc': '#2A1800', '--warn': '#7A5000', '--err': '#B3261E', '--onerr': '#FFFFFF', '--ec': '#F9DEDC', '--onec': '#410E0B', '--inv': '#2A3230', '--oninv': '#EDF2F0', '--invpri': '#8ED5CC' };
+    const D = { '--bg': '#0E1413', '--surf': '#172020', '--c1': '#1B2524', '--c2': '#24302E', '--c3': '#34423F', '--ink': '#DDE4E2', '--ink2': '#A8B6B2', '--line': '#2F3B39', '--pri': '#8ED5CC', '--onpri': '#003732', '--pc': '#1E4F49', '--onpc': '#BFEDE6', '--wc': '#4D3500', '--onwc': '#FFDDAE', '--warn': '#F0BE6E', '--err': '#F2B8B5', '--onerr': '#601410', '--ec': '#8C1D18', '--onec': '#FFDAD6', '--inv': '#DDE4E2', '--oninv': '#2A3230', '--invpri': '#1F6A64' };
+    const POOL = [1035, 1036, 1037, 1038, 1039, 1040, 1041, 1042, 1043, 1044, 1047, 1048, 1049, 1050, 1051, 1052, 1053, 1054, 1055, 1056, 1057, 1058, 1059, 1060];
+    const src = i => `https://picsum.photos/id/${POOL[i % POOL.length]}/240/240`;
+    const q = (i, st, o = {}) => ({ src: src(i), st, showQuiet: true, ...o });
+    const waiting = { title: 'Waiting · 3', meta: 'From 15:20 today', items: [q(0, 'waiting'), q(1, 'waiting', { dur: '0:09' }), q(2, 'waiting')] };
+    const queued = (meta) => ({ title: 'Queued for tonight · 6', meta, items: [3, 4, 5, 6, 7, 8].map(i => q(i, 'queued', { motion: i === 4, fav: i === 6 })) });
+    const H = (tone, icon, title, body, action = '', extra = {}) => ({ tone, icon, title, body, action, actionIcon: '', progress: undefined, progressLabel: '', progressMeta: '', ...extra });
+    const S = {
+      ok: H('ok', 'cloud_done', 'All in Drive', '256 items are safe and checked. 9 new ones back up tonight, on Wi-Fi and the charger.'),
+      busy: H('busy', 'cloud_upload', 'Backing up 12 of 40', 'Each file is checked in Drive before it counts as safe.', 'Pause', { actionIcon: 'pause', progress: 30, progressLabel: '4.2 MB/s', progressMeta: 'About 6 minutes left' }),
+      user: H('warn', 'pause_circle', 'Backup paused by you', '9 items wait on this phone, safe and unchanged.', 'Resume', { actionIcon: 'play_arrow' }),
+      off: H('off', 'cloud_off', 'Backup is off', 'Connect Google Drive to back up originals to your own Drive.', 'Connect'),
+      full: H('warn', 'cloud_off', 'Paused: Google Drive is full', '214 items are waiting safely on this phone. Free up space in Drive or add storage.', 'Manage storage'),
+      sign: H('warn', 'account_circle', 'Paused: sign in to Google again', 'Google signed Settle out. Nothing on this phone has changed.', 'Sign in'),
+      loc: H('warn', 'location_off', 'Paused: location access needed', 'Settle needs permission to read where photos were taken, so originals reach Drive with their location intact.', 'Allow'),
+      att: H('err', 'error', '2 items need attention', 'Everything else is in Drive. Nothing was lost.', 'Review'),
+    };
+    const P = (o) => ({ hasNow: false, hasRestore: false, hasAttention: false, hasGrid: false, hasEmpty: false, noAccount: false, dot: false, att: [], grid: [], restoreThumbs: [], emptyIcon: '', emptyTitle: '', emptyBody: '', ...o });
+    return {
+      themes: [{ label: 'Light', vars: L }, { label: 'Dark', vars: D }],
+      states: [
+        { label: 'All in Drive', ...S.ok }, { label: 'Backing up', ...S.busy }, { label: 'Needs attention', ...S.att },
+        { label: 'Paused · sign in again', ...S.sign }, { label: 'Paused · Drive full', ...S.full }, { label: 'Paused · Drive not connected', ...S.off },
+        { label: 'Paused · location access', ...S.loc }, { label: 'Paused · by you', ...S.user },
+      ],
+      pages: [
+        P({ id: 'J1', name: 'All in Drive, with items waiting', h: S.ok, hasNow: true, hasGrid: true, grid: [waiting, queued('Tonight, on Wi-Fi and the charger')],
+          comp: 'The header has no action: nothing is needed. "Back up everything now" is a single row (surf, radius 20) with a tonal Start button; it skips the wait and the charger, and asks before using mobile data. Then Waiting and Queued grids with their badges visible. The section meta says when each group goes. Tapping a cell opens the viewer with its chip ("Backs up in 5 hours" plus "Back up now").',
+          str: 'Backup / Yedekleme · All in Drive / Tümü Drive\'da · 256 items are safe and checked. 9 new ones back up tonight, on Wi-Fi and the charger. / 256 öğe güvende ve kontrol edildi. 9 yeni öğe bu gece Wi-Fi ve şarjdayken yedeklenecek. · Back up everything now / Şimdi her şeyi yedekle · Skips the waiting time and the charger / Bekleme süresini ve şarj koşulunu atlar · Start / Başlat · Waiting · 3 / Bekliyor · 3 · From 15:20 today / Bugün 15:20\'den itibaren · Queued for tonight · 6 / Bu gece için sırada · 6.' }),
+        P({ id: 'J2', name: 'Backing up', h: S.busy, hasGrid: true, grid: [{ title: 'In this backup · 28 left', meta: '96 MB', items: [3, 4, 5, 6, 7, 8, 9, 10].map((i, k) => q(i, k < 2 ? 'uploading' : 'queued', { progress: k === 0 ? 74 : 22, motion: i === 4 })) }, waiting],
+          comp: 'The header carries the progress bar (8 dp), speed on the left and time left on the right (they wrap at 130%), plus Pause. Pausing turns the header into J3 in place. The cells currently uploading show their own ring, and verified cells leave the section (collapse 250 ms). "Back up everything now" is hidden while a backup runs.',
+          str: 'Backing up 12 of 40 / 40 öğeden 12\'si yedekleniyor · Each file is checked in Drive before it counts as safe. / Her dosya güvende sayılmadan önce Drive\'da kontrol edilir. · 4.2 MB/s / 4,2 MB/sn · About 6 minutes left / Yaklaşık 6 dakika kaldı · Pause / Duraklat · In this backup · 28 left / Bu yedeklemede · 28 kaldı.' }),
+        P({ id: 'J3', name: 'Paused by you', h: S.user, hasGrid: true, grid: [waiting, queued('After you resume')],
+          comp: 'The warn header with Resume. Other pause reasons use this same frame with their own sentence and action (J8). While paused, "Back up everything now" is hidden, since Resume is the one action. Queued meta changes to say they wait for the resume.',
+          str: 'Backup paused by you / Yedekleme sizin tarafınızdan duraklatıldı · 9 items wait on this phone, safe and unchanged. / 9 öğe bu telefonda güvenle ve değişmeden bekliyor. · Resume / Devam et · After you resume / Siz devam ettirdikten sonra.' }),
+        P({ id: 'J4', name: 'Needs attention', h: S.att, dot: true, hasAttention: true, att: [
+            { src: src(21), title: 'Couldn’t read this file', sub: 'Video · Sunday, 25 October · 1:08. It may be damaged or still being saved by another app. It stays on this phone.', action: 'Try again', border: 'none' },
+            { src: src(19), title: 'Settle lost access to this folder', sub: 'Photo · WhatsApp Images. Allow access again to back it up.', action: 'Allow access', border: '1px solid var(--line)' },
+          ], hasGrid: true, grid: [waiting],
+          comp: 'AttentionRow: 56 dp thumbnail with an err badge, a short reason (14.5/600), a longer explanation that always says the file is still on the phone, and one text action. "Review" in the header scrolls to this list. Resolved rows leave with a check. The NavBar\'s Backup tab shows an 8 dp err dot until the list is empty.',
+          str: '2 items need attention / 2 öğe ilgi bekliyor · Everything else is in Drive. Nothing was lost. / Geri kalan her şey Drive\'da. Hiçbir şey kaybolmadı. · Couldn’t read this file / Bu dosya okunamadı · It may be damaged or still being saved by another app. It stays on this phone. / Hasarlı olabilir veya başka bir uygulama hâlâ kaydediyor olabilir. Bu telefonda kalıyor. · Try again / Tekrar dene · Settle lost access to this folder / Settle bu klasöre erişimi kaybetti · Allow access again to back it up. / Yedeklemek için erişime tekrar izin verin. · Allow access / Erişime izin ver.' }),
+        P({ id: 'J5', name: 'Restoring from trash in progress', h: S.ok, hasRestore: true, restoreThumbs: [src(9), src(10), src(11), src(12)], hasGrid: true, grid: [queued('Tonight, on Wi-Fi and the charger')],
+          comp: 'RestoreCard mirrors the Trash state (F5) so restores are visible from anywhere: a stack of thumbnails, title, a 6 dp progress bar, bytes and "View in Trash". It sits above attention and upload sections. When done, it shows "4 restored and checked. Nothing was lost." for 4 s, then collapses.',
+          str: 'Restoring from trash · 2 of 4 / Çöp kutusundan geri yükleniyor · 4 öğeden 2\'si · Downloading from Drive and checking each file / Drive\'dan indiriliyor ve her dosya kontrol ediliyor · 18 MB of 36 MB / 36 MB\'ın 18 MB\'ı · View in Trash / Çöp kutusunda gör · 4 restored and checked. Nothing was lost. / 4 öğe geri yüklendi ve kontrol edildi. Hiçbir şey kaybolmadı.' }),
+        P({ id: 'J6', name: 'All caught up (empty)', h: H('ok', 'cloud_done', 'All in Drive', '602 items are safe and checked. Last backup today at 03:12.'), hasEmpty: true, emptyIcon: 'done_all', emptyTitle: 'Nothing waiting', emptyBody: 'New photos and videos back up 24 hours after you take them, at night.',
+          comp: 'With nothing waiting or queued, the header stands alone above a small EmptyState (64 dp tile) that explains the rhythm in one sentence. There\'s no "Back up everything now" since there\'s nothing to send.',
+          str: '602 items are safe and checked. Last backup today at 03:12. / 602 öğe güvende ve kontrol edildi. Son yedekleme bugün 03:12. · Nothing waiting / Bekleyen bir şey yok · New photos and videos back up 24 hours after you take them, at night. / Yeni fotoğraf ve videolar, çekildikten 24 saat sonra gece yedeklenir.' }),
+        P({ id: 'J7', name: 'First run, Drive not connected', h: S.off, noAccount: true, hasEmpty: true, emptyIcon: 'nightlight', emptyTitle: 'How backup works', emptyBody: 'New photos wait 24 hours, then back up at night on Wi-Fi and the charger. Each copy is checked before Settle calls it safe.',
+          comp: 'The off-tone header with Connect (goes to A6). Below, one EmptyState explains the rhythm, the only teaching moment on this tab. The avatar is account_circle. Once connected, the tab becomes A9\'s state: "First backup tonight".',
+          str: 'Backup is off / Yedekleme kapalı · Connect Google Drive to back up originals to your own Drive. / Orijinalleri kendi Drive\'ınıza yedeklemek için Google Drive\'ı bağlayın. · Connect / Bağlan · How backup works / Yedekleme nasıl çalışır · New photos wait 24 hours, then back up at night on Wi-Fi and the charger. Each copy is checked before Settle calls it safe. / Yeni fotoğraflar 24 saat bekler, ardından gece Wi-Fi ve şarjdayken yedeklenir. Her kopya, Settle güvende demeden önce kontrol edilir.' }),
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

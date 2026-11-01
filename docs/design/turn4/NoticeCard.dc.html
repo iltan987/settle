@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<div style="margin:{{ margin }};background:{{ bg }};color:{{ fg }};border-radius:24px;padding:16px 4px 8px 16px;display:flex;flex-direction:column;gap:4px;">
+  <div style="display:flex;gap:12px;align-items:flex-start;">
+    <span style="font:400 24px/1 'Material Symbols Rounded';font-variation-settings:'FILL' 1;">{{ icon }}</span>
+    <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px;padding-top:2px;">
+      <div style="font:600 15px/1.3 Figtree,sans-serif;">{{ title }}</div>
+      <div style="font:400 14px/1.45 Figtree,sans-serif;text-wrap:pretty;">{{ body }}</div>
+    </div>
+    <sc-if value="{{ dismissible }}"><span style="width:48px;height:48px;margin:-12px 0 0;display:flex;align-items:center;justify-content:center;font:400 22px/1 'Material Symbols Rounded';">close</span></sc-if>
+    <sc-if value="{{ notDismissible }}"><span style="width:12px;"></span></sc-if>
+  </div>
+  <div style="display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:center;gap:4px 8px;padding-right:8px;">
+    <sc-if value="{{ hasSecondary }}"><span style="min-height:48px;padding:0 12px;display:flex;align-items:center;font:600 14px/1.2 Figtree,sans-serif;">{{ secondary }}</span></sc-if>
+    <sc-if value="{{ hasPrimary }}"><span style="min-height:48px;display:flex;align-items:center;"><span style="min-height:40px;padding:0 18px;border-radius:20px;background:{{ pBg }};color:{{ pFg }};display:flex;align-items:center;font:600 14px/1.2 Figtree,sans-serif;">{{ primary }}</span></span></sc-if>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:380,&quot;height&quot;:170},&quot;tone&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;info&quot;,&quot;warn&quot;,&quot;err&quot;],&quot;default&quot;:&quot;info&quot;,&quot;tsType&quot;:&quot;'info'|'warn'|'err'&quot;},&quot;icon&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;info&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;title&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;body&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;primary&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;secondary&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;dismissible&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props, tone = p.tone ?? 'info';
+    const T = { info: ['var(--c1)', 'var(--ink)', 'var(--pri)', 'var(--onpri)'], warn: ['var(--wc)', 'var(--onwc)', 'var(--onwc)', 'var(--wc)'], err: ['var(--ec)', 'var(--onec)', 'var(--onec)', 'var(--ec)'] }[tone];
+    return {
+      icon: p.icon ?? 'info', title: p.title ?? '', body: p.body ?? '',
+      dismissible: !!p.dismissible, notDismissible: !p.dismissible,
+      hasPrimary: !!p.primary, primary: p.primary, hasSecondary: !!p.secondary, secondary: p.secondary,
+      bg: T[0], fg: T[1], pBg: T[2], pFg: T[3], margin: p.flush ? '0' : '4px 10px 8px',
+    };
+  }
+}
+</script>
+</body>
+</html>

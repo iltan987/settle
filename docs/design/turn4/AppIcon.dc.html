@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<div style="width:{{ px }};height:{{ px }};border-radius:{{ radius }};overflow:hidden;position:relative;flex:none;background:{{ bgFill }};">
+  <svg viewBox="0 0 108 108" width="100%" height="100%" style="display:block;">
+    <rect x="0" y="0" width="108" height="108" style="fill:{{ bgFill }};fill-opacity:{{ bgOp }};"></rect>
+    <g style="opacity:{{ fgOp }};">
+      <path d="M 37.12 51 A 17 17 0 1 1 70.88 51 Z" style="fill:{{ c1 }};"></path>
+      <rect x="28" y="54" width="52" height="12" rx="6" style="fill:{{ c2 }};"></rect>
+      <rect x="35" y="70" width="38" height="10" rx="5" style="fill:{{ c3 }};"></rect>
+    </g>
+    <g style="opacity:{{ safeOp }};">
+      <rect x="0.5" y="0.5" width="107" height="107" style="fill:none;stroke:#D9467A;stroke-width:0.7;stroke-dasharray:2 2;"></rect>
+      <circle cx="54" cy="54" r="33" style="fill:none;stroke:#D9467A;stroke-width:0.7;stroke-dasharray:2 2;"></circle>
+    </g>
+  </svg>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:120,&quot;height&quot;:120},&quot;variant&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;full&quot;,&quot;fg&quot;,&quot;bg&quot;,&quot;mono&quot;,&quot;mark&quot;],&quot;default&quot;:&quot;full&quot;,&quot;tsType&quot;:&quot;'full'|'fg'|'bg'|'mono'|'mark'&quot;},&quot;mask&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;none&quot;,&quot;circle&quot;,&quot;squircle&quot;,&quot;rounded&quot;],&quot;default&quot;:&quot;circle&quot;,&quot;tsType&quot;:&quot;'none'|'circle'|'squircle'|'rounded'&quot;},&quot;size&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;min&quot;:16,&quot;max&quot;:400,&quot;default&quot;:96,&quot;tsType&quot;:&quot;number&quot;},&quot;showSafe&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;},&quot;onDark&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;},&quot;monoFg&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#1F3B37&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;monoBg&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#D6E4E0&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props, v = p.variant ?? 'full', size = p.size ?? 96;
+    if (v === 'mark') {
+      const dark = !!p.onDark;
+      return { px: `${size}px`, radius: '0', bgFill: 'transparent', bgOp: 0, fgOp: 1, safeOp: 0,
+        c1: dark ? '#8ED5CC' : '#1F6A64', c2: dark ? '#4FA79D' : '#5E9C95', c3: dark ? '#2E6F68' : '#9CC7C1' };
+    }
+    const mono = v === 'mono';
+    const fgC = mono ? (p.monoFg ?? '#1F3B37') : null;
+    const R = { none: '0', circle: '50%', squircle: '32%', rounded: '22%' }[p.mask ?? 'circle'];
+    return {
+      px: `${size}px`, radius: R,
+      bgFill: v === 'fg' ? 'transparent' : (mono ? (p.monoBg ?? '#D6E4E0') : '#1F6A64'),
+      bgOp: v === 'fg' ? 0 : 1, fgOp: v === 'bg' ? 0 : 1, safeOp: p.showSafe ? 1 : 0,
+      c1: fgC || '#F4F8F7', c2: fgC || '#8ED5CC', c3: fgC || '#BFEDE6',
+    };
+  }
+}
+</script>
+</body>
+</html>

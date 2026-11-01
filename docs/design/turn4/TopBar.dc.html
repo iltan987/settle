@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<div style="height:64px;padding:0 4px 0 20px;display:flex;align-items:center;gap:2px;background:var(--bg);">
+  <div style="flex:1;min-width:0;font:600 24px/1.1 Figtree,sans-serif;color:var(--ink);letter-spacing:-0.01em;">{{ title }}</div>
+  <sc-if value="{{ hasChip }}">
+    <div style="min-height:48px;display:flex;align-items:center;">
+      <div style="height:32px;padding:0 12px 0 8px;border-radius:16px;background:{{ chipBg }};color:{{ chipFg }};display:flex;align-items:center;gap:6px;font:600 13px/1 Figtree,sans-serif;white-space:nowrap;">
+        <sc-if value="{{ hasRing }}"><span style="width:18px;height:18px;border-radius:50%;background:{{ ring }};display:flex;align-items:center;justify-content:center;"><span style="width:12px;height:12px;border-radius:50%;background:{{ chipBg }};"></span></span></sc-if>
+        <sc-if value="{{ hasIcon }}"><span style="font:400 18px/1 'Material Symbols Rounded';font-variation-settings:'FILL' 1;color:{{ iconFg }};">{{ chipIcon }}</span></sc-if>
+        <span>{{ chipText }}</span>
+      </div>
+    </div>
+  </sc-if>
+  <sc-if value="{{ hasAccount }}" hint-placeholder-val="{{ true }}"><div style="width:48px;height:48px;display:flex;align-items:center;justify-content:center;"><div style="width:34px;height:34px;border-radius:50%;background:var(--pc);color:var(--onpc);font:600 15px/34px Figtree,sans-serif;text-align:center;">{{ initial }}</div></div></sc-if>
+  <sc-if value="{{ noAccount }}"><div style="width:48px;height:48px;display:flex;align-items:center;justify-content:center;font:400 30px/1 'Material Symbols Rounded';color:var(--ink2);">account_circle</div></sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:380,&quot;height&quot;:64},&quot;title&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;Photos&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;chip&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;{icon?:string,text:string,tone?:'ok'|'busy'|'warn'|'err',progress?:number}|null&quot;},&quot;account&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;D&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;noAccount&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const c = this.props.chip;
+    const tone = c?.tone || 'ok';
+    const T = { ok: ['var(--c1)', 'var(--ink)', 'var(--pri)'], busy: ['var(--c1)', 'var(--ink)', 'var(--pri)'], warn: ['var(--wc)', 'var(--onwc)', 'var(--onwc)'], err: ['var(--ec)', 'var(--onec)', 'var(--onec)'] }[tone];
+    return {
+      title: this.props.title ?? 'Photos', hasAccount: !this.props.noAccount, noAccount: !!this.props.noAccount, initial: this.props.account ?? 'D', hasChip: !!c, chipText: c?.text || '', chipIcon: c?.icon || '',
+      hasRing: tone === 'busy', hasIcon: tone !== 'busy',
+      chipBg: T[0], chipFg: T[1], iconFg: T[2],
+      ring: `conic-gradient(var(--pri) ${(c?.progress ?? 0) * 3.6}deg, var(--c3) 0)`,
+    };
+  }
+}
+</script>
+</body>
+</html>

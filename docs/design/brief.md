@@ -16,6 +16,11 @@ are left to the engineer too.
    in plain form.
 4. Export the HTML or React and the handoff sheet into `docs/design/`.
 
+**Done (2026-11-01).** Each round is kept as Claude Design returned it, in `turn1/` to `turn4/`.
+`turn4/` holds the whole project as it finished. Build from it, starting with
+`Settle Handoff.dc.html`. The `.dc.html` files load their components with `fetch`, so open them
+through a local web server (`python3 -m http.server`), not as `file://`.
+
 ## Message 1: master brief
 
 ```
