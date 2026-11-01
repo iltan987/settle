@@ -108,16 +108,7 @@ class BackupSettingsViewModel(
     fun setNetworkUse(use: NetworkUse) = change { it.copy(networkUse = use) }
 
     fun setPaused(paused: Boolean) {
-        viewModelScope.launch {
-            preferences.update { it.copy(settings = it.settings.copy(paused = paused)) }
-            if (paused) {
-                scheduler.stopUploads()
-            } else {
-                // Requests made before the pause continue now that Settle is open.
-                cloudBackup.backUpNow(emptyList())
-            }
-            scheduler.reschedule()
-        }
+        viewModelScope.launch { cloudBackup.setPaused(paused) }
     }
 
     fun setFolderBackUp(folder: FolderSummary, backUp: Boolean) {

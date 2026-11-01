@@ -61,6 +61,18 @@ class CloudBackup(
             row?.toCandidate()?.let { backupDecision(it, choices.settings, clock()) }
         }
 
+    /** Pauses or resumes all backup (R6); call while Settle is visible. */
+    suspend fun setPaused(paused: Boolean) {
+        preferences.update { it.copy(settings = it.settings.copy(paused = paused)) }
+        if (paused) {
+            scheduler.stopUploads()
+        } else {
+            // Requests made before the pause continue now that Settle is open.
+            backUpNow(emptyList())
+        }
+        scheduler.reschedule()
+    }
+
     /** Starts backing these items up now; call while Settle is visible. */
     suspend fun backUpNow(itemIds: Collection<String>) {
         if (!originals.canReadOriginals()) {
