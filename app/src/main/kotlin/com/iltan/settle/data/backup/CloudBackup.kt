@@ -5,6 +5,7 @@ import com.iltan.settle.data.drive.MediaStoreOriginals
 import com.iltan.settle.domain.backup.BackupDecision
 import com.iltan.settle.domain.backup.BackupPause
 import com.iltan.settle.domain.backup.backupDecision
+import com.iltan.settle.domain.backup.backupPause
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -33,13 +34,12 @@ class CloudBackup(
      */
     val pause: Flow<BackupPause?> =
         combine(dao.account(), preferences.choices) { account, choices ->
-            when {
-                account == null -> BackupPause.NOT_CONNECTED
-                !originals.canReadOriginals() -> BackupPause.NO_ORIGINAL_ACCESS
-                choices.blocked != null -> choices.blocked
-                choices.settings.paused -> BackupPause.BY_USER
-                else -> null
-            }
+            backupPause(
+                connected = account != null,
+                blocked = choices.blocked,
+                canReadOriginals = originals::canReadOriginals,
+                pausedByUser = choices.settings.paused,
+            )
         }
 
     private val refused = MutableSharedFlow<BackupOutcome>(extraBufferCapacity = 4)

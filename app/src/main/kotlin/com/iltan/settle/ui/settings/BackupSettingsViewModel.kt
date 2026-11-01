@@ -15,6 +15,7 @@ import com.iltan.settle.domain.backup.BackupDecision
 import com.iltan.settle.domain.backup.BackupPause
 import com.iltan.settle.domain.backup.BackupSettings
 import com.iltan.settle.domain.backup.backupDecision
+import com.iltan.settle.domain.backup.backupPause
 import com.iltan.settle.domain.backup.planBackup
 import com.iltan.settle.domain.transfer.NetworkUse
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -60,11 +61,12 @@ class BackupSettingsViewModel(
             refreshes,
         ) { account, choices, rows, _ ->
             val pause =
-                when {
-                    account == null -> BackupPause.NOT_CONNECTED
-                    !canReadOriginals() -> BackupPause.NO_ORIGINAL_ACCESS
-                    else -> choices.blocked
-                }
+                backupPause(
+                    connected = account != null,
+                    blocked = choices.blocked,
+                    canReadOriginals = canReadOriginals,
+                    pausedByUser = false,
+                )
             choices to
                 planBackup(rows.mapNotNull { it.toCandidate() }, choices.settings, pause, clock())
         }

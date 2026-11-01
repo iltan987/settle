@@ -6,6 +6,7 @@ import com.iltan.settle.domain.MediaItemId
 import com.iltan.settle.domain.backup.BackupCandidate
 import com.iltan.settle.domain.backup.BackupPause
 import com.iltan.settle.domain.backup.BackupPlan
+import com.iltan.settle.domain.backup.backupPause
 import com.iltan.settle.domain.backup.folderBacksUp
 import com.iltan.settle.domain.backup.planBackup
 
@@ -28,11 +29,12 @@ class BackupPlanner(
 
     /** Why nothing may run, apart from the user's own pause, which the rules read from settings. */
     suspend fun pause(blocked: BackupPause?): BackupPause? =
-        when {
-            dao.accountEmail() == null -> BackupPause.NOT_CONNECTED
-            !canReadOriginals() -> BackupPause.NO_ORIGINAL_ACCESS
-            else -> blocked
-        }
+        backupPause(
+            connected = dao.accountEmail() != null,
+            blocked = blocked,
+            canReadOriginals = canReadOriginals,
+            pausedByUser = false,
+        )
 }
 
 fun BackupCandidateRow.toCandidate(): BackupCandidate? =
