@@ -8,9 +8,6 @@ import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts.StartIntentSenderForResult
-import androidx.compose.material3.SnackbarDuration
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -19,6 +16,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalResources
 import com.iltan.settle.R
@@ -27,6 +25,7 @@ import com.iltan.settle.data.contentUri
 import com.iltan.settle.data.db.MediaEntry
 import com.iltan.settle.data.trash.DeletionRequest
 import com.iltan.settle.domain.CloudState
+import com.iltan.settle.ui.AppMessages
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -81,9 +80,17 @@ class ItemActions(
     val share: (List<MediaEntry>) -> Unit,
 )
 
-/** Delete with Undo, back up now, and share, reporting in [snackbar]. */
+/** The item actions of the whole app, provided by [SettleApp][com.iltan.settle.ui.SettleApp]. */
+val LocalItemActions =
+    staticCompositionLocalOf<ItemActions> { error("ItemActions are provided by SettleApp") }
+
+/**
+ * Delete with Undo, back up now, and share, reporting through the app's [messages]. Remembered at
+ * the root, above navigation, so a deletion's system dialog and its Undo outlive the screen it
+ * started on.
+ */
 @Composable
-fun rememberItemActions(snackbar: SnackbarHostState): ItemActions {
+fun rememberItemActions(messages: AppMessages): ItemActions {
     val context = LocalContext.current
     val resources = LocalResources.current
     val graph = context.appGraph
@@ -95,27 +102,19 @@ fun rememberItemActions(snackbar: SnackbarHostState): ItemActions {
         if (!approved) return@rememberDeletionRunner
         val (entries, deleted) = deleting
         deleted()
-        scope.launch {
-            val notBackedUp = entries.count { it.cloudState != CloudState.VERIFIED }
-            val message =
-                if (notBackedUp == 0) {
-                    resources.getQuantityString(R.plurals.trash_moved, entries.size, entries.size)
-                } else {
-                    resources.getQuantityString(
-                        R.plurals.trash_moved_not_backed_up,
-                        notBackedUp,
-                        notBackedUp,
-                    )
-                }
-            val result =
-                snackbar.showSnackbar(
-                    message,
-                    actionLabel = resources.getString(R.string.trash_undo),
-                    duration = SnackbarDuration.Long,
+        val notBackedUp = entries.count { it.cloudState != CloudState.VERIFIED }
+        val message =
+            if (notBackedUp == 0) {
+                resources.getQuantityString(R.plurals.trash_moved, entries.size, entries.size)
+            } else {
+                resources.getQuantityString(
+                    R.plurals.trash_moved_not_backed_up,
+                    notBackedUp,
+                    notBackedUp,
                 )
-            if (result == SnackbarResult.ActionPerformed) {
-                undoRunner(graph.deletion.restore(entries.map { it.id }))
             }
+        messages.offer(message, resources.getString(R.string.trash_undo)) {
+            scope.launch { undoRunner(graph.deletion.restore(entries.map { it.id })) }
         }
     }
     return remember(graph) {
@@ -127,7 +126,7 @@ fun rememberItemActions(snackbar: SnackbarHostState): ItemActions {
             backUp = { entries ->
                 scope.launch {
                     graph.cloudBackup.backUpNow(entries.map { it.id })
-                    snackbar.showSnackbar(
+                    messages.show(
                         resources.getQuantityString(
                             R.plurals.backup_requested,
                             entries.size,

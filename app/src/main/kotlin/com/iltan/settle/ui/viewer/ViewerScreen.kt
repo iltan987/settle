@@ -34,10 +34,6 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.SnackbarDuration
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -78,9 +74,12 @@ import com.iltan.settle.domain.backup.BackupPause
 import com.iltan.settle.domain.backup.BackupResult
 import com.iltan.settle.domain.backup.UploadProblem
 import com.iltan.settle.domain.scan.MediaKind
+import com.iltan.settle.ui.AppMessages
+import com.iltan.settle.ui.LocalAppMessages
+import com.iltan.settle.ui.SnackbarAbove
 import com.iltan.settle.ui.grid.SPECIAL_FORMAT_MOTION_PHOTO
 import com.iltan.settle.ui.theme.SettleTheme
-import com.iltan.settle.ui.trash.rememberItemActions
+import com.iltan.settle.ui.trash.LocalItemActions
 import java.util.Date
 import java.util.Locale
 import me.saket.telephoto.zoomable.coil3.ZoomableAsyncImage
@@ -134,15 +133,16 @@ private fun Viewer(
     val current = entries.getOrNull(pagerState.currentPage) ?: return
     val cloud by
         remember(current.id) { viewModel.cloudStatus(current.id) }.collectAsStateWithLifecycle(null)
-    val snackbar = remember { SnackbarHostState() }
-    val actions = rememberItemActions(snackbar)
+    val messages = LocalAppMessages.current
+    val actions = LocalItemActions.current
+    SnackbarAbove(VIEWER_SNACKBAR_OFFSET)
     val askOriginalAccess =
         rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
             if (granted) viewModel.backUp(current)
         }
     BackupMessages(
         viewModel,
-        snackbar,
+        messages,
         onOpenSettings,
         onAskOriginalAccess = {
             askOriginalAccess.launch(Manifest.permission.ACCESS_MEDIA_LOCATION)
@@ -232,11 +232,6 @@ private fun Viewer(
                 }
             }
         }
-
-        SnackbarHost(
-            snackbar,
-            Modifier.align(Alignment.BottomCenter).navigationBarsPadding().padding(bottom = 80.dp),
-        )
     }
 
     if (showInfo) {
@@ -250,7 +245,7 @@ private fun Viewer(
 @Composable
 private fun BackupMessages(
     viewModel: ViewerViewModel,
-    snackbar: SnackbarHostState,
+    messages: AppMessages,
     onOpenSettings: () -> Unit,
     onAskOriginalAccess: () -> Unit,
 ) {
@@ -260,13 +255,7 @@ private fun BackupMessages(
     LaunchedEffect(viewModel) {
         viewModel.outcomes.collect { outcome ->
             val (message, action) = outcome.message()
-            val result =
-                snackbar.showSnackbar(
-                    resources.getString(message),
-                    actionLabel = action?.let(resources::getString),
-                    duration = SnackbarDuration.Short,
-                )
-            if (result == SnackbarResult.ActionPerformed) {
+            messages.show(resources.getString(message), action?.let(resources::getString)) {
                 when (action) {
                     R.string.backup_allow -> askAccess()
                     else -> openSettings()
@@ -626,3 +615,6 @@ private fun share(context: android.content.Context, entry: MediaEntry) {
 
 /** Where a motion photo's clip starts; a null offset means Media3 has to find it itself. */
 private class MotionClip(val offset: Long?)
+
+/** The viewer's snackbar sits where its bottom controls are, until the design pass moves it. */
+private val VIEWER_SNACKBAR_OFFSET = 80.dp

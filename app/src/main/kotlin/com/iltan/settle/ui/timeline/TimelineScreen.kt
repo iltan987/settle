@@ -15,8 +15,6 @@ import androidx.compose.material3.LargeFlexibleTopAppBar
 import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
@@ -51,7 +49,6 @@ fun TimelineScreen(
     onOpenSettings: () -> Unit,
     /** Delete, back up and share for a selection; null turns selecting off. */
     actions: ItemActions? = null,
-    snackbar: SnackbarHostState = remember { SnackbarHostState() },
     /** Files that vanished at once and wait for the user (R14); 0 when there are none. */
     breakerCount: Int = 0,
     onBreakerKeep: () -> Unit = {},
@@ -65,7 +62,6 @@ fun TimelineScreen(
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-        snackbarHost = { SnackbarHost(snackbar) },
         topBar = {
             if (actions != null && chosen.isNotEmpty()) {
                 SelectionTopBar(

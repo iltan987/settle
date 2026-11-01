@@ -1,7 +1,9 @@
 package com.iltan.settle.ui
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
@@ -10,16 +12,19 @@ import androidx.compose.material3.ShortNavigationBarItem
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
@@ -41,6 +46,7 @@ import com.iltan.settle.ui.onboarding.MediaAccessGate
 import com.iltan.settle.ui.settings.SettingsScreen
 import com.iltan.settle.ui.timeline.TimelineScreen
 import com.iltan.settle.ui.timeline.TimelineViewModel
+import com.iltan.settle.ui.trash.LocalItemActions
 import com.iltan.settle.ui.trash.TrashScreen
 import com.iltan.settle.ui.trash.TrashViewModel
 import com.iltan.settle.ui.trash.rememberDeletionRunner
@@ -93,14 +99,42 @@ private fun NavBackStack<NavKey>.select(tab: Tab) {
 private fun Navigation(openSettings: Boolean, reconnect: Boolean) {
     // Started once, from the notification that opened Settle, not on every visit to Settings.
     var reconnectPending by rememberSaveable { mutableStateOf(reconnect) }
-    val context = LocalContext.current
-    val graph = context.appGraph
     // A backup notification that needs the user opens Settings over the timeline.
     val backStack =
         if (openSettings) rememberNavBackStack(Timeline, Settings)
         else rememberNavBackStack(Timeline)
     val currentTab = Tab.entries.firstOrNull { it.key == backStack.lastOrNull() }
+    // Messages and item actions belong to the app, not to a screen (ADR-016): a deletion's
+    // dialogs and its Undo outlive the viewer that started it.
+    val scope = rememberCoroutineScope()
+    val messages = remember { AppMessages(SnackbarHostState(), scope) }
+    CompositionLocalProvider(LocalAppMessages provides messages) {
+        val actions = rememberItemActions(messages)
+        CompositionLocalProvider(LocalItemActions provides actions) {
+            Box(Modifier.fillMaxSize()) {
+                Destinations(backStack, currentTab, reconnectPending) { reconnectPending = false }
+                AppSnackbarHost(
+                    messages,
+                    // Above the navigation bar on the tabs; screens with other bars say so.
+                    tabBarOffset = if (currentTab != null) TAB_BAR_OFFSET else null,
+                    modifier = Modifier.align(Alignment.BottomCenter),
+                )
+            }
+        }
+    }
+}
 
+/** Room for the navigation bar under the snackbar, plus the design's 12 dp gap. */
+private val TAB_BAR_OFFSET = 64.dp + 12.dp
+
+@Composable
+private fun Destinations(
+    backStack: NavBackStack<NavKey>,
+    currentTab: Tab?,
+    reconnectPending: Boolean,
+    onReconnectStarted: () -> Unit,
+) {
+    val graph = LocalContext.current.appGraph
     Scaffold(
         // Each screen handles its own insets; this Scaffold only adds the bar.
         contentWindowInsets = WindowInsets(0),
@@ -142,7 +176,6 @@ private fun Navigation(openSettings: Boolean, reconnect: Boolean) {
                         }
                         val state by viewModel.state.collectAsStateWithLifecycle()
                         val breaker by graph.deletion.breakerCount.collectAsStateWithLifecycle(0)
-                        val snackbar = remember { SnackbarHostState() }
                         fun decide(decision: VanishedDecision) {
                             graph.appScope.launch { graph.deletion.decide(null, decision) }
                         }
@@ -150,8 +183,7 @@ private fun Navigation(openSettings: Boolean, reconnect: Boolean) {
                             state = state,
                             onOpen = { backStack.add(Viewer(GridSource.Timeline, it.id)) },
                             onOpenSettings = { backStack.add(Settings) },
-                            actions = rememberItemActions(snackbar),
-                            snackbar = snackbar,
+                            actions = LocalItemActions.current,
                             breakerCount = breaker,
                             onBreakerKeep = { decide(VanishedDecision.KEEP_DRIVE_COPIES) },
                             onBreakerMove = { decide(VanishedDecision.MOVE_DRIVE_COPIES_TO_TRASH) },
@@ -249,7 +281,7 @@ private fun Navigation(openSettings: Boolean, reconnect: Boolean) {
                         SettingsScreen(
                             onBack = { backStack.removeLastOrNull() },
                             reconnect = reconnectPending,
-                            onReconnectStarted = { reconnectPending = false },
+                            onReconnectStarted = onReconnectStarted,
                         )
                     }
                 },
