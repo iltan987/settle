@@ -276,7 +276,18 @@ J. The Backup tab: the place the status chip opens. At the top, the overall stat
 
 ## Message 4: later screens and the icon
 
+Round 3 (A, H, I, J) is in `turn3/`, which holds the whole project as it stood then. The opening
+asks for two things the build needs: art Settle may ship, and one token table.
+
 ```
+Round 3 is excellent too. Two additions before the last screens:
+- A1's welcome collage uses stock photos, which Settle can't ship. Replace it with art from the
+  brand system (shapes or an illustration built from the app icon idea in L), bundled as vector.
+- In the consolidated handoff sheet, include one token table: every token you used (bg, surf,
+  c1–c3, ink, ink2, line, pri, onpri, pc, onpc, wc, onwc, warn, err, onerr, ec, onec, inv, oninv,
+  invpri) with its light and dark value and the nearest Material 3 colour role it stands for, plus
+  the type scale (Figtree sizes, weights, line heights), corner radii, spacing and the springs.
+
 Finally, at lower fidelity but in the same system:
 
 K1. Cloud-only items in the timeline (preview with a cloud marker) and opening one: the preview

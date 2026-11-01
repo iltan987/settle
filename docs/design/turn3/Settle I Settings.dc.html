@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Roboto:wght@500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,300..500,0..1,0&display=block">
+<style>html,body{margin:0;background:#DFE5E3;-webkit-font-smoothing:antialiased;}a{color:#1F6A64;}a:hover{color:#0E3F3B;}</style>
+</helmet>
+<section style="display:flex;flex-direction:column;gap:64px;padding:64px;font-family:Figtree,sans-serif;color:#141D1B;">
+  <div style="display:flex;flex-direction:column;gap:12px;max-width:1200px;">
+    <div style="font:600 14px/1 Figtree,sans-serif;color:#3F4D49;">Settle · Tidepool · Round 3, part 2 of 3</div>
+    <div style="font:700 52px/1.05 Figtree,sans-serif;letter-spacing:-0.02em;">I Settings</div>
+    <div style="font:400 18px/1.5 Figtree,sans-serif;color:#3F4D49;text-wrap:pretty;">Tapping the avatar opens Settings as a pushed screen with a back arrow, never a tab. Other parts: <a href="Settle A-H Onboarding and Folders.dc.html">A–H Onboarding and folders</a> · <a href="Settle J Backup tab.dc.html">J Backup tab</a>.</div>
+    <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;margin-top:12px;font:400 15px/1.5 Figtree,sans-serif;color:#2B3533;">
+      <div style="display:flex;flex-direction:column;gap:4px;"><b>SettingsList</b><span style="text-wrap:pretty;">Groups on bg. Each has a pri title (13.5/600) over a surf card (radius 20) with 1 dp dividers. A SettingsRow is at least 56 dp: 24 dp icon, title 15/500, sub 13/400, then one trailing control. Two-line subs wrap, never truncate.</span></div>
+      <div style="display:flex;flex-direction:column;gap:4px;"><b>Trailing controls</b><span style="text-wrap:pretty;">Switch (52×32, pri when on with a check thumb), chevron for sub-pages, open_in_new for external links, a radio on the leading side for choices, and a button (40 dp, 48 dp touch) for one-shot actions. Any row whose action isn't currently needed is removed, not disabled.</span></div>
+      <div style="display:flex;flex-direction:column;gap:4px;"><b>Scannability</b><span style="text-wrap:pretty;">Every row's sub carries its current value, so the main page reads as a status summary. Problems use the warn or err icon tint plus words in the sub, never colour alone.</span></div>
+    </div>
+  </div>
+
+  <div style="display:flex;flex-wrap:wrap;gap:72px 64px;">
+    <sc-for list="{{ pagesA }}" as="p" hint-placeholder-count="4">
+      <div id="{{ p.id }}" style="display:flex;flex-direction:column;gap:16px;width:788px;">
+        <div style="display:flex;align-items:center;gap:12px;"><a href="#{{ p.id }}" style="font:700 14px/1 Figtree,sans-serif;background:#141D1B;color:#fff;padding:7px 11px;border-radius:999px;text-decoration:none;">{{ p.id }}</a><span style="font:600 22px/1.2 Figtree,sans-serif;">{{ p.name }}</span></div>
+        <div style="display:flex;gap:28px;">
+          <sc-for list="{{ themes }}" as="m" hint-placeholder-count="2"><div style="{{ m.vars }}">
+            <div style="position:relative;width:380px;height:824px;border-radius:36px;overflow:hidden;background:var(--bg);box-shadow:0 0 0 1px rgba(0,0,0,.14),0 24px 48px -24px rgba(0,0,0,.35);">
+              <div style="position:absolute;top:100px;left:0;right:0;bottom:0;overflow:hidden;"><div style="margin-top:{{ p.offset }};"><dc-import name="SettingsList" groups="{{ p.groups }}" hint-size="100%,600px"></dc-import></div></div>
+              <div style="position:absolute;top:36px;left:0;right:0;height:64px;padding:0 4px;display:flex;align-items:center;gap:4px;background:var(--bg);z-index:10;">
+                <span style="width:48px;height:48px;display:flex;align-items:center;justify-content:center;font:400 24px/1 'Material Symbols Rounded';color:var(--ink);">arrow_back</span>
+                <span style="flex:1;font:600 22px/1.2 Figtree,sans-serif;color:var(--ink);">{{ p.bar }}</span>
+              </div>
+              <dc-import name="SystemBars" style="position:absolute;inset:0;z-index:30;pointer-events:none;" hint-size="100%,100%"></dc-import>
+            </div>
+          </div></sc-for>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;font:400 14px/1.55 Figtree,sans-serif;color:#2B3533;">
+          <div style="text-wrap:pretty;"><b>Notes.</b> {{ p.comp }}</div>
+          <div style="text-wrap:pretty;"><b>Strings.</b> {{ p.str }}</div>
+        </div>
+      </div>
+    </sc-for>
+
+    <div id="I5" style="display:flex;flex-direction:column;gap:16px;width:788px;">
+      <div style="display:flex;align-items:center;gap:12px;"><a href="#I5" style="font:700 14px/1 Figtree,sans-serif;background:#141D1B;color:#fff;padding:7px 11px;border-radius:999px;text-decoration:none;">I5</a><span style="font:600 22px/1.2 Figtree,sans-serif;">Disconnect Google Drive</span></div>
+      <div style="display:flex;gap:28px;">
+        <sc-for list="{{ themes }}" as="m" hint-placeholder-count="2"><div style="{{ m.vars }}">
+          <div style="position:relative;width:380px;height:824px;border-radius:36px;overflow:hidden;background:var(--bg);box-shadow:0 0 0 1px rgba(0,0,0,.14),0 24px 48px -24px rgba(0,0,0,.35);">
+            <div style="position:absolute;top:100px;left:0;right:0;bottom:0;overflow:hidden;"><dc-import name="SettingsList" groups="{{ mainGroups }}" hint-size="100%,600px"></dc-import></div>
+            <div style="position:absolute;top:36px;left:0;right:0;height:64px;padding:0 4px;display:flex;align-items:center;gap:4px;background:var(--bg);z-index:10;"><span style="width:48px;height:48px;display:flex;align-items:center;justify-content:center;font:400 24px/1 'Material Symbols Rounded';color:var(--ink);">arrow_back</span><span style="flex:1;font:600 22px/1.2 Figtree,sans-serif;color:var(--ink);">Settings</span></div>
+            <div style="position:absolute;inset:0;background:rgba(0,0,0,.5);z-index:20;"></div>
+            <div style="position:absolute;left:24px;right:24px;top:250px;z-index:21;background:var(--surf);border-radius:28px;padding:24px 24px 16px;display:flex;flex-direction:column;gap:14px;">
+              <span style="align-self:center;font:400 28px/1 'Material Symbols Rounded';color:var(--ink2);">link_off</span>
+              <div style="font:600 22px/1.3 Figtree,sans-serif;color:var(--ink);text-align:center;">Disconnect Google Drive?</div>
+              <div style="font:400 15px/1.5 Figtree,sans-serif;color:var(--ink2);text-wrap:pretty;">Files already in Drive stay there. Backups stop until you connect again.</div>
+              <div style="display:flex;flex-wrap:wrap;justify-content:flex-end;gap:8px;margin-top:8px;">
+                <span style="min-height:48px;padding:0 16px;display:flex;align-items:center;font:600 14px/1.2 Figtree,sans-serif;color:var(--pri);">Cancel</span>
+                <span style="min-height:48px;padding:0 20px;border-radius:24px;background:var(--pri);color:var(--onpri);display:flex;align-items:center;font:600 14px/1.2 Figtree,sans-serif;">Disconnect</span>
+              </div>
+            </div>
+            <dc-import name="SystemBars" style="position:absolute;inset:0;z-index:30;pointer-events:none;" hint-size="100%,100%"></dc-import>
+          </div>
+        </div></sc-for>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;font:400 14px/1.55 Figtree,sans-serif;color:#2B3533;">
+        <div style="text-wrap:pretty;"><b>Reversible, so pri, not err.</b> Reconnecting the same account resumes from the existing Settle folder without re-uploading. After disconnecting, the app returns to the not-connected state: the I3 group, the B12 card, the account_circle avatar. Cloud-only items stay listed with a "Connect to view originals" chip. Deletion sync to Drive is off while disconnected, and Settle says so in Trash.</div>
+        <div style="text-wrap:pretty;"><b>Strings.</b> Disconnect Google Drive? / Google Drive bağlantısı kesilsin mi? · Files already in Drive stay there. Backups stop until you connect again. / Drive'daki dosyalar orada kalır. Yeniden bağlanana kadar yedekleme durur. · Disconnect / Bağlantıyı kes · Cancel / İptal.</div>
+      </div>
+    </div>
+
+    <sc-for list="{{ pagesB }}" as="p" hint-placeholder-count="2">
+      <div id="{{ p.id }}" style="display:flex;flex-direction:column;gap:16px;width:788px;">
+        <div style="display:flex;align-items:center;gap:12px;"><a href="#{{ p.id }}" style="font:700 14px/1 Figtree,sans-serif;background:#141D1B;color:#fff;padding:7px 11px;border-radius:999px;text-decoration:none;">{{ p.id }}</a><span style="font:600 22px/1.2 Figtree,sans-serif;">{{ p.name }}</span></div>
+        <div style="display:flex;gap:28px;">
+          <sc-for list="{{ themes }}" as="m" hint-placeholder-count="2"><div style="{{ m.vars }}">
+            <div style="position:relative;width:380px;height:824px;border-radius:36px;overflow:hidden;background:var(--bg);box-shadow:0 0 0 1px rgba(0,0,0,.14),0 24px 48px -24px rgba(0,0,0,.35);">
+              <div style="position:absolute;top:100px;left:0;right:0;bottom:0;overflow:hidden;"><div style="margin-top:{{ p.offset }};"><dc-import name="SettingsList" groups="{{ p.groups }}" hint-size="100%,600px"></dc-import></div></div>
+              <div style="position:absolute;top:36px;left:0;right:0;height:64px;padding:0 4px;display:flex;align-items:center;gap:4px;background:var(--bg);z-index:10;">
+                <span style="width:48px;height:48px;display:flex;align-items:center;justify-content:center;font:400 24px/1 'Material Symbols Rounded';color:var(--ink);">arrow_back</span>
+                <span style="flex:1;font:600 22px/1.2 Figtree,sans-serif;color:var(--ink);">{{ p.bar }}</span>
+              </div>
+              <dc-import name="SystemBars" style="position:absolute;inset:0;z-index:30;pointer-events:none;" hint-size="100%,100%"></dc-import>
+            </div>
+          </div></sc-for>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;font:400 14px/1.55 Figtree,sans-serif;color:#2B3533;">
+          <div style="text-wrap:pretty;"><b>Notes.</b> {{ p.comp }}</div>
+          <div style="text-wrap:pretty;"><b>Strings.</b> {{ p.str }}</div>
+        </div>
+      </div>
+    </sc-for>
+
+    <sc-for list="{{ sheets }}" as="p" hint-placeholder-count="2">
+      <div id="{{ p.id }}" style="display:flex;flex-direction:column;gap:16px;width:788px;">
+        <div style="display:flex;align-items:center;gap:12px;"><a href="#{{ p.id }}" style="font:700 14px/1 Figtree,sans-serif;background:#141D1B;color:#fff;padding:7px 11px;border-radius:999px;text-decoration:none;">{{ p.id }}</a><span style="font:600 22px/1.2 Figtree,sans-serif;">{{ p.name }}</span></div>
+        <div style="display:flex;gap:28px;">
+          <sc-for list="{{ themes }}" as="m" hint-placeholder-count="2"><div style="{{ m.vars }}">
+            <div style="position:relative;width:380px;height:824px;border-radius:36px;overflow:hidden;background:var(--bg);box-shadow:0 0 0 1px rgba(0,0,0,.14),0 24px 48px -24px rgba(0,0,0,.35);">
+              <div style="position:absolute;top:100px;left:0;right:0;bottom:0;overflow:hidden;"><dc-import name="SettingsList" groups="{{ backupGroups }}" hint-size="100%,600px"></dc-import></div>
+              <div style="position:absolute;top:36px;left:0;right:0;height:64px;padding:0 4px;display:flex;align-items:center;gap:4px;background:var(--bg);z-index:10;"><span style="width:48px;height:48px;display:flex;align-items:center;justify-content:center;font:400 24px/1 'Material Symbols Rounded';color:var(--ink);">arrow_back</span><span style="flex:1;font:600 22px/1.2 Figtree,sans-serif;color:var(--ink);">Backup</span></div>
+              <div style="position:absolute;inset:0;background:rgba(0,0,0,.5);z-index:20;"></div>
+              <div style="position:absolute;left:0;right:0;bottom:0;z-index:21;background:var(--surf);border-radius:28px 28px 0 0;padding:10px 0 20px;display:flex;flex-direction:column;">
+                <div style="align-self:center;width:32px;height:4px;border-radius:2px;background:var(--ink2);opacity:.4;margin-bottom:14px;"></div>
+                <div style="padding:0 24px 4px;font:600 20px/1.25 Figtree,sans-serif;color:var(--ink);">{{ p.title }}</div>
+                <div style="padding:0 24px 8px;font:400 14px/1.5 Figtree,sans-serif;color:var(--ink2);text-wrap:pretty;">{{ p.lead }}</div>
+                <dc-import name="SettingsList" groups="{{ p.groups }}" card-bg="var(--c1)" hint-size="100%,360px"></dc-import>
+              </div>
+              <dc-import name="SystemBars" on-dark="{{ true }}" style="position:absolute;inset:0;z-index:30;pointer-events:none;" hint-size="100%,100%"></dc-import>
+            </div>
+          </div></sc-for>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;font:400 14px/1.55 Figtree,sans-serif;color:#2B3533;">
+          <div style="text-wrap:pretty;"><b>Notes.</b> {{ p.comp }}</div>
+          <div style="text-wrap:pretty;"><b>Strings.</b> {{ p.str }}</div>
+        </div>
+      </div>
+    </sc-for>
+
+    <sc-for list="{{ pagesC }}" as="p" hint-placeholder-count="4">
+      <div id="{{ p.id }}" style="display:flex;flex-direction:column;gap:16px;width:788px;">
+        <div style="display:flex;align-items:center;gap:12px;"><a href="#{{ p.id }}" style="font:700 14px/1 Figtree,sans-serif;background:#141D1B;color:#fff;padding:7px 11px;border-radius:999px;text-decoration:none;">{{ p.id }}</a><span style="font:600 22px/1.2 Figtree,sans-serif;">{{ p.name }}</span></div>
+        <div style="display:flex;gap:28px;">
+          <sc-for list="{{ themes }}" as="m" hint-placeholder-count="2"><div style="{{ m.vars }}">
+            <div style="position:relative;width:380px;height:824px;border-radius:36px;overflow:hidden;background:var(--bg);box-shadow:0 0 0 1px rgba(0,0,0,.14),0 24px 48px -24px rgba(0,0,0,.35);">
+              <div style="position:absolute;top:100px;left:0;right:0;bottom:0;overflow:hidden;"><dc-import name="SettingsList" groups="{{ p.groups }}" hint-size="100%,600px"></dc-import></div>
+              <div style="position:absolute;top:36px;left:0;right:0;height:64px;padding:0 4px;display:flex;align-items:center;gap:4px;background:var(--bg);z-index:10;">
+                <span style="width:48px;height:48px;display:flex;align-items:center;justify-content:center;font:400 24px/1 'Material Symbols Rounded';color:var(--ink);">arrow_back</span>
+                <span style="flex:1;font:600 22px/1.2 Figtree,sans-serif;color:var(--ink);">{{ p.bar }}</span>
+              </div>
+              <dc-import name="SystemBars" style="position:absolute;inset:0;z-index:30;pointer-events:none;" hint-size="100%,100%"></dc-import>
+            </div>
+          </div></sc-for>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;font:400 14px/1.55 Figtree,sans-serif;color:#2B3533;">
+          <div style="text-wrap:pretty;"><b>Notes.</b> {{ p.comp }}</div>
+          <div style="text-wrap:pretty;"><b>Strings.</b> {{ p.str }}</div>
+        </div>
+      </div>
+    </sc-for>
+  </div>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() {
+    if (!this._v) this._v = this.build();
+    return this._v;
+  }
+  build() {
+    const L = { '--bg': '#F4F8F7', '--surf': '#FFFFFF', '--c1': '#E6EFEC', '--c2': '#D6E4E0', '--c3': '#C2D4CF', '--ink': '#141D1B', '--ink2': '#3F4D49', '--line': '#CBD8D4', '--pri': '#1F6A64', '--onpri': '#FFFFFF', '--pc': '#BFEDE6', '--onpc': '#00201D', '--wc': '#FFDDAE', '--onwc': '#2A1800', '--warn': '#7A5000', '--err': '#B3261E', '--onerr': '#FFFFFF', '--ec': '#F9DEDC', '--onec': '#410E0B', '--inv': '#2A3230', '--oninv': '#EDF2F0', '--invpri': '#8ED5CC' };
+    const D = { '--bg': '#0E1413', '--surf': '#172020', '--c1': '#1B2524', '--c2': '#24302E', '--c3': '#34423F', '--ink': '#DDE4E2', '--ink2': '#A8B6B2', '--line': '#2F3B39', '--pri': '#8ED5CC', '--onpri': '#003732', '--pc': '#1E4F49', '--onpc': '#BFEDE6', '--wc': '#4D3500', '--onwc': '#FFDDAE', '--warn': '#F0BE6E', '--err': '#F2B8B5', '--onerr': '#601410', '--ec': '#8C1D18', '--onec': '#FFDAD6', '--inv': '#DDE4E2', '--oninv': '#2A3230', '--invpri': '#1F6A64' };
+
+    const library = { title: 'Library', rows: [{ icon: 'photo_library', title: '602 photos and videos on this phone', sub: 'Last checked today at 09:58', button: 'Rescan', btn: 'outline' }] };
+    const driveRows = (warn) => [
+      { avatar: 'D', title: 'deniz.aydin@gmail.com', sub: warn ? 'Needs you to sign in again' : 'Connected', subTone: warn ? 'warn' : '' },
+      { icon: 'cloud', title: '50 GB of 5.5 TB used', sub: 'Your Google storage, shared with Gmail and Photos', meter: 0.9 },
+      { icon: 'folder', title: 'Folder', sub: 'Settle · in My Drive', trail: 'external' },
+      { icon: 'link_off', title: 'Disconnect', danger: true, tone: 'err' },
+    ];
+    const backupSum = { title: 'Backup', rows: [{ icon: 'cloud_done', fill: true, tone: 'pri', title: '256 backed up · 3 waiting', sub: 'Next backup tonight, on Wi-Fi and the charger', trail: 'chevron' }] };
+    const deletion = { title: 'Deletion', rows: [
+      { icon: 'delete', title: 'When you delete in another app', sub: 'Move the Drive copy to the trash', trail: 'chevron' },
+      { icon: 'bolt', title: 'Delete without asking each time', sub: 'Lets Settle move items to the trash without Android asking each time', button: 'Allow', btn: 'tonal' },
+    ] };
+    const keep = { title: 'Keep backup running', rows: [{ icon: 'battery_alert', tone: 'warn', title: '1 step left', sub: 'Unrestricted battery use, so Android doesn’t stop backup at night', trail: 'chevron' }] };
+    const general = { title: 'General', rows: [
+      { icon: 'language', title: 'Language', trail: 'value', value: 'System default' },
+      { icon: 'info', title: 'About Settle', trail: 'value', value: '1.0.0' },
+    ] };
+    const mainGroups = [library, { title: 'Google Drive', rows: driveRows(false) }, backupSum, deletion, keep, general];
+
+    const backupGroups = (paused) => [
+      { rows: [
+        paused ? { icon: 'pause_circle', fill: true, tone: 'warn', title: 'Backup paused by you', sub: 'Since today at 11:20 · 3 waiting', button: 'Resume', btn: 'filled' }
+               : { icon: 'cloud_done', fill: true, tone: 'pri', title: '256 backed up · 3 waiting', sub: 'Last backup today at 03:12' },
+        { icon: 'error', fill: true, tone: 'err', title: '1 needs attention', sub: 'A video from 25 October couldn’t be read', trail: 'chevron' },
+        { icon: 'bolt', title: 'Back up everything now', sub: 'Skips the waiting time and the charger', button: 'Start', btn: 'tonal', disabled: paused },
+      ] },
+      { title: 'Automatic backup', rows: [
+        { title: 'Back up automatically', trail: 'switch', on: true },
+        { title: 'Wait before backing up', sub: '24 hours', trail: 'chevron' },
+        { title: 'Only while charging', trail: 'switch', on: true },
+        { title: 'Use mobile data', sub: 'Off: waits for Wi-Fi', trail: 'switch', on: false },
+        { title: 'Network use', sub: 'Polite: leaves room for others on your network', trail: 'chevron' },
+      ] },
+      { title: 'What backs up', rows: [{ title: 'Folders to back up', sub: 'Camera', trail: 'chevron' }] },
+      ...(paused ? [] : [{ rows: [{ icon: 'pause_circle', title: 'Pause backup', sub: 'Nothing uploads until you resume', button: 'Pause', btn: 'outline' }] }]),
+    ];
+
+    const P = (id, name, bar, groups, comp, str, offset = '0px') => ({ id, name, bar, groups, comp, str, offset });
+    const radio = (title, sub, selected) => ({ title, sub, trail: 'radio', selected });
+
+    return {
+      themes: [{ label: 'Light', vars: L }, { label: 'Dark', vars: D }],
+      mainGroups, backupGroups: backupGroups(false),
+      pagesA: [
+        P('I1', 'Settings, connected and healthy (top)', 'Settings', mainGroups,
+          'Library shows the count and last check, with a one-shot Rescan (outline button, turns into a spinner and "Checking…"). The Google Drive group shows the account (avatar initial), a StorageMeter (8 dp, minimum 2% fill so it\'s always visible), the Settle folder (opens Drive) and Disconnect in err text. Backup is a one-line summary that opens the Backup page (I6).',
+          'Settings / Ayarlar · Library / Kitaplık · 602 photos and videos on this phone / Bu telefonda 602 fotoğraf ve video · Last checked today at 09:58 / Son kontrol bugün 09:58 · Rescan / Yeniden tara · Connected / Bağlı · 50 GB of 5.5 TB used / 5,5 TB\'ın 50 GB\'ı kullanılıyor · Settle · in My Drive / Settle · Drive\'ım içinde · Disconnect / Bağlantıyı kes · 256 backed up · 3 waiting / 256 yedeklendi · 3 bekliyor.'),
+        P('I2', 'Settings (scrolled)', 'Settings', mainGroups,
+          'Deletion holds the policy and the optional Android permission, whose row disappears once it\'s granted. Keep backup running exists only while a step is unmet, tinted warn with the step named in the sub. Language and About show their value on the right.',
+          'Deletion / Silme · When you delete in another app / Başka bir uygulamada sildiğinizde · Move the Drive copy to the trash / Drive kopyasını çöp kutusuna taşı · Delete without asking each time / Her seferinde sormadan sil · Lets Settle move items to the trash without Android asking each time / Android her seferinde sormadan Settle\'ın öğeleri çöp kutusuna taşımasına izin verir · Keep backup running / Yedeklemeyi çalışır tut · 1 step left / 1 adım kaldı · Language / Dil · System default / Sistem varsayılanı · About Settle / Settle hakkında.', '-470px'),
+        P('I3', 'Google Drive not connected', 'Settings', [library, { title: 'Google Drive', card: { tone: 'info', icon: 'add_to_drive', title: 'Not connected', body: 'Back up originals to your own Google Drive. Settle only sees the files it creates there.', primary: 'Connect' } }, { title: 'Backup', rows: [{ icon: 'cloud_off', title: 'Backup is off', sub: 'Connect Google Drive to start' }] }, deletion, general],
+          'The Drive group turns into an info NoticeCard with Connect, which goes to Google\'s picker (A6). The Backup summary says it is off, in words. Deletion settings stay editable; they apply once Drive is connected.',
+          'Not connected / Bağlı değil · Back up originals to your own Google Drive. Settle only sees the files it creates there. / Orijinalleri kendi Google Drive\'ınıza yedekleyin. Settle orada yalnızca kendi oluşturduğu dosyaları görür. · Connect / Bağlan · Backup is off / Yedekleme kapalı · Connect Google Drive to start / Başlamak için Google Drive\'ı bağlayın.'),
+        P('I4', 'Reconnect needed', 'Settings', [library, { title: 'Google Drive', card: { tone: 'warn', icon: 'account_circle', title: 'Sign in to Google again', body: 'Google signed Settle out, so backup is paused. Nothing on this phone has changed.', primary: 'Sign in' }, rows: driveRows(true) }, { title: 'Backup', rows: [{ icon: 'pause_circle', fill: true, tone: 'warn', title: 'Backup paused', sub: 'Waiting for you to sign in · 9 waiting', trail: 'chevron' }] }],
+          'The same warn card as the timeline (B8), at the top of the Drive group. The account row\'s sub turns warn and says why. The storage meter keeps the last known value. Backup shows "paused" with its reason.',
+          'Sign in to Google again / Google\'da tekrar oturum açın · Google signed Settle out, so backup is paused. Nothing on this phone has changed. / Google, Settle\'ın oturumunu kapattı; yedekleme duraklatıldı. Bu telefonda hiçbir şey değişmedi. · Needs you to sign in again / Tekrar oturum açmanız gerekiyor · Waiting for you to sign in · 9 waiting / Oturum açmanız bekleniyor · 9 bekliyor.'),
+      ],
+      pagesB: [
+        P('I6', 'Backup settings', 'Backup', backupGroups(false),
+          'The status row at the top mirrors the Backup tab. Back up everything now (tonal Start) skips the wait and the charger, and asks before using mobile data. Automatic backup: switches for on/off and charging, chevrons open choice sheets (I7, I8). Folders to back up opens a checklist of folders. Pause uses an outline button, since it\'s an action, not a setting.',
+          'Back up everything now / Şimdi her şeyi yedekle · Skips the waiting time and the charger / Bekleme süresini ve şarj koşulunu atlar · Start / Başlat · Back up automatically / Otomatik yedekle · Wait before backing up / Yedeklemeden önce bekle · Only while charging / Yalnızca şarj olurken · Use mobile data / Mobil veri kullan · Off: waits for Wi-Fi / Kapalı: Wi-Fi\'ı bekler · Network use / Ağ kullanımı · Folders to back up / Yedeklenecek klasörler · Pause backup / Yedeklemeyi duraklat · Nothing uploads until you resume / Siz devam ettirene kadar hiçbir şey yüklenmez · Pause / Duraklat.'),
+        P('I6b', 'Backup settings, paused by you', 'Backup', backupGroups(true),
+          'While paused, the status row turns warn and carries the filled Resume button. The Pause row disappears. Back up everything now is visible but dimmed: the pause wins, and its tooltip says "Resume backup first".',
+          'Backup paused by you / Yedekleme sizin tarafınızdan duraklatıldı · Since today at 11:20 · 3 waiting / Bugün 11:20\'den beri · 3 bekliyor · Resume / Devam et · Resume backup first / Önce yedeklemeyi devam ettirin.'),
+      ],
+      sheets: [
+        { id: 'I7', name: 'Wait before backing up', title: 'Wait before backing up', lead: 'New photos wait this long, so the shots you delete soon never reach Drive.',
+          groups: [{ rows: [radio('No wait', 'Backs up at the next chance', false), radio('1 hour', '', false), radio('24 hours', 'Recommended', true), radio('3 days', '', false), radio('7 days', '', false)] }],
+          comp: 'ChoiceSheet: a modal bottom sheet with a title, a one-line lead, and radio rows in a c1 group. Picking a row applies it and closes the sheet (no OK button). Shortening the wait doesn\'t upload anything immediately; items become Queued for the next run.',
+          str: 'Wait before backing up / Yedeklemeden önce bekle · New photos wait this long, so the shots you delete soon never reach Drive. / Yeni fotoğraflar bu kadar bekler; böylece kısa süre içinde sildikleriniz Drive\'a hiç ulaşmaz. · No wait / Bekleme yok · Backs up at the next chance / İlk fırsatta yedeklenir · 1 hour / 1 saat · 24 hours / 24 saat · Recommended / Önerilen · 3 days / 3 gün · 7 days / 7 gün.' },
+        { id: 'I8', name: 'Network use', title: 'Network use', lead: 'How much of your connection backup may use.',
+          groups: [{ rows: [radio('Polite', 'Leaves room for others on your network', true), radio('Up to 5 Mbps', '', false), radio('Up to 10 Mbps', '', false), radio('Up to 20 Mbps', '', false), radio('Up to 40 Mbps', '', false), radio('As fast as possible', '', false)] }],
+          comp: 'Same ChoiceSheet. Polite is the default and adapts to the network. Numeric caps are upper limits. Six rows fit at 100% font scale; at 130% the sheet scrolls under a fixed title.',
+          str: 'Network use / Ağ kullanımı · How much of your connection backup may use. / Yedeklemenin bağlantınızın ne kadarını kullanabileceği. · Polite / Nazik · Leaves room for others on your network / Ağınızdaki diğerlerine yer bırakır · Up to 5 Mbps / En fazla 5 Mbps · As fast as possible / Olabildiğince hızlı.' },
+      ],
+      pagesC: [
+        P('I9', 'Deletion', 'Deletion', [
+          { title: 'When you delete in another app', lead: 'For photos and videos that are already backed up.', rows: [radio('Move the Drive copy to the trash', 'Same as deleting in Settle. Restorable for 30 days.', true), radio('Ask me first', 'Items wait in Trash until you choose.', false)] },
+          { title: 'Android permission', rows: [{ icon: 'bolt', title: 'Delete without asking each time', sub: 'Lets Settle move items to the trash without Android asking each time', button: 'Allow', btn: 'tonal' }], note: 'Optional. This row disappears once it’s allowed.' },
+        ], 'The policy is two radio rows. "Ask me first" produces the F8 state in Trash. The permission row opens Android\'s Media management page and is removed once it\'s granted. If that leaves the group empty, the whole group goes.',
+          'Move the Drive copy to the trash / Drive kopyasını çöp kutusuna taşı · Same as deleting in Settle. Restorable for 30 days. / Settle\'da silmekle aynı. 30 gün boyunca geri yüklenebilir. · Ask me first / Önce bana sor · Items wait in Trash until you choose. / Öğeler siz seçene kadar Çöp kutusunda bekler. · For photos and videos that are already backed up. / Zaten yedeklenmiş fotoğraf ve videolar için. · Optional. This row disappears once it’s allowed. / İsteğe bağlı. İzin verildiğinde bu satır kaybolur.'),
+        P('I10', 'Keep backup running', 'Keep backup running', [
+          { lead: 'Android sometimes stops apps in the background. These steps prevent that. Each one disappears once it’s done.', rows: [
+            { icon: 'battery_charging_full', tone: 'warn', title: 'Unrestricted battery use', sub: 'So Android doesn’t stop backup at night.', button: 'Allow', btn: 'tonal' },
+            { icon: 'bedtime_off', title: 'Never sleeping apps', sub: 'A Samsung setting. Keeps Settle awake for its night backup.', button: 'Open settings', btn: 'outline' },
+          ] },
+        ], 'The same SetupStepList as onboarding (A7), minus completed steps. Notifications is already allowed, so it isn\'t listed. When the list empties, the page closes itself and its row leaves the main Settings page.',
+          'Android sometimes stops apps in the background. These steps prevent that. Each one disappears once it’s done. / Android bazen arka plandaki uygulamaları durdurur. Bu adımlar bunu önler. Tamamlanan adım kaybolur. · Unrestricted battery use / Kısıtlamasız pil kullanımı · Never sleeping apps / Hiç uyumayan uygulamalar.'),
+        P('I11', 'Language', 'Language', [
+          { rows: [radio('System default', 'English', true), radio('English', '', false), radio('Türkçe', 'Turkish', false)] },
+        ], 'Each language name is written in that language, with the English name as its sub. The change applies immediately via per-app locale (Android 13+). On older versions the screen recreates.',
+          'Language / Dil · System default / Sistem varsayılanı · English / İngilizce · Türkçe.'),
+        P('I12', 'About', 'About Settle', [
+          { lead: 'Settle 1.0.0 (build 42)', rows: [
+            { icon: 'verified_user', title: 'How Settle keeps your photos safe', trail: 'external' },
+            { icon: 'policy', title: 'Privacy policy', trail: 'external' },
+            { icon: 'description', title: 'Open-source licences', trail: 'chevron' },
+            { icon: 'mail', title: 'Send feedback', trail: 'external' },
+          ] },
+        ], 'Plain list. The version line can be selected and copied. The brand mark goes here once L is designed.',
+          'About Settle / Settle hakkında · How Settle keeps your photos safe / Settle fotoğraflarınızı nasıl güvende tutar · Privacy policy / Gizlilik politikası · Open-source licences / Açık kaynak lisansları · Send feedback / Geri bildirim gönder.'),
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

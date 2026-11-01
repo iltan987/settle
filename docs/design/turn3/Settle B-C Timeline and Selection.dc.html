@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Roboto:wght@500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,300..500,0..1,0&display=block">
+<style>html,body{margin:0;background:#DFE5E3;-webkit-font-smoothing:antialiased;}a{color:#1F6A64;}a:hover{color:#0E3F3B;}</style>
+</helmet>
+<section style="display:flex;flex-direction:column;gap:64px;padding:64px;font-family:Figtree,sans-serif;color:#141D1B;">
+  <div style="display:flex;flex-direction:column;gap:12px;max-width:1200px;">
+    <div style="font:600 14px/1 Figtree,sans-serif;color:#3F4D49;">Settle · Tidepool · Part 1 of 3</div>
+    <div style="font:700 52px/1.05 Figtree,sans-serif;letter-spacing:-0.02em;">B Photos timeline · C Selection</div>
+    <div style="font:400 18px/1.5 Figtree,sans-serif;color:#3F4D49;text-wrap:pretty;">Today is Sunday 1 November 2026. Each state is shown in light and dark, with handoff notes underneath. The other parts: <a href="Settle D-E Viewer and Delete.dc.html">D–E Viewer and delete</a> · <a href="Settle F-G Trash and Mass disappearance.dc.html">F–G Trash and mass disappearance</a>.</div>
+    <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;margin-top:12px;font:400 15px/1.5 Figtree,sans-serif;color:#2B3533;">
+      <div style="display:flex;flex-direction:column;gap:4px;"><b>Layering rule (prevents the grid from jumping)</b><span style="text-wrap:pretty;">TopBar (64), NavBar and SelectionBar float over the grid as fixed overlays. NoticeCards scroll with the grid. Entering or leaving selection only swaps overlays of the same height, so no grid row moves.</span></div>
+      <div style="display:flex;flex-direction:column;gap:4px;"><b>Status on cells</b><span style="text-wrap:pretty;">Backed up shows nothing. Every other status is an 18 dp neutral badge in the bottom-right. Only Needs attention uses colour, plus a 2 dp outline. Waiting and Queued badges appear only in selection and on the Backup tab. See <a href="#B5">B5</a>.</span></div>
+      <div style="display:flex;flex-direction:column;gap:4px;"><b>Wallpaper colour</b><span style="text-wrap:pretty;">With dynamic colour on, pri/pc/c1–c3 come from the wallpaper seed. wc, ec, err and warn stay fixed, so problems always look the same.</span></div>
+    </div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:32px;">
+    <div style="font:700 32px/1.1 Figtree,sans-serif;">B · Photos timeline</div>
+    <div style="display:flex;flex-wrap:wrap;gap:72px 64px;">
+
+      <div id="B1" style="display:flex;flex-direction:column;gap:16px;width:788px;">
+        <div style="display:flex;align-items:center;gap:12px;"><a href="#B1" style="font:700 14px/1 Figtree,sans-serif;background:#141D1B;color:#fff;padding:7px 11px;border-radius:999px;text-decoration:none;">B1</a><span style="font:600 22px/1.2 Figtree,sans-serif;">Default, everything safe</span></div>
+        <div style="display:flex;gap:28px;">
+          <sc-for list="{{ themes }}" as="m" hint-placeholder-count="2"><div style="{{ m.vars }}">
+            <div style="position:relative;width:380px;height:824px;border-radius:36px;overflow:hidden;background:var(--bg);box-shadow:0 0 0 1px rgba(0,0,0,.14),0 24px 48px -24px rgba(0,0,0,.35);">
+              <div style="position:absolute;top:100px;left:0;right:0;bottom:0;overflow:hidden;"><dc-import name="PhotoGrid" sections="{{ tlDefault }}" cols="{{ 4 }}" hint-size="100%,600px"></dc-import></div>
+              <dc-import name="TopBar" title="Photos" chip="{{ chipSafe }}" style="position:absolute;top:36px;left:0;right:0;z-index:10;" hint-size="100%,64px"></dc-import>
+              <dc-import name="NavBar" active="photos" style="position:absolute;left:0;right:0;bottom:0;z-index:10;" hint-size="100%,104px"></dc-import>
+              <dc-import name="SystemBars" style="position:absolute;inset:0;z-index:30;pointer-events:none;" hint-size="100%,100%"></dc-import>
+            </div>
+          </div></sc-for>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;font:400 14px/1.55 Figtree,sans-serif;color:#2B3533;">
+          <div style="text-wrap:pretty;"><b>Components.</b> TopBar 64 dp: title 24/600, StatusChip 32 dp tall (48 dp touch) that opens Backup, Avatar 34 dp shows the connected Google account’s initial and opens Settings as a pushed screen. Before Drive is connected it is a plain account_circle icon. DayHeader at least 44 dp: title 14/600 ink, subtitle 13/400 ink2. GridCell is square with a 4 dp radius on a 2 dp gap, 2 dp side inset, 4 columns by default. NavBar 80 dp plus the gesture inset.</div>
+          <div style="text-wrap:pretty;"><b>Strings.</b> Photos / Fotoğraflar · All in Drive / Tümü Drive'da · Today / Bugün · Yesterday / Dün · Thursday, 29 October / 29 Ekim Perşembe · older years: Saturday, 14 March 2025 / 14 Mart 2025 Cumartesi · Folders / Klasörler · Backup / Yedekleme. Today's items are waiting and Yesterday's are queued, but they show no badge here, by design.</div>
+        </div>
+      </div>
+
+      <div id="B2" style="display:flex;flex-direction:column;gap:16px;width:788px;">
+        <div style="display:flex;align-items:center;gap:12px;"><a href="#B2" style="font:700 14px/1 Figtree,sans-serif;background:#141D1B;color:#fff;padding:7px 11px;border-radius:999px;text-decoration:none;">B2</a><span style="font:600 22px/1.2 Figtree,sans-serif;">Backup running</span></div>
+        <div style="display:flex;gap:28px;">
+          <sc-for list="{{ themes }}" as="m" hint-placeholder-count="2"><div style="{{ m.vars }}">
+            <div style="position:relative;width:380px;height:824px;border-radius:36px;overflow:hidden;background:var(--bg);box-shadow:0 0 0 1px rgba(0,0,0,.14),0 24px 48px -24px rgba(0,0,0,.35);">
+              <div style="position:absolute;top:100px;left:0;right:0;bottom:0;overflow:hidden;"><dc-import name="PhotoGrid" sections="{{ tlUploading }}" cols="{{ 4 }}" hint-size="100%,600px"></dc-import></div>
+              <dc-import name="TopBar" title="Photos" chip="{{ chipBusy }}" style="position:absolute;top:36px;left:0;right:0;z-index:10;" hint-size="100%,64px"></dc-import>
+              <dc-import name="NavBar" active="photos" style="position:absolute;left:0;right:0;bottom:0;z-index:10;" hint-size="100%,104px"></dc-import>
+              <dc-import name="SystemBars" style="position:absolute;inset:0;z-index:30;pointer-events:none;" hint-size="100%,100%"></dc-import>
+            </div>
+          </div></sc-for>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;font:400 14px/1.55 Figtree,sans-serif;color:#2B3533;">
+          <div style="text-wrap:pretty;"><b>Behaviour.</b> The chip shows a ring for overall progress (18 dp, pri on c3). Cells that are uploading show their own ring badge, which is the one transient status that always shows, because it is live and short. When a cell is verified, its badge fades out (200 ms). Most backups run at night, so you will rarely see this state.</div>
+          <div style="text-wrap:pretty;"><b>Strings.</b> Backing up · 38% / Yedekleniyor · %38. Spoken: "Backing up, 6 of 16 items". Proposed: show the percentage, not counts, to keep the chip short in Turkish.</div>
+        </div>
+      </div>
+
+      <div id="B3" style="display:flex;flex-direction:column;gap:16px;width:788px;">
+        <div style="display:flex;align-items:center;gap:12px;"><a href="#B3" style="font:700 14px/1 Figtree,sans-serif;background:#141D1B;color:#fff;padding:7px 11px;border-radius:999px;text-decoration:none;">B3</a><span style="font:600 22px/1.2 Figtree,sans-serif;">Fast scroller, 30,000 items</span></div>
+        <div style="display:flex;gap:28px;">
+          <sc-for list="{{ themes }}" as="m" hint-placeholder-count="2"><div style="{{ m.vars }}">
+            <div style="position:relative;width:380px;height:824px;border-radius:36px;overflow:hidden;background:var(--bg);box-shadow:0 0 0 1px rgba(0,0,0,.14),0 24px 48px -24px rgba(0,0,0,.35);">
+              <div style="position:absolute;top:100px;left:0;right:0;bottom:0;overflow:hidden;"><dc-import name="PhotoGrid" sections="{{ tlOld }}" cols="{{ 4 }}" hint-size="100%,600px"></dc-import></div>
+              <div style="position:absolute;top:112px;bottom:120px;right:0;width:64px;z-index:12;">
+                <div style="position:absolute;inset:0;background:linear-gradient(90deg,transparent,var(--bg) 70%);opacity:.85;"></div>
+                <sc-for list="{{ years }}" as="y" hint-placeholder-count="6"><span style="position:absolute;right:10px;top:{{ y.top }};padding:3px 7px;border-radius:8px;background:var(--c1);color:var(--ink2);font:600 11.5px/1 Figtree,sans-serif;">{{ y.label }}</span></sc-for>
+                <div style="position:absolute;top:38%;right:0;width:40px;height:52px;border-radius:26px 0 0 26px;background:var(--pri);color:var(--onpri);display:flex;align-items:center;justify-content:center;font:400 22px/1 'Material Symbols Rounded';">unfold_more</div>
+                <div style="position:absolute;top:38%;right:52px;height:52px;padding:0 20px;border-radius:26px;background:var(--pc);color:var(--onpc);display:flex;align-items:center;font:700 17px/1 Figtree,sans-serif;white-space:nowrap;box-shadow:0 4px 14px rgba(0,0,0,.18);">March 2025</div>
+              </div>
+              <dc-import name="TopBar" title="Photos" chip="{{ chipSafe }}" style="position:absolute;top:36px;left:0;right:0;z-index:10;" hint-size="100%,64px"></dc-import>
+              <dc-import name="NavBar" active="photos" style="position:absolute;left:0;right:0;bottom:0;z-index:10;" hint-size="100%,104px"></dc-import>
+              <dc-import name="SystemBars" style="position:absolute;inset:0;z-index:30;pointer-events:none;" hint-size="100%,100%"></dc-import>
+            </div>
+          </div></sc-for>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;font:400 14px/1.55 Figtree,sans-serif;color:#2B3533;">
+          <div style="text-wrap:pretty;"><b>FastScroller.</b> The thumb is 40×52 dp (touch area 48×64). It appears after a fling of more than 2 screens and hides 1.5 s after scrolling stops. While dragging, a year rail fades in and is positioned by item count, not by time. The MonthBubble (52 dp, pc) follows the thumb, with a light haptic tick at each new month. The thumb position maps to item index, so dense years take more rail.</div>
+          <div style="text-wrap:pretty;"><b>Strings.</b> Month bubble "March 2025" / "Mart 2025". Years show as numbers only. Older items here are Cloud only, shown by a neutral cloud badge, which always shows.</div>
+        </div>
+      </div>
+
+      <div id="B4" style="display:flex;flex-direction:column;gap:16px;width:788px;">
+        <div style="display:flex;align-items:center;gap:12px;"><a href="#B4" style="font:700 14px/1 Figtree,sans-serif;background:#141D1B;color:#fff;padding:7px 11px;border-radius:999px;text-decoration:none;">B4</a><span style="font:600 22px/1.2 Figtree,sans-serif;">Pinch to 6 columns</span></div>
+        <div style="display:flex;gap:28px;">
+          <sc-for list="{{ themes }}" as="m" hint-placeholder-count="2"><div style="{{ m.vars }}">
+            <div style="position:relative;width:380px;height:824px;border-radius:36px;overflow:hidden;background:var(--bg);box-shadow:0 0 0 1px rgba(0,0,0,.14),0 24px 48px -24px rgba(0,0,0,.35);">
+              <div style="position:absolute;top:100px;left:0;right:0;bottom:0;overflow:hidden;"><dc-import name="PhotoGrid" sections="{{ tlMonths }}" cols="{{ 6 }}" hint-size="100%,600px"></dc-import></div>
+              <dc-import name="TopBar" title="Photos" chip="{{ chipSafe }}" style="position:absolute;top:36px;left:0;right:0;z-index:10;" hint-size="100%,64px"></dc-import>
+              <div style="position:absolute;bottom:120px;left:50%;transform:translateX(-50%);height:36px;padding:0 14px;border-radius:18px;background:var(--inv);color:var(--oninv);display:flex;align-items:center;gap:6px;font:600 13px/1 Figtree,sans-serif;z-index:11;white-space:nowrap;"><span style="font:400 18px/1 'Material Symbols Rounded';">grid_view</span>6 per row · by month</div>
+              <dc-import name="NavBar" active="photos" style="position:absolute;left:0;right:0;bottom:0;z-index:10;" hint-size="100%,104px"></dc-import>
+              <dc-import name="SystemBars" style="position:absolute;inset:0;z-index:30;pointer-events:none;" hint-size="100%,100%"></dc-import>
+            </div>
+          </div></sc-for>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;font:400 14px/1.55 Figtree,sans-serif;color:#2B3533;">
+          <div style="text-wrap:pretty;"><b>Density.</b> Pinch steps through 3, 4, 5 and 6 columns, snapping with a spring (stiffness 400, damping 0.85). The item under the pinch centre stays anchored. At 3–4 columns, headers group by day. At 5–6 columns they group by month and favourite hearts are hidden. Status badges stay at every density. A toast (1.2 s) names the new density. The choice is remembered.</div>
+          <div style="text-wrap:pretty;"><b>Strings.</b> 6 per row · by month / Satırda 6 · aya göre · November 2026 / Kasım 2026 · October 2026 / Ekim 2026.</div>
+        </div>
+      </div>
+
+      <div id="B5" style="display:flex;flex-direction:column;gap:16px;width:788px;">
+        <div style="display:flex;align-items:center;gap:12px;"><a href="#B5" style="font:700 14px/1 Figtree,sans-serif;background:#141D1B;color:#fff;padding:7px 11px;border-radius:999px;text-decoration:none;">B5</a><span style="font:600 22px/1.2 Figtree,sans-serif;">Grid-cell status reference</span></div>
+        <div style="display:flex;gap:28px;">
+          <sc-for list="{{ themes }}" as="m" hint-placeholder-count="2"><div style="{{ m.vars }}">
+            <div style="width:380px;box-sizing:border-box;padding:20px;border-radius:24px;background:var(--bg);box-shadow:0 0 0 1px rgba(0,0,0,.14);display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px 10px;">
+              <sc-for list="{{ legend }}" as="l" hint-placeholder-count="12">
+                <div style="display:flex;flex-direction:column;gap:6px;">
+                  <dc-import name="GridCell" cell="{{ l.cell }}" hint-size="100%,100px"></dc-import>
+                  <span style="font:600 12.5px/1.25 Figtree,sans-serif;color:var(--ink);">{{ l.name }}</span>
+                  <span style="font:400 11.5px/1.3 Figtree,sans-serif;color:var(--ink2);">{{ l.rule }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </div></sc-for>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;font:400 14px/1.55 Figtree,sans-serif;color:#2B3533;">
+          <div style="text-wrap:pretty;"><b>Each marker has its own corner, so they never collide.</b> Top-left: selection check. Top-right: favourite (15 dp white heart). Bottom-left: video duration (11/600) or motion photo icon. Bottom-right: status badge, 18 dp circle, rgba(0,0,0,.46) behind a 12 dp white glyph. Needs attention uses an err fill plus a 2 dp inset outline. Uploading uses a 20 dp progress ring. Soft gradients (45% height) appear only behind corners that have markers.</div>
+          <div style="text-wrap:pretty;"><b>Accessibility.</b> Glyph shape tells statuses apart without colour. Each cell's content description is "Photo, 29 October, 18:42, waiting, backs up in 5 hours" / "Fotoğraf, 29 Ekim, 18:42, bekliyor, 5 saat içinde yedeklenecek". Badges stay 18 dp at 130% font scale, since they are icons, not text.</div>
+        </div>
+      </div>
+
+      <div id="B6" style="display:flex;flex-direction:column;gap:16px;width:788px;">
+        <div style="display:flex;align-items:center;gap:12px;"><a href="#B6" style="font:700 14px/1 Figtree,sans-serif;background:#141D1B;color:#fff;padding:7px 11px;border-radius:999px;text-decoration:none;">B6</a><span style="font:600 22px/1.2 Figtree,sans-serif;">One item needs attention</span></div>
+        <div style="display:flex;gap:28px;">
+          <sc-for list="{{ themes }}" as="m" hint-placeholder-count="2"><div style="{{ m.vars }}">
+            <div style="position:relative;width:380px;height:824px;border-radius:36px;overflow:hidden;background:var(--bg);box-shadow:0 0 0 1px rgba(0,0,0,.14),0 24px 48px -24px rgba(0,0,0,.35);">
+              <div style="position:absolute;top:100px;left:0;right:0;bottom:0;overflow:hidden;">
+                <dc-import name="NoticeCard" tone="err" icon="error" title="1 item needs attention" body="A video from 25 October couldn’t be read for backup. It’s still on this phone. Nothing was lost." primary="Review" dismissible="{{ true }}" hint-size="100%,150px"></dc-import>
+                <dc-import name="PhotoGrid" sections="{{ tlAttention }}" cols="{{ 4 }}" hint-size="100%,600px"></dc-import>
+              </div>
+              <dc-import name="TopBar" title="Photos" style="position:absolute;top:36px;left:0;right:0;z-index:10;" hint-size="100%,64px"></dc-import>
+              <dc-import name="NavBar" active="photos" backup-dot="{{ true }}" style="position:absolute;left:0;right:0;bottom:0;z-index:10;" hint-size="100%,104px"></dc-import>
+              <dc-import name="SystemBars" style="position:absolute;inset:0;z-index:30;pointer-events:none;" hint-size="100%,100%"></dc-import>
+            </div>
+          </div></sc-for>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;font:400 14px/1.55 Figtree,sans-serif;color:#2B3533;">
+          <div style="text-wrap:pretty;"><b>NoticeCard.</b> Radius 24, 10 dp side margin, scrolls with the grid. It replaces the chip while showing. Dismissing it collapses to the chip "1 needs attention" (ec), so the status never disappears. "Review" opens the item in the viewer with its reason. The Backup tab gets an 8 dp err dot until it's resolved.</div>
+          <div style="text-wrap:pretty;"><b>Strings.</b> 1 item needs attention / 1 öğe ilgi bekliyor · A video from 25 October couldn’t be read for backup. It’s still on this phone. Nothing was lost. / 25 Ekim tarihli bir video yedekleme için okunamadı. Hâlâ bu telefonda. Hiçbir şey kaybolmadı. · Review / İncele.</div>
+        </div>
+      </div>
+
+      <div id="B7" style="display:flex;flex-direction:column;gap:16px;width:788px;">
+        <div style="display:flex;align-items:center;gap:12px;"><a href="#B7" style="font:700 14px/1 Figtree,sans-serif;background:#141D1B;color:#fff;padding:7px 11px;border-radius:999px;text-decoration:none;">B7</a><span style="font:600 22px/1.2 Figtree,sans-serif;">Notice: Drive is full</span></div>
+        <div style="display:flex;gap:28px;">
+          <sc-for list="{{ themes }}" as="m" hint-placeholder-count="2"><div style="{{ m.vars }}">
+            <div style="position:relative;width:380px;height:824px;border-radius:36px;overflow:hidden;background:var(--bg);box-shadow:0 0 0 1px rgba(0,0,0,.14),0 24px 48px -24px rgba(0,0,0,.35);">
+              <div style="position:absolute;top:100px;left:0;right:0;bottom:0;overflow:hidden;">
+                <dc-import name="NoticeCard" tone="warn" icon="cloud_off" title="Google Drive is full" body="Backup is paused. 214 items are waiting safely on this phone. Free up space in Drive or add storage." primary="Manage storage" dismissible="{{ true }}" hint-size="100%,150px"></dc-import>
+                <dc-import name="PhotoGrid" sections="{{ tlDefault }}" cols="{{ 4 }}" hint-size="100%,600px"></dc-import>
+              </div>
+              <dc-import name="TopBar" title="Photos" style="position:absolute;top:36px;left:0;right:0;z-index:10;" hint-size="100%,64px"></dc-import>
+              <dc-import name="NavBar" active="photos" style="position:absolute;left:0;right:0;bottom:0;z-index:10;" hint-size="100%,104px"></dc-import>
+              <dc-import name="SystemBars" style="position:absolute;inset:0;z-index:30;pointer-events:none;" hint-size="100%,100%"></dc-import>
+            </div>
+          </div></sc-for>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;font:400 14px/1.55 Figtree,sans-serif;color:#2B3533;">
+          <div style="text-wrap:pretty;"><b>Pause notices.</b> These use the warn tone (wc / onwc): something to do, nothing at risk. Dismissing collapses to the chip "Backup paused" (wc). The card comes back once a day while the problem lasts. "Manage storage" opens Google One in the browser. Other pause reasons share this layout: paused by you, Drive not connected, location access missing.</div>
+          <div style="text-wrap:pretty;"><b>Strings.</b> Google Drive is full / Google Drive dolu · Backup is paused. 214 items are waiting safely on this phone. Free up space in Drive or add storage. / Yedekleme duraklatıldı. 214 öğe bu telefonda güvenle bekliyor. Drive'da yer açın veya depolama alanı ekleyin. · Manage storage / Depolamayı yönet · Chip: Backup paused / Yedekleme duraklatıldı.</div>
+        </div>
+      </div>
+
+      <div id="B8" style="display:flex;flex-direction:column;gap:16px;width:788px;">
+        <div style="display:flex;align-items:center;gap:12px;"><a href="#B8" style="font:700 14px/1 Figtree,sans-serif;background:#141D1B;color:#fff;padding:7px 11px;border-radius:999px;text-decoration:none;">B8</a><span style="font:600 22px/1.2 Figtree,sans-serif;">Notice: sign in again (card dismissed)</span></div>
+        <div style="display:flex;gap:28px;">
+          <sc-for list="{{ themes }}" as="m" hint-placeholder-count="2"><div style="{{ m.vars }}">
+            <div style="position:relative;width:380px;height:824px;border-radius:36px;overflow:hidden;background:var(--bg);box-shadow:0 0 0 1px rgba(0,0,0,.14),0 24px 48px -24px rgba(0,0,0,.35);">
+              <div style="position:absolute;top:100px;left:0;right:0;bottom:0;overflow:hidden;"><dc-import name="PhotoGrid" sections="{{ tlDefault }}" cols="{{ 4 }}" hint-size="100%,600px"></dc-import></div>
+              <dc-import name="TopBar" title="Photos" chip="{{ chipPaused }}" style="position:absolute;top:36px;left:0;right:0;z-index:10;" hint-size="100%,64px"></dc-import>
+              <div style="position:absolute;top:96px;right:10px;width:300px;z-index:15;background:var(--surf);border-radius:20px;box-shadow:0 10px 30px rgba(0,0,0,.22);padding:16px 8px 8px 16px;display:flex;flex-direction:column;gap:6px;">
+                <div style="display:flex;gap:10px;align-items:flex-start;"><span style="font:400 22px/1 'Material Symbols Rounded';color:var(--warn);">account_circle</span><div style="display:flex;flex-direction:column;gap:4px;padding-right:8px;"><span style="font:600 15px/1.3 Figtree,sans-serif;color:var(--ink);">Sign in to Google again</span><span style="font:400 13.5px/1.45 Figtree,sans-serif;color:var(--ink2);text-wrap:pretty;">Google signed Settle out, so backup is paused. Nothing on this phone has changed.</span></div></div>
+                <div style="display:flex;justify-content:flex-end;gap:4px;"><span style="min-height:48px;padding:0 12px;display:flex;align-items:center;font:600 14px/1 Figtree,sans-serif;color:var(--pri);">Backup details</span><span style="min-height:48px;display:flex;align-items:center;"><span style="height:40px;padding:0 18px;border-radius:20px;background:var(--pri);color:var(--onpri);display:flex;align-items:center;font:600 14px/1 Figtree,sans-serif;">Sign in</span></span></div>
+              </div>
+              <dc-import name="NavBar" active="photos" style="position:absolute;left:0;right:0;bottom:0;z-index:10;" hint-size="100%,104px"></dc-import>
+              <dc-import name="SystemBars" style="position:absolute;inset:0;z-index:30;pointer-events:none;" hint-size="100%,100%"></dc-import>
+            </div>
+          </div></sc-for>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;font:400 14px/1.55 Figtree,sans-serif;color:#2B3533;">
+          <div style="text-wrap:pretty;"><b>After dismissing.</b> The card collapsed into the warn chip. Tapping the chip opens this StatusPopover (300 dp, radius 20, level-3 shadow). It offers the fix directly, with a link to Backup. The chip opens the Backup tab only when everything is safe.</div>
+          <div style="text-wrap:pretty;"><b>Strings.</b> Sign in to Google again / Google'da tekrar oturum açın · Google signed Settle out, so backup is paused. Nothing on this phone has changed. / Google, Settle'ın oturumunu kapattı; yedekleme duraklatıldı. Bu telefonda hiçbir şey değişmedi. · Sign in / Oturum aç · Backup details / Yedekleme ayrıntıları.</div>
+        </div>
+      </div>
+
+      <div id="B9" style="display:flex;flex-direction:column;gap:16px;width:788px;">
+        <div style="display:flex;align-items:center;gap:12px;"><a href="#B9" style="font:700 14px/1 Figtree,sans-serif;background:#141D1B;color:#fff;padding:7px 11px;border-radius:999px;text-decoration:none;">B9</a><span style="font:600 22px/1.2 Figtree,sans-serif;">Notice: mass disappearance pending</span></div>
+        <div style="display:flex;gap:28px;">
+          <sc-for list="{{ themes }}" as="m" hint-placeholder-count="2"><div style="{{ m.vars }}">
+            <div style="position:relative;width:380px;height:824px;border-radius:36px;overflow:hidden;background:var(--bg);box-shadow:0 0 0 1px rgba(0,0,0,.14),0 24px 48px -24px rgba(0,0,0,.35);">
+              <div style="position:absolute;top:100px;left:0;right:0;bottom:0;overflow:hidden;">
+                <dc-import name="NoticeCard" tone="warn" icon="hide_image" title="312 items disappeared from this phone" body="Their Drive copies are untouched. Settle won’t change anything in Drive until you decide." primary="Review" hint-size="100%,150px"></dc-import>
+                <dc-import name="PhotoGrid" sections="{{ tlDefault }}" cols="{{ 4 }}" hint-size="100%,600px"></dc-import>
+              </div>
+              <dc-import name="TopBar" title="Photos" style="position:absolute;top:36px;left:0;right:0;z-index:10;" hint-size="100%,64px"></dc-import>
+              <dc-import name="NavBar" active="photos" backup-dot="{{ true }}" style="position:absolute;left:0;right:0;bottom:0;z-index:10;" hint-size="100%,104px"></dc-import>
+              <dc-import name="SystemBars" style="position:absolute;inset:0;z-index:30;pointer-events:none;" hint-size="100%,100%"></dc-import>
+            </div>
+          </div></sc-for>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;font:400 14px/1.55 Figtree,sans-serif;color:#2B3533;">
+          <div style="text-wrap:pretty;"><b>Not dismissible</b> (there is no close button). The card is persisted, so it survives closing the app and reboots until the user answers in <a href="Settle F-G Trash and Mass disappearance.dc.html#G1">G1</a>. It uses warn, not error: nothing is at risk while Settle waits. Deletion sync to Drive is held for these items. Other backup keeps running.</div>
+          <div style="text-wrap:pretty;"><b>Strings.</b> 312 items disappeared from this phone / 312 öğe bu telefondan kayboldu · Their Drive copies are untouched. Settle won’t change anything in Drive until you decide. / Drive'daki kopyalarına dokunulmadı. Siz karar verene kadar Settle Drive'da hiçbir şeyi değiştirmeyecek. · Review / İncele.</div>
+        </div>
+      </div>
+
+      <div id="B10" style="display:flex;flex-direction:column;gap:16px;width:788px;">
+        <div style="display:flex;align-items:center;gap:12px;"><a href="#B10" style="font:700 14px/1 Figtree,sans-serif;background:#141D1B;color:#fff;padding:7px 11px;border-radius:999px;text-decoration:none;">B10</a><span style="font:600 22px/1.2 Figtree,sans-serif;">Loading</span></div>
+        <div style="display:flex;gap:28px;">
+          <sc-for list="{{ themes }}" as="m" hint-placeholder-count="2"><div style="{{ m.vars }}">
+            <div style="position:relative;width:380px;height:824px;border-radius:36px;overflow:hidden;background:var(--bg);box-shadow:0 0 0 1px rgba(0,0,0,.14),0 24px 48px -24px rgba(0,0,0,.35);">
+              <div style="position:absolute;top:100px;left:0;right:0;bottom:0;overflow:hidden;"><dc-import name="PhotoGrid" sections="{{ tlSkeleton }}" cols="{{ 4 }}" hint-size="100%,600px"></dc-import></div>
+              <dc-import name="TopBar" title="Photos" style="position:absolute;top:36px;left:0;right:0;z-index:10;" hint-size="100%,64px"></dc-import>
+              <dc-import name="NavBar" active="photos" style="position:absolute;left:0;right:0;bottom:0;z-index:10;" hint-size="100%,104px"></dc-import>
+              <dc-import name="SystemBars" style="position:absolute;inset:0;z-index:30;pointer-events:none;" hint-size="100%,100%"></dc-import>
+            </div>
+          </div></sc-for>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;font:400 14px/1.55 Figtree,sans-serif;color:#2B3533;">
+          <div style="text-wrap:pretty;"><b>Skeleton.</b> c2 tiles in the real grid geometry, with a slow 1.6 s opacity pulse between 0.6 and 1 (no shimmer sweep). Thumbnails fade in over 120 ms as they decode. The chip appears only after the first status read, so it never flashes a false "All in Drive". If loading takes over 3 s, nothing extra appears; the skeleton is enough.</div>
+          <div style="text-wrap:pretty;"><b>Strings.</b> Spoken only: "Loading photos" / "Fotoğraflar yükleniyor".</div>
+        </div>
+      </div>
+
+      <div id="B11" style="display:flex;flex-direction:column;gap:16px;width:788px;">
+        <div style="display:flex;align-items:center;gap:12px;"><a href="#B11" style="font:700 14px/1 Figtree,sans-serif;background:#141D1B;color:#fff;padding:7px 11px;border-radius:999px;text-decoration:none;">B11</a><span style="font:600 22px/1.2 Figtree,sans-serif;">Empty</span></div>
+        <div style="display:flex;gap:28px;">
+          <sc-for list="{{ themes }}" as="m" hint-placeholder-count="2"><div style="{{ m.vars }}">
+            <div style="position:relative;width:380px;height:824px;border-radius:36px;overflow:hidden;background:var(--bg);box-shadow:0 0 0 1px rgba(0,0,0,.14),0 24px 48px -24px rgba(0,0,0,.35);">
+              <div style="position:absolute;top:100px;left:0;right:0;bottom:104px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:0 40px;text-align:center;">
+                <div style="width:96px;height:96px;border-radius:32px;background:var(--c1);color:var(--pri);display:flex;align-items:center;justify-content:center;font:300 44px/1 'Material Symbols Rounded';">photo_library</div>
+                <div style="font:600 22px/1.25 Figtree,sans-serif;color:var(--ink);">Nothing here yet</div>
+                <div style="font:400 15px/1.5 Figtree,sans-serif;color:var(--ink2);text-wrap:pretty;">Photos and videos you take will show up here. Settle backs them up to your Drive at night.</div>
+                <div style="min-height:48px;display:flex;align-items:center;margin-top:6px;"><span style="height:40px;padding:0 20px;border-radius:20px;background:var(--pc);color:var(--onpc);display:flex;align-items:center;font:600 14px/1 Figtree,sans-serif;">Choose folders to show</span></div>
+              </div>
+              <dc-import name="TopBar" title="Photos" style="position:absolute;top:36px;left:0;right:0;z-index:10;" hint-size="100%,64px"></dc-import>
+              <dc-import name="NavBar" active="photos" style="position:absolute;left:0;right:0;bottom:0;z-index:10;" hint-size="100%,104px"></dc-import>
+              <dc-import name="SystemBars" style="position:absolute;inset:0;z-index:30;pointer-events:none;" hint-size="100%,100%"></dc-import>
+            </div>
+          </div></sc-for>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;font:400 14px/1.55 Figtree,sans-serif;color:#2B3533;">
+          <div style="text-wrap:pretty;"><b>EmptyState.</b> 96 dp tile (radius 32, c1) with a 44 dp glyph, a title in 22/600 and body text in 15/400, max width 300 dp. The tonal button opens folder visibility. The chip is hidden: there's nothing to report.</div>
+          <div style="text-wrap:pretty;"><b>Strings.</b> Nothing here yet / Henüz burada bir şey yok · Photos and videos you take will show up here. Settle backs them up to your Drive at night. / Çektiğiniz fotoğraf ve videolar burada görünecek. Settle bunları gece Drive'ınıza yedekler. · Choose folders to show / Gösterilecek klasörleri seçin.</div>
+        </div>
+      </div>
+
+      <div id="B12" style="display:flex;flex-direction:column;gap:16px;width:788px;">
+        <div style="display:flex;align-items:center;gap:12px;"><a href="#B12" style="font:700 14px/1 Figtree,sans-serif;background:#141D1B;color:#fff;padding:7px 11px;border-radius:999px;text-decoration:none;">B12</a><span style="font:600 22px/1.2 Figtree,sans-serif;">First run, Drive not connected</span></div>
+        <div style="display:flex;gap:28px;">
+          <sc-for list="{{ themes }}" as="m" hint-placeholder-count="2"><div style="{{ m.vars }}">
+            <div style="position:relative;width:380px;height:824px;border-radius:36px;overflow:hidden;background:var(--bg);box-shadow:0 0 0 1px rgba(0,0,0,.14),0 24px 48px -24px rgba(0,0,0,.35);">
+              <div style="position:absolute;top:100px;left:0;right:0;bottom:0;overflow:hidden;">
+                <dc-import name="NoticeCard" tone="info" icon="add_to_drive" title="Connect Google Drive" body="Settle keeps your photos in a Settle folder in your own Drive. Nothing is uploaded until you choose what to back up." primary="Connect" secondary="Not now" hint-size="100%,170px"></dc-import>
+                <dc-import name="PhotoGrid" sections="{{ tlFirstRun }}" cols="{{ 4 }}" hint-size="100%,600px"></dc-import>
+              </div>
+              <dc-import name="TopBar" title="Photos" no-account="{{ true }}" style="position:absolute;top:36px;left:0;right:0;z-index:10;" hint-size="100%,64px"></dc-import>
+              <dc-import name="NavBar" active="photos" style="position:absolute;left:0;right:0;bottom:0;z-index:10;" hint-size="100%,104px"></dc-import>
+              <dc-import name="SystemBars" style="position:absolute;inset:0;z-index:30;pointer-events:none;" hint-size="100%,100%"></dc-import>
+            </div>
+          </div></sc-for>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;font:400 14px/1.55 Figtree,sans-serif;color:#2B3533;">
+          <div style="text-wrap:pretty;"><b>Rule.</b> While Drive isn't connected, per-cell "Not backed up" badges are hidden. Otherwise every cell would carry one, and the card already explains the state. "Not now" collapses to the chip "Drive not connected" (warn). The card comes back on the next cold start, at most once a day. The avatar is a plain account_circle until an account is connected.</div>
+          <div style="text-wrap:pretty;"><b>Strings.</b> Connect Google Drive / Google Drive'ı bağlayın · Settle keeps your photos in a Settle folder in your own Drive. Nothing is uploaded until you choose what to back up. / Settle fotoğraflarınızı kendi Drive'ınızdaki Settle klasöründe saklar. Neyin yedekleneceğini seçene kadar hiçbir şey yüklenmez. · Connect / Bağlan · Not now / Şimdi değil.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:32px;">
+    <div style="font:700 32px/1.1 Figtree,sans-serif;">C · Selection mode</div>
+    <div style="max-width:1200px;font:400 16px/1.55 Figtree,sans-serif;color:#2B3533;text-wrap:pretty;"><b>Where the actions live.</b> The SelectionBar takes the NavBar's exact slot and height at the bottom. That puts the actions in thumb reach right after a long-press, and swapping two overlays of the same height can't move the grid. The SelectionTopBar replaces the 64 dp TopBar in place; it holds the count, Select all and overflow (Move, Add to album). Delete is the rightmost action and uses err text. Like the rest, it is undoable.</div>
+    <div style="display:flex;flex-wrap:wrap;gap:72px 64px;">
+
+      <div id="C1" style="display:flex;flex-direction:column;gap:16px;width:788px;">
+        <div style="display:flex;align-items:center;gap:12px;"><a href="#C1" style="font:700 14px/1 Figtree,sans-serif;background:#141D1B;color:#fff;padding:7px 11px;border-radius:999px;text-decoration:none;">C1</a><span style="font:600 22px/1.2 Figtree,sans-serif;">Long-press starts selection</span></div>
+        <div style="display:flex;gap:28px;">
+          <sc-for list="{{ themes }}" as="m" hint-placeholder-count="2"><div style="{{ m.vars }}">
+            <div style="position:relative;width:380px;height:824px;border-radius:36px;overflow:hidden;background:var(--bg);box-shadow:0 0 0 1px rgba(0,0,0,.14),0 24px 48px -24px rgba(0,0,0,.35);">
+              <div style="position:absolute;top:100px;left:0;right:0;bottom:0;overflow:hidden;"><dc-import name="PhotoGrid" sections="{{ selC1 }}" cols="{{ 4 }}" hint-size="100%,600px"></dc-import></div>
+              <div style="position:absolute;top:0;left:0;right:0;height:100px;padding:36px 4px 0;box-sizing:border-box;display:flex;align-items:center;gap:2px;background:var(--c1);z-index:10;">
+                <span style="width:48px;height:48px;display:flex;align-items:center;justify-content:center;font:400 24px/1 'Material Symbols Rounded';color:var(--ink);">close</span>
+                <span style="flex:1;font:600 20px/1.2 Figtree,sans-serif;color:var(--ink);">1 selected</span>
+                <span style="width:48px;height:48px;display:flex;align-items:center;justify-content:center;font:400 24px/1 'Material Symbols Rounded';color:var(--ink);">select_all</span>
+                <span style="width:48px;height:48px;display:flex;align-items:center;justify-content:center;font:400 24px/1 'Material Symbols Rounded';color:var(--ink);">more_vert</span>
+              </div>
+              <dc-import name="SelectionBar" actions="{{ actsBacked }}" style="position:absolute;left:0;right:0;bottom:0;z-index:10;" hint-size="100%,104px"></dc-import>
+              <dc-import name="SystemBars" style="position:absolute;inset:0;z-index:30;pointer-events:none;" hint-size="100%,100%"></dc-import>
+            </div>
+          </div></sc-for>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;font:400 14px/1.55 Figtree,sans-serif;color:#2B3533;">
+          <div style="text-wrap:pretty;"><b>Motion.</b> Long-press (400 ms) gives a haptic and selects the cell, which insets 8 dp (spring 600/0.8). Every cell fades in its check ring (150 ms). Waiting and Queued badges fade in. The bars cross-fade in place (150 ms). The finger stays on the same cell because nothing moves. Day headers swap their meta for a 48 dp select-day control at the right edge, without changing height.</div>
+          <div style="text-wrap:pretty;"><b>Strings.</b> 1 selected / 1 seçildi · Share / Paylaş · Favourite / Favori · Back up / Yedekle · Delete / Sil. "Back up" is disabled when everything selected is already in Drive. Its long-press tooltip says: Already in Drive / Zaten Drive'da.</div>
+        </div>
+      </div>
+
+      <div id="C2" style="display:flex;flex-direction:column;gap:16px;width:788px;">
+        <div style="display:flex;align-items:center;gap:12px;"><a href="#C2" style="font:700 14px/1 Figtree,sans-serif;background:#141D1B;color:#fff;padding:7px 11px;border-radius:999px;text-decoration:none;">C2</a><span style="font:600 22px/1.2 Figtree,sans-serif;">Drag to extend</span></div>
+        <div style="display:flex;gap:28px;">
+          <sc-for list="{{ themes }}" as="m" hint-placeholder-count="2"><div style="{{ m.vars }}">
+            <div style="position:relative;width:380px;height:824px;border-radius:36px;overflow:hidden;background:var(--bg);box-shadow:0 0 0 1px rgba(0,0,0,.14),0 24px 48px -24px rgba(0,0,0,.35);">
+              <div style="position:absolute;top:100px;left:0;right:0;bottom:0;overflow:hidden;"><dc-import name="PhotoGrid" sections="{{ selC2 }}" cols="{{ 4 }}" hint-size="100%,600px"></dc-import></div>
+              <div style="position:absolute;top:0;left:0;right:0;height:100px;padding:36px 4px 0;box-sizing:border-box;display:flex;align-items:center;gap:2px;background:var(--c1);z-index:10;">
+                <span style="width:48px;height:48px;display:flex;align-items:center;justify-content:center;font:400 24px/1 'Material Symbols Rounded';color:var(--ink);">close</span>
+                <span style="flex:1;font:600 20px/1.2 Figtree,sans-serif;color:var(--ink);">7 selected</span>
+                <span style="width:48px;height:48px;display:flex;align-items:center;justify-content:center;font:400 24px/1 'Material Symbols Rounded';color:var(--ink);">select_all</span>
+                <span style="width:48px;height:48px;display:flex;align-items:center;justify-content:center;font:400 24px/1 'Material Symbols Rounded';color:var(--ink);">more_vert</span>
+              </div>
+              <div style="position:absolute;left:0;right:0;bottom:104px;height:72px;background:linear-gradient(transparent,var(--pc));opacity:.55;z-index:9;"></div>
+              <dc-import name="SelectionBar" actions="{{ actsBacked }}" style="position:absolute;left:0;right:0;bottom:0;z-index:10;" hint-size="100%,104px"></dc-import>
+              <dc-import name="SystemBars" style="position:absolute;inset:0;z-index:30;pointer-events:none;" hint-size="100%,100%"></dc-import>
+            </div>
+          </div></sc-for>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;font:400 14px/1.55 Figtree,sans-serif;color:#2B3533;">
+          <div style="text-wrap:pretty;"><b>Drag.</b> Without lifting, dragging selects in reading order from the anchor cell to the finger. Dragging back shrinks the range. If the drag started on a selected cell, it clears instead. A 72 dp edge zone at the top and bottom auto-scrolls, faster the deeper the finger goes (shown as a faint pc wash). Each cell added gives a light tick haptic. The count updates live.</div>
+          <div style="text-wrap:pretty;"><b>Strings.</b> 7 selected / 7 seçildi. Spoken on lift: "7 selected".</div>
+        </div>
+      </div>
+
+      <div id="C3" style="display:flex;flex-direction:column;gap:16px;width:788px;">
+        <div style="display:flex;align-items:center;gap:12px;"><a href="#C3" style="font:700 14px/1 Figtree,sans-serif;background:#141D1B;color:#fff;padding:7px 11px;border-radius:999px;text-decoration:none;">C3</a><span style="font:600 22px/1.2 Figtree,sans-serif;">Select a whole day</span></div>
+        <div style="display:flex;gap:28px;">
+          <sc-for list="{{ themes }}" as="m" hint-placeholder-count="2"><div style="{{ m.vars }}">
+            <div style="position:relative;width:380px;height:824px;border-radius:36px;overflow:hidden;background:var(--bg);box-shadow:0 0 0 1px rgba(0,0,0,.14),0 24px 48px -24px rgba(0,0,0,.35);">
+              <div style="position:absolute;top:100px;left:0;right:0;bottom:0;overflow:hidden;"><dc-import name="PhotoGrid" sections="{{ selC3 }}" cols="{{ 4 }}" hint-size="100%,600px"></dc-import></div>
+              <div style="position:absolute;top:0;left:0;right:0;height:100px;padding:36px 4px 0;box-sizing:border-box;display:flex;align-items:center;gap:2px;background:var(--c1);z-index:10;">
+                <span style="width:48px;height:48px;display:flex;align-items:center;justify-content:center;font:400 24px/1 'Material Symbols Rounded';color:var(--ink);">close</span>
+                <span style="flex:1;font:600 20px/1.2 Figtree,sans-serif;color:var(--ink);">10 selected</span>
+                <span style="width:48px;height:48px;display:flex;align-items:center;justify-content:center;font:400 24px/1 'Material Symbols Rounded';color:var(--ink);">select_all</span>
+                <span style="width:48px;height:48px;display:flex;align-items:center;justify-content:center;font:400 24px/1 'Material Symbols Rounded';color:var(--ink);">more_vert</span>
+              </div>
+              <dc-import name="SelectionBar" actions="{{ actsMixed }}" style="position:absolute;left:0;right:0;bottom:0;z-index:10;" hint-size="100%,104px"></dc-import>
+              <dc-import name="SystemBars" style="position:absolute;inset:0;z-index:30;pointer-events:none;" hint-size="100%,100%"></dc-import>
+            </div>
+          </div></sc-for>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;font:400 14px/1.55 Figtree,sans-serif;color:#2B3533;">
+          <div style="text-wrap:pretty;"><b>DayHeader select control.</b> Three states: empty ring, partial (filled minus, pri) and all (filled check, pri). Tapping the control or the header text toggles: partial or empty becomes all, and all becomes none. Outside selection mode, long-pressing a header selects that day and enters selection.</div>
+          <div style="text-wrap:pretty;"><b>Strings.</b> Spoken: "Select Thursday, 29 October, 8 items" / "29 Ekim Perşembe'yi seç, 8 öğe" · "Yesterday, 2 of 6 selected" / "Dün, 6 öğeden 2'si seçili".</div>
+        </div>
+      </div>
+
+      <div id="C4" style="display:flex;flex-direction:column;gap:16px;width:788px;">
+        <div style="display:flex;align-items:center;gap:12px;"><a href="#C4" style="font:700 14px/1 Figtree,sans-serif;background:#141D1B;color:#fff;padding:7px 11px;border-radius:999px;text-decoration:none;">C4</a><span style="font:600 22px/1.2 Figtree,sans-serif;">Mixed: some not in Drive yet</span></div>
+        <div style="display:flex;gap:28px;">
+          <sc-for list="{{ themes }}" as="m" hint-placeholder-count="2"><div style="{{ m.vars }}">
+            <div style="position:relative;width:380px;height:824px;border-radius:36px;overflow:hidden;background:var(--bg);box-shadow:0 0 0 1px rgba(0,0,0,.14),0 24px 48px -24px rgba(0,0,0,.35);">
+              <div style="position:absolute;top:100px;left:0;right:0;bottom:0;overflow:hidden;"><dc-import name="PhotoGrid" sections="{{ selC4 }}" cols="{{ 4 }}" hint-size="100%,600px"></dc-import></div>
+              <div style="position:absolute;top:0;left:0;right:0;height:100px;padding:36px 4px 0;box-sizing:border-box;display:flex;align-items:center;gap:2px;background:var(--c1);z-index:10;">
+                <span style="width:48px;height:48px;display:flex;align-items:center;justify-content:center;font:400 24px/1 'Material Symbols Rounded';color:var(--ink);">close</span>
+                <span style="flex:1;font:600 20px/1.2 Figtree,sans-serif;color:var(--ink);">12 selected</span>
+                <span style="width:48px;height:48px;display:flex;align-items:center;justify-content:center;font:400 24px/1 'Material Symbols Rounded';color:var(--ink);">select_all</span>
+                <span style="width:48px;height:48px;display:flex;align-items:center;justify-content:center;font:400 24px/1 'Material Symbols Rounded';color:var(--ink);">more_vert</span>
+              </div>
+              <dc-import name="SelectionBar" actions="{{ actsMixed5 }}" info="{{ mixedInfo }}" style="position:absolute;left:0;right:0;bottom:0;z-index:10;" hint-size="100%,170px"></dc-import>
+              <dc-import name="SystemBars" style="position:absolute;inset:0;z-index:30;pointer-events:none;" hint-size="100%,100%"></dc-import>
+            </div>
+          </div></sc-for>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;font:400 14px/1.55 Figtree,sans-serif;color:#2B3533;">
+          <div style="text-wrap:pretty;"><b>Mixed selection.</b> An InfoStrip (surf, radius 16) floats above the bar whenever any selected item isn't in Drive. "Back up" gets a count badge and acts only on those 5: it skips the waiting period and starts now on Wi-Fi, even without the charger. Delete stays one tap; the snackbar then says which items weren't backed up (<a href="Settle D-E Viewer and Delete.dc.html#E5">E5</a>). Items in folders not chosen for backup (Not backed up) are included in Back up, after a one-time "Also back up this folder?" prompt.</div>
+          <div style="text-wrap:pretty;"><b>Strings.</b> 5 of 12 aren’t in Drive yet. Back up sends them now; Delete keeps them restorable for 30 days. / 12 öğeden 5'i henüz Drive'da değil. Yedekle, bunları şimdi gönderir; Sil, 30 gün boyunca geri yüklenebilir tutar. (proposed)</div>
+        </div>
+      </div>
+
+      <div id="C5" style="display:flex;flex-direction:column;gap:16px;width:788px;">
+        <div style="display:flex;align-items:center;gap:12px;"><a href="#C5" style="font:700 14px/1 Figtree,sans-serif;background:#141D1B;color:#fff;padding:7px 11px;border-radius:999px;text-decoration:none;">C5</a><span style="font:600 22px/1.2 Figtree,sans-serif;">After “Back up now”</span></div>
+        <div style="display:flex;gap:28px;">
+          <sc-for list="{{ themes }}" as="m" hint-placeholder-count="2"><div style="{{ m.vars }}">
+            <div style="position:relative;width:380px;height:824px;border-radius:36px;overflow:hidden;background:var(--bg);box-shadow:0 0 0 1px rgba(0,0,0,.14),0 24px 48px -24px rgba(0,0,0,.35);">
+              <div style="position:absolute;top:100px;left:0;right:0;bottom:0;overflow:hidden;"><dc-import name="PhotoGrid" sections="{{ tlBackupNow }}" cols="{{ 4 }}" hint-size="100%,600px"></dc-import></div>
+              <dc-import name="TopBar" title="Photos" chip="{{ chipBusy5 }}" style="position:absolute;top:36px;left:0;right:0;z-index:10;" hint-size="100%,64px"></dc-import>
+              <dc-import name="Snackbar" text="Backing up 5 items now." action="Details" style="position:absolute;left:0;right:0;bottom:116px;z-index:12;" hint-size="100%,56px"></dc-import>
+              <dc-import name="NavBar" active="photos" style="position:absolute;left:0;right:0;bottom:0;z-index:10;" hint-size="100%,104px"></dc-import>
+              <dc-import name="SystemBars" style="position:absolute;inset:0;z-index:30;pointer-events:none;" hint-size="100%,100%"></dc-import>
+            </div>
+          </div></sc-for>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;font:400 14px/1.55 Figtree,sans-serif;color:#2B3533;">
+          <div style="text-wrap:pretty;"><b>Result.</b> Selection ends. The five items show Uploading rings, and the chip shows progress. The Snackbar (radius 12, inv surface, 4 s) sits 12 dp above the NavBar. If the phone is on mobile data, a dialog asks first: "Use mobile data for 5 items (86 MB)?"</div>
+          <div style="text-wrap:pretty;"><b>Strings.</b> Backing up 5 items now. / 5 öğe şimdi yedekleniyor. · Details / Ayrıntılar · Use mobile data for 5 items (86 MB)? / 5 öğe (86 MB) için mobil veri kullanılsın mı?</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() {
+    if (!this._v) this._v = this.build();
+    return this._v;
+  }
+  build() {
+    const L = { '--bg': '#F4F8F7', '--surf': '#FFFFFF', '--c1': '#E6EFEC', '--c2': '#D6E4E0', '--c3': '#C2D4CF', '--ink': '#141D1B', '--ink2': '#3F4D49', '--line': '#CBD8D4', '--pri': '#1F6A64', '--onpri': '#FFFFFF', '--pc': '#BFEDE6', '--onpc': '#00201D', '--wc': '#FFDDAE', '--onwc': '#2A1800', '--warn': '#7A5000', '--err': '#B3261E', '--onerr': '#FFFFFF', '--ec': '#F9DEDC', '--onec': '#410E0B', '--inv': '#2A3230', '--oninv': '#EDF2F0', '--invpri': '#8ED5CC' };
+    const D = { '--bg': '#0E1413', '--surf': '#172020', '--c1': '#1B2524', '--c2': '#24302E', '--c3': '#34423F', '--ink': '#DDE4E2', '--ink2': '#A8B6B2', '--line': '#2F3B39', '--pri': '#8ED5CC', '--onpri': '#003732', '--pc': '#1E4F49', '--onpc': '#BFEDE6', '--wc': '#4D3500', '--onwc': '#FFDDAE', '--warn': '#F0BE6E', '--err': '#F2B8B5', '--onerr': '#601410', '--ec': '#8C1D18', '--onec': '#FFDAD6', '--inv': '#DDE4E2', '--oninv': '#2A3230', '--invpri': '#1F6A64' };
+    const themes = [{ label: 'Light', vars: L }, { label: 'Dark', vars: D }];
+
+    const POOL = [1035, 1036, 1037, 1038, 1039, 1040, 1041, 1042, 1043, 1044, 1047, 1048, 1049, 1050, 1051, 1052, 1053, 1054, 1055, 1056, 1057, 1058, 1059, 1060, 1061, 1062, 1063, 1064, 1065, 1066, 1067, 1068, 1069, 1070, 1071, 1072, 1073, 1074, 1075, 1076, 1077, 1078, 1079, 1080, 1081, 1082, 1083, 1084, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29];
+    const src = i => `https://picsum.photos/id/${POOL[i % POOL.length]}/240/240`;
+    const it = (i, o = {}) => ({ src: src(i), st: 'ok', ...o });
+
+    const base = () => [
+      { title: 'Today', items: [it(0, { st: 'waiting' }), it(1, { st: 'waiting', dur: '0:09' }), it(2, { st: 'waiting' })] },
+      { title: 'Yesterday', items: [3, 4, 5, 6, 7, 8].map(i => it(i, { st: 'queued', motion: i === 4, fav: i === 6 })) },
+      { title: 'Thursday, 29 October', items: [9, 10, 11, 12, 13, 14, 15, 16].map(i => it(i, { dur: i === 11 ? '0:42' : '', fav: i === 14 })) },
+      { title: 'Sunday, 25 October', items: [17, 18, 19, 20, 21, 22, 23, 24].map(i => it(i, { st: i === 19 ? 'notbacked' : 'ok', dur: i === 21 ? '1:08' : '' })) },
+    ];
+    const map = (secs, fn) => secs.map((s, si) => ({ ...s, items: s.items.map((x, ii) => fn(x, si, ii, s) || x) }));
+
+    const tlDefault = base();
+    const tlUploading = map(base(), (x, si, ii) => si === 1 ? { ...x, st: ii === 0 ? 'uploading' : ii === 1 ? 'uploading' : 'queued', progress: ii === 0 ? 72 : 18 } : (si === 0 ? x : null));
+    const tlAttention = map(base(), (x, si, ii) => si === 3 && ii === 4 ? { ...x, st: 'attention' } : null);
+    const tlFirstRun = map(base(), x => ({ ...x, st: 'ok' }));
+    const tlBackupNow = map(base(), (x, si, ii) => (si === 0 || (si === 1 && ii < 2)) ? { ...x, st: 'uploading', progress: [64, 30, 8, 0, 0][si === 0 ? ii : ii + 3] || 4 } : null);
+    const tlSkeleton = [3, 8, 8, 8].map((n, si) => ({ title: '', skel: true, items: Array.from({ length: n }, () => ({ skeleton: true })) }));
+    const tlOld = [
+      { title: 'Sunday, 16 March 2025', items: [33, 34, 35, 36, 37, 38].map(i => it(i, { st: 'cloud', fav: i === 35 })) },
+      { title: 'Saturday, 15 March 2025', items: [39, 40, 41, 42, 43, 44, 45, 46].map(i => it(i, { st: 'cloud', dur: i === 42 ? '2:31' : '' })) },
+      { title: 'Friday, 7 March 2025', items: [47, 48, 49, 50, 51].map(i => it(i, { st: 'cloud' })) },
+      { title: 'Sunday, 2 March 2025', items: [52, 53, 54, 55, 56, 57, 58, 59].map(i => it(i, { st: 'cloud', motion: i === 55 })) },
+    ];
+    const years = [['2026', '0%'], ['2025', '30%'], ['2024', '52%'], ['2023', '68%'], ['2021', '82%'], ['2019', '94%']].map(([label, top]) => ({ label, top }));
+    const tlMonths = [
+      { title: 'November 2026', items: [0, 1, 2].map(i => it(i)) },
+      { title: 'October 2026', items: Array.from({ length: 24 }, (_, k) => it(3 + k, { st: k === 16 ? 'notbacked' : 'ok', dur: k === 8 ? '0:42' : '' })) },
+      { title: 'September 2026', items: Array.from({ length: 18 }, (_, k) => it(33 + k)) },
+    ];
+
+    const sel = (secs, pred, finger, selMap = {}) => map(secs, (x, si, ii) => ({ ...x, selecting: true, selected: pred(si, ii), finger: finger && finger[0] === si && finger[1] === ii })).map((s, si) => ({ ...s, sel: selMap[si] || 'none' }));
+    const selC1 = sel(base(), (si, ii) => si === 2 && ii === 1, [2, 1]);
+    const selC2 = sel(base(), (si, ii) => si === 2 && ii >= 1 && ii <= 7, [2, 7], { 2: 'some' });
+    const selC3 = sel(base(), (si, ii) => si === 2 || (si === 1 && ii < 2), null, { 1: 'some', 2: 'all' });
+    const selC4 = sel(base(), (si, ii) => si === 0 || (si === 1 && ii < 2) || (si === 2 && ii < 7), null, { 0: 'all', 1: 'some', 2: 'some' });
+
+    const A = (icon, label, o = {}) => ({ icon, label, ...o });
+    const actsBacked = [A('share', 'Share'), A('favorite', 'Favourite'), A('cloud_upload', 'Back up', { disabled: true }), A('delete', 'Delete', { tone: 'err' })];
+    const actsMixed = [A('share', 'Share'), A('favorite', 'Favourite'), A('cloud_upload', 'Back up', { badge: '2' }), A('delete', 'Delete', { tone: 'err' })];
+    const actsMixed5 = [A('share', 'Share'), A('favorite', 'Favourite'), A('cloud_upload', 'Back up', { badge: '5' }), A('delete', 'Delete', { tone: 'err' })];
+    const mixedInfo = { icon: 'cloud_off', text: '5 of 12 aren’t in Drive yet. Back up sends them now; Delete keeps them restorable for 30 days.' };
+
+    const C = (name, rule, cell) => ({ name, rule, cell: { src: src(cell.i), st: 'ok', ...cell } });
+    const legend = [
+      C('Backed up', 'Default · no mark', { i: 9 }),
+      C('Waiting', 'Selection & Backup tab', { i: 0, st: 'waiting', showQuiet: true }),
+      C('Queued', 'Selection & Backup tab', { i: 3, st: 'queued', showQuiet: true }),
+      C('Uploading 64%', 'Always, while live', { i: 5, st: 'uploading', progress: 64 }),
+      C('Not backed up', 'Always', { i: 19, st: 'notbacked' }),
+      C('Needs attention', 'Always · colour + outline', { i: 21, st: 'attention' }),
+      C('Cloud only', 'Always', { i: 27, st: 'cloud' }),
+      C('Video', 'Duration, bottom-left', { i: 11, dur: '0:42' }),
+      C('Motion photo', 'Icon, bottom-left', { i: 4, motion: true }),
+      C('Favourite', 'Top-right', { i: 14, fav: true }),
+      C('All at once', 'Corners never collide', { i: 21, st: 'notbacked', dur: '1:08', fav: true }),
+      C('Selected', 'Inset 8 dp + check', { i: 12, selecting: true, selected: true }),
+    ];
+
+    return {
+      themes, tlDefault, tlUploading, tlAttention, tlFirstRun, tlBackupNow, tlSkeleton, tlOld, tlMonths, years,
+      selC1, selC2, selC3, selC4, actsBacked, actsMixed, actsMixed5, mixedInfo, legend,
+      chipSafe: { icon: 'cloud_done', text: 'All in Drive', tone: 'ok' },
+      chipBusy: { text: 'Backing up · 38%', tone: 'busy', progress: 38 },
+      chipBusy5: { text: 'Backing up · 12%', tone: 'busy', progress: 12 },
+      chipPaused: { icon: 'pause_circle', text: 'Backup paused', tone: 'warn' },
+    };
+  }
+}
+</script>
+</body>
+</html>

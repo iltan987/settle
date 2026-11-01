@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&family=Roboto:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,300..500,0..1,0&display=block">
+<style>html,body{margin:0;background:#DFE5E3;-webkit-font-smoothing:antialiased;}a{color:#1F6A64;}a:hover{color:#0E3F3B;}</style>
+</helmet>
+<section style="display:flex;flex-direction:column;gap:64px;padding:64px;font-family:Figtree,sans-serif;color:#141D1B;">
+  <div style="display:flex;flex-direction:column;gap:12px;max-width:1200px;">
+    <div style="font:600 14px/1 Figtree,sans-serif;color:#3F4D49;">Settle · Tidepool · Round 3, part 1 of 3</div>
+    <div style="font:700 52px/1.05 Figtree,sans-serif;letter-spacing:-0.02em;">A Onboarding · H Folders</div>
+    <div style="font:400 18px/1.5 Figtree,sans-serif;color:#3F4D49;text-wrap:pretty;">Same tokens, components and layering rule as round 2. Also in this round: <a href="Settle I Settings.dc.html">I Settings</a> · <a href="Settle J Backup tab.dc.html">J Backup tab</a>. Applied to earlier files: no blur anywhere (solid #202020 at 92%), no map thumbnail in Details, and the avatar shows the account initial (account_circle while Drive isn't connected).</div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:32px;">
+    <div style="font:700 32px/1.1 Figtree,sans-serif;">A · Onboarding</div>
+    <div style="max-width:1200px;font:400 16px/1.55 Figtree,sans-serif;color:#2B3533;text-wrap:pretty;"><b>Flow.</b> Welcome (A1) → Android photo access (A2) → full access to the timeline, or partial (A3), or blocked (A4) → Connect Drive (A5) → Google's account picker (A6) → background setup (A7, A8), showing only the steps that are still needed → timeline (A9). Everything after photo access can be skipped, and anything skipped returns later as a calm NoticeCard or a Settings row, never as a modal.</div>
+    <div style="display:flex;flex-wrap:wrap;gap:72px 64px;">
+
+      <div id="A1" style="display:flex;flex-direction:column;gap:16px;width:788px;">
+        <div style="display:flex;align-items:center;gap:12px;"><a href="#A1" style="font:700 14px/1 Figtree,sans-serif;background:#141D1B;color:#fff;padding:7px 11px;border-radius:999px;text-decoration:none;">A1</a><span style="font:600 22px/1.2 Figtree,sans-serif;">Welcome and photo access</span></div>
+        <div style="display:flex;gap:28px;">
+          <sc-for list="{{ themes }}" as="m" hint-placeholder-count="2"><div style="{{ m.vars }}">
+            <div style="position:relative;width:380px;height:824px;border-radius:36px;overflow:hidden;background:var(--bg);box-shadow:0 0 0 1px rgba(0,0,0,.14),0 24px 48px -24px rgba(0,0,0,.35);">
+              <div style="position:absolute;top:60px;left:16px;right:16px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;">
+                <sc-for list="{{ collage }}" as="c" hint-placeholder-count="6"><img src="{{ c }}" alt="" style="width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:12px;display:block;"></sc-for>
+              </div>
+              <div style="position:absolute;top:322px;left:24px;right:24px;display:flex;flex-direction:column;gap:12px;">
+                <div style="font:700 15px/1 Figtree,sans-serif;color:var(--pri);letter-spacing:.01em;">Settle</div>
+                <div style="font:600 28px/1.2 Figtree,sans-serif;color:var(--ink);letter-spacing:-0.01em;text-wrap:pretty;">Your phone and your Drive as one library</div>
+                <div style="font:400 15px/1.5 Figtree,sans-serif;color:var(--ink2);text-wrap:pretty;">Settle shows every photo and video on this phone in one place. To do that it needs access to all of them. Nothing leaves your phone until you connect Google Drive.</div>
+              </div>
+              <div style="position:absolute;left:24px;right:24px;bottom:40px;display:flex;flex-direction:column;gap:8px;">
+                <span style="min-height:52px;border-radius:26px;background:var(--pri);color:var(--onpri);display:flex;align-items:center;justify-content:center;text-align:center;padding:0 16px;font:600 15px/1.2 Figtree,sans-serif;">Allow access to photos</span>
+              </div>
+              <dc-import name="SystemBars" style="position:absolute;inset:0;z-index:30;pointer-events:none;" hint-size="100%,100%"></dc-import>
+            </div>
+          </div></sc-for>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;font:400 14px/1.55 Figtree,sans-serif;color:#2B3533;">
+          <div style="text-wrap:pretty;"><b>Components.</b> A photo collage of six neutral stock-style tiles (radius 12, 4 dp gap; bundled assets, since there's no access yet). Wordmark at 15/700 pri. Headline at 28/600 in the content area. A pinned 52 dp primary button. There's no skip: the app can't work without photo access. If access is already granted, onboarding starts at A5.</div>
+          <div style="text-wrap:pretty;"><b>Strings.</b> Your phone and your Drive as one library / Telefonunuz ve Drive'ınız tek bir kitaplık · Settle shows every photo and video on this phone in one place. To do that it needs access to all of them. Nothing leaves your phone until you connect Google Drive. / Settle bu telefondaki tüm fotoğraf ve videoları tek bir yerde gösterir. Bunun için hepsine erişmesi gerekir. Google Drive'ı bağlayana kadar telefonunuzdan hiçbir şey çıkmaz. · Allow access to photos / Fotoğraflara erişime izin ver.</div>
+        </div>
+      </div>
+
+      <div id="A2" style="display:flex;flex-direction:column;gap:16px;width:788px;">
+        <div style="display:flex;align-items:center;gap:12px;"><a href="#A2" style="font:700 14px/1 Figtree,sans-serif;background:#141D1B;color:#fff;padding:7px 11px;border-radius:999px;text-decoration:none;">A2</a><span style="font:600 22px/1.2 Figtree,sans-serif;">Android’s photo access dialog</span></div>
+        <div style="display:flex;gap:28px;">
+          <sc-for list="{{ themes }}" as="m" hint-placeholder-count="2"><div style="{{ m.vars }}">
+            <div style="position:relative;width:380px;height:824px;border-radius:36px;overflow:hidden;background:var(--bg);box-shadow:0 0 0 1px rgba(0,0,0,.14),0 24px 48px -24px rgba(0,0,0,.35);">
+              <div style="position:absolute;top:60px;left:16px;right:16px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;">
+                <sc-for list="{{ collage }}" as="c" hint-placeholder-count="6"><img src="{{ c }}" alt="" style="width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:12px;display:block;"></sc-for>
+              </div>
+              <div style="position:absolute;inset:0;background:rgba(0,0,0,.5);"></div>
+              <div style="position:absolute;left:24px;right:24px;top:236px;background:var(--surf);border-radius:28px;padding:24px 16px 12px;display:flex;flex-direction:column;gap:14px;font-family:Roboto,sans-serif;">
+                <span style="align-self:center;font:400 26px/1 'Material Symbols Rounded';color:var(--pri);">photo_library</span>
+                <div style="font:400 20px/1.35 Roboto,sans-serif;color:var(--ink);text-align:center;padding:0 8px;">Allow Settle to access photos and videos on this device?</div>
+                <div style="display:flex;flex-direction:column;gap:6px;">
+                  <span style="min-height:48px;border-radius:24px;background:var(--pri);color:var(--onpri);display:flex;align-items:center;justify-content:center;font:500 14px/1 Roboto,sans-serif;">Allow all</span>
+                  <span style="min-height:48px;border-radius:24px;background:var(--c1);color:var(--ink);display:flex;align-items:center;justify-content:center;font:500 14px/1 Roboto,sans-serif;">Select photos and videos</span>
+                  <span style="min-height:48px;border-radius:24px;background:var(--c1);color:var(--ink);display:flex;align-items:center;justify-content:center;font:500 14px/1 Roboto,sans-serif;">Don’t allow</span>
+                </div>
+              </div>
+              <div style="position:absolute;left:0;right:0;top:206px;font:500 11px/1 'IBM Plex Mono',monospace;color:#fff;opacity:.75;text-align:center;">system UI · approximate</div>
+              <dc-import name="SystemBars" on-dark="{{ true }}" style="position:absolute;inset:0;z-index:30;pointer-events:none;" hint-size="100%,100%"></dc-import>
+            </div>
+          </div></sc-for>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;font:400 14px/1.55 Figtree,sans-serif;color:#2B3533;">
+          <div style="text-wrap:pretty;"><b>Android draws this.</b> Settle draws nothing on top. Allow all goes to A5. Select photos and videos goes to A3. Don't allow goes to A4. On a second denial, Android stops showing the dialog, so the screen links to settings instead (A4).</div>
+          <div style="text-wrap:pretty;"><b>Strings.</b> Written by the system in the system language.</div>
+        </div>
+      </div>
+
+      <div id="A3" style="display:flex;flex-direction:column;gap:16px;width:788px;">
+        <div style="display:flex;align-items:center;gap:12px;"><a href="#A3" style="font:700 14px/1 Figtree,sans-serif;background:#141D1B;color:#fff;padding:7px 11px;border-radius:999px;text-decoration:none;">A3</a><span style="font:600 22px/1.2 Figtree,sans-serif;">Only some photos allowed</span></div>
+        <div style="display:flex;gap:28px;">
+          <sc-for list="{{ themes }}" as="m" hint-placeholder-count="2"><div style="{{ m.vars }}">
+            <div style="position:relative;width:380px;height:824px;border-radius:36px;overflow:hidden;background:var(--bg);box-shadow:0 0 0 1px rgba(0,0,0,.14),0 24px 48px -24px rgba(0,0,0,.35);">
+              <div style="position:absolute;top:100px;left:0;right:0;bottom:0;overflow:hidden;">
+                <dc-import name="NoticeCard" tone="info" icon="photo_library" title="Settle sees only the 24 photos you picked" body="Allow all to see your whole library in one place. You still choose which folders back up." primary="Allow all" secondary="Change selection" hint-size="100%,170px"></dc-import>
+                <dc-import name="PhotoGrid" sections="{{ partialSecs }}" cols="{{ 4 }}" hint-size="100%,500px"></dc-import>
+              </div>
+              <dc-import name="TopBar" title="Photos" no-account="{{ true }}" style="position:absolute;top:36px;left:0;right:0;z-index:10;" hint-size="100%,64px"></dc-import>
+              <dc-import name="NavBar" active="photos" style="position:absolute;left:0;right:0;bottom:0;z-index:10;" hint-size="100%,104px"></dc-import>
+              <dc-import name="SystemBars" style="position:absolute;inset:0;z-index:30;pointer-events:none;" hint-size="100%,100%"></dc-import>
+            </div>
+          </div></sc-for>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;font:400 14px/1.55 Figtree,sans-serif;color:#2B3533;">
+          <div style="text-wrap:pretty;"><b>Behaviour.</b> The app works on what it can see. The NoticeCard can't be dismissed while access is partial, but it scrolls away with the grid. Allow all opens the system permission page. Change selection reopens Android's picker. Onboarding continues to A5 after the first view; partial access doesn't block connecting Drive.</div>
+          <div style="text-wrap:pretty;"><b>Strings.</b> Settle sees only the 24 photos you picked / Settle yalnızca seçtiğiniz 24 fotoğrafı görüyor · Allow all to see your whole library in one place. You still choose which folders back up. / Tüm kitaplığınızı tek yerde görmek için tümüne izin verin. Hangi klasörlerin yedekleneceğini yine siz seçersiniz. · Allow all / Tümüne izin ver · Change selection / Seçimi değiştir.</div>
+        </div>
+      </div>
+
+      <div id="A4" style="display:flex;flex-direction:column;gap:16px;width:788px;">
+        <div style="display:flex;align-items:center;gap:12px;"><a href="#A4" style="font:700 14px/1 Figtree,sans-serif;background:#141D1B;color:#fff;padding:7px 11px;border-radius:999px;text-decoration:none;">A4</a><span style="font:600 22px/1.2 Figtree,sans-serif;">Access blocked</span></div>
+        <div style="display:flex;gap:28px;">
+          <sc-for list="{{ themes }}" as="m" hint-placeholder-count="2"><div style="{{ m.vars }}">
+            <div style="position:relative;width:380px;height:824px;border-radius:36px;overflow:hidden;background:var(--bg);box-shadow:0 0 0 1px rgba(0,0,0,.14),0 24px 48px -24px rgba(0,0,0,.35);">
+              <div style="position:absolute;top:150px;left:24px;right:24px;display:flex;flex-direction:column;gap:14px;">
+                <div style="width:56px;height:56px;border-radius:18px;background:var(--c1);color:var(--ink2);display:flex;align-items:center;justify-content:center;font:400 30px/1 'Material Symbols Rounded';">lock</div>
+                <div style="font:600 26px/1.25 Figtree,sans-serif;color:var(--ink);">Settle can’t see your photos</div>
+                <div style="font:400 15px/1.5 Figtree,sans-serif;color:var(--ink2);text-wrap:pretty;">Photo access is turned off for Settle. Turn it on in Android settings to see your library here.</div>
+                <div style="margin-top:6px;border-radius:20px;background:var(--c1);padding:14px 16px;display:flex;flex-direction:column;gap:10px;">
+                  <sc-for list="{{ blockedSteps }}" as="s" hint-placeholder-count="3"><div style="display:flex;gap:12px;align-items:center;"><span style="width:24px;height:24px;border-radius:50%;background:var(--surf);color:var(--ink);font:600 12.5px/24px Figtree,sans-serif;text-align:center;flex:none;">{{ s.n }}</span><span style="font:400 14px/1.4 Figtree,sans-serif;color:var(--ink);">{{ s.t }}</span></div></sc-for>
+                </div>
+              </div>
+              <div style="position:absolute;left:24px;right:24px;bottom:40px;"><span style="min-height:52px;border-radius:26px;background:var(--pri);color:var(--onpri);display:flex;align-items:center;justify-content:center;gap:8px;font:600 15px/1.2 Figtree,sans-serif;">Open Android settings<span style="font:400 18px/1 'Material Symbols Rounded';">open_in_new</span></span></div>
+              <dc-import name="SystemBars" style="position:absolute;inset:0;z-index:30;pointer-events:none;" hint-size="100%,100%"></dc-import>
+            </div>
+          </div></sc-for>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;font:400 14px/1.55 Figtree,sans-serif;color:#2B3533;">
+          <div style="text-wrap:pretty;"><b>No blame, no dead end.</b> Shown after a denial, or whenever access is later revoked (it replaces the timeline). The StepList (c1, radius 20, numbered 24 dp discs) mirrors Android's wording. Returning from settings re-checks access automatically. If access was revoked with backups in Drive, the timeline's mass-disappearance check doesn't run (see G).</div>
+          <div style="text-wrap:pretty;"><b>Strings.</b> Settle can’t see your photos / Settle fotoğraflarınızı göremiyor · Photo access is turned off for Settle. Turn it on in Android settings to see your library here. / Settle için fotoğraf erişimi kapalı. Kitaplığınızı burada görmek için Android ayarlarından açın. · Open Android settings / Android ayarlarını aç · Steps: Permissions / İzinler · Photos and videos / Fotoğraflar ve videolar · Allow all / Tümüne izin ver.</div>
+        </div>
+      </div>
+
+      <div id="A5" style="display:flex;flex-direction:column;gap:16px;width:788px;">
+        <div style="display:flex;align-items:center;gap:12px;"><a href="#A5" style="font:700 14px/1 Figtree,sans-serif;background:#141D1B;color:#fff;padding:7px 11px;border-radius:999px;text-decoration:none;">A5</a><span style="font:600 22px/1.2 Figtree,sans-serif;">Connect Google Drive</span></div>
+        <div style="display:flex;gap:28px;">
+          <sc-for list="{{ themes }}" as="m" hint-placeholder-count="2"><div style="{{ m.vars }}">
+            <div style="position:relative;width:380px;height:824px;border-radius:36px;overflow:hidden;background:var(--bg);box-shadow:0 0 0 1px rgba(0,0,0,.14),0 24px 48px -24px rgba(0,0,0,.35);">
+              <div style="position:absolute;top:100px;left:24px;right:24px;display:flex;flex-direction:column;gap:14px;">
+                <div style="width:56px;height:56px;border-radius:18px;background:var(--pc);color:var(--onpc);display:flex;align-items:center;justify-content:center;font:400 30px/1 'Material Symbols Rounded';">add_to_drive</div>
+                <div style="font:600 26px/1.25 Figtree,sans-serif;color:var(--ink);text-wrap:pretty;">Back up to your own Google Drive</div>
+                <div style="font:400 15px/1.5 Figtree,sans-serif;color:var(--ink2);text-wrap:pretty;">Originals go to a folder called Settle in your Drive, byte for byte. Settle only sees the files it creates there.</div>
+                <div style="display:flex;flex-direction:column;gap:16px;margin-top:10px;">
+                  <sc-for list="{{ promises }}" as="p" hint-placeholder-count="3">
+                    <div style="display:flex;gap:14px;align-items:flex-start;"><span style="width:40px;height:40px;border-radius:12px;background:var(--c1);color:var(--pri);display:flex;align-items:center;justify-content:center;font:400 22px/1 'Material Symbols Rounded';flex:none;">{{ p.icon }}</span><div style="display:flex;flex-direction:column;gap:2px;padding-top:1px;"><span style="font:600 14.5px/1.3 Figtree,sans-serif;color:var(--ink);">{{ p.t }}</span><span style="font:400 13px/1.4 Figtree,sans-serif;color:var(--ink2);text-wrap:pretty;">{{ p.s }}</span></div></div>
+                  </sc-for>
+                </div>
+              </div>
+              <div style="position:absolute;left:24px;right:24px;bottom:32px;display:flex;flex-direction:column;gap:8px;">
+                <span style="min-height:52px;border-radius:26px;background:var(--pri);color:var(--onpri);display:flex;align-items:center;justify-content:center;font:600 15px/1.2 Figtree,sans-serif;">Connect Google Drive</span>
+                <span style="min-height:48px;display:flex;align-items:center;justify-content:center;font:600 15px/1.2 Figtree,sans-serif;color:var(--pri);">Not now</span>
+              </div>
+              <dc-import name="SystemBars" style="position:absolute;inset:0;z-index:30;pointer-events:none;" hint-size="100%,100%"></dc-import>
+            </div>
+          </div></sc-for>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;font:400 14px/1.55 Figtree,sans-serif;color:#2B3533;">
+          <div style="text-wrap:pretty;"><b>Purpose.</b> State the promise once, in three facts, before Google's screens. PromiseRow: 40 dp icon tile, title 14.5/600, one line of detail. Not now goes to the timeline in the B12 state. Connect opens Google's picker (A6) and asks only for the per-file Drive scope.</div>
+          <div style="text-wrap:pretty;"><b>Strings.</b> Back up to your own Google Drive / Kendi Google Drive'ınıza yedekleyin · Originals go to a folder called Settle in your Drive, byte for byte. Settle only sees the files it creates there. / Orijinaller Drive'ınızdaki Settle adlı klasöre birebir gider. Settle orada yalnızca kendi oluşturduğu dosyaları görür. · Waits before it uploads / Yüklemeden önce bekler · Works at night / Gece çalışır · Delete once, everywhere / Bir kez silin, her yerden silinsin · Connect Google Drive / Google Drive'ı bağla · Not now / Şimdi değil.</div>
+        </div>
+      </div>
+
+      <div id="A6" style="display:flex;flex-direction:column;gap:16px;width:788px;">
+        <div style="display:flex;align-items:center;gap:12px;"><a href="#A6" style="font:700 14px/1 Figtree,sans-serif;background:#141D1B;color:#fff;padding:7px 11px;border-radius:999px;text-decoration:none;">A6</a><span style="font:600 22px/1.2 Figtree,sans-serif;">Google’s account picker</span></div>
+        <div style="display:flex;gap:28px;">
+          <sc-for list="{{ themes }}" as="m" hint-placeholder-count="2"><div style="{{ m.vars }}">
+            <div style="position:relative;width:380px;height:824px;border-radius:36px;overflow:hidden;background:var(--bg);box-shadow:0 0 0 1px rgba(0,0,0,.14),0 24px 48px -24px rgba(0,0,0,.35);">
+              <div style="position:absolute;inset:0;background:rgba(0,0,0,.5);"></div>
+              <div style="position:absolute;left:0;right:0;bottom:0;background:var(--surf);border-radius:28px 28px 0 0;padding:24px 0 40px;display:flex;flex-direction:column;gap:6px;font-family:Roboto,sans-serif;">
+                <div style="font:400 22px/1.3 Roboto,sans-serif;color:var(--ink);text-align:center;">Choose an account</div>
+                <div style="font:400 14px/1.3 Roboto,sans-serif;color:var(--ink2);text-align:center;margin-bottom:12px;">to continue to Settle</div>
+                <sc-for list="{{ accounts }}" as="a" hint-placeholder-count="2">
+                  <div style="min-height:64px;padding:8px 24px;box-sizing:border-box;display:flex;align-items:center;gap:16px;border-top:1px solid var(--line);"><span style="width:36px;height:36px;border-radius:50%;background:{{ a.bg }};color:#fff;font:500 16px/36px Roboto,sans-serif;text-align:center;">{{ a.i }}</span><div style="display:flex;flex-direction:column;gap:2px;"><span style="font:500 14px/1.3 Roboto,sans-serif;color:var(--ink);">{{ a.name }}</span><span style="font:400 13px/1.3 Roboto,sans-serif;color:var(--ink2);">{{ a.mail }}</span></div></div>
+                </sc-for>
+                <div style="min-height:56px;padding:8px 24px;box-sizing:border-box;display:flex;align-items:center;gap:16px;border-top:1px solid var(--line);"><span style="width:36px;text-align:center;font:400 22px/1 'Material Symbols Rounded';color:var(--ink2);">person_add</span><span style="font:500 14px/1.3 Roboto,sans-serif;color:var(--ink);">Add another account</span></div>
+              </div>
+              <div style="position:absolute;left:0;right:0;top:300px;font:500 11px/1 'IBM Plex Mono',monospace;color:#fff;opacity:.75;text-align:center;">Google UI · approximate</div>
+              <dc-import name="SystemBars" on-dark="{{ true }}" style="position:absolute;inset:0;z-index:30;pointer-events:none;" hint-size="100%,100%"></dc-import>
+            </div>
+          </div></sc-for>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;font:400 14px/1.55 Figtree,sans-serif;color:#2B3533;">
+          <div style="text-wrap:pretty;"><b>Google draws this</b>, followed by its consent screen. Settle shows a 1-second "Connecting…" state on return, then A7. If the user cancels, they go back to A5 with no message. If the scope is refused, A5 shows an inline line: "Settle needs permission to create its folder in Drive."</div>
+          <div style="text-wrap:pretty;"><b>Strings (Settle's).</b> Connecting… / Bağlanıyor… · Settle needs permission to create its folder in Drive. / Settle'ın Drive'da klasörünü oluşturmak için izne ihtiyacı var.</div>
+        </div>
+      </div>
+
+      <div id="A7" style="display:flex;flex-direction:column;gap:16px;width:788px;">
+        <div style="display:flex;align-items:center;gap:12px;"><a href="#A7" style="font:700 14px/1 Figtree,sans-serif;background:#141D1B;color:#fff;padding:7px 11px;border-radius:999px;text-decoration:none;">A7</a><span style="font:600 22px/1.2 Figtree,sans-serif;">Keep backup running (only needed steps)</span></div>
+        <div style="display:flex;gap:28px;">
+          <sc-for list="{{ themes }}" as="m" hint-placeholder-count="2"><div style="{{ m.vars }}">
+            <div style="position:relative;width:380px;height:824px;border-radius:36px;overflow:hidden;background:var(--bg);box-shadow:0 0 0 1px rgba(0,0,0,.14),0 24px 48px -24px rgba(0,0,0,.35);">
+              <div style="position:absolute;top:36px;left:0;right:0;height:56px;padding:0 4px 0 24px;display:flex;align-items:center;justify-content:space-between;">
+                <span style="font:600 14px/1 Figtree,sans-serif;color:var(--ink2);">Drive connected · deniz.aydin@gmail.com</span>
+                <span style="min-height:48px;padding:0 12px;display:flex;align-items:center;font:600 14px/1 Figtree,sans-serif;color:var(--pri);">Skip</span>
+              </div>
+              <div style="position:absolute;top:100px;left:24px;right:24px;display:flex;flex-direction:column;gap:10px;">
+                <div style="font:600 26px/1.25 Figtree,sans-serif;color:var(--ink);text-wrap:pretty;">Help backup run at night</div>
+                <div style="font:400 15px/1.5 Figtree,sans-serif;color:var(--ink2);text-wrap:pretty;">Android sometimes stops apps in the background. These steps prevent that. Each one is optional.</div>
+              </div>
+              <div style="position:absolute;top:248px;left:0;right:0;"><dc-import name="SettingsList" groups="{{ setupGroups }}" hint-size="100%,300px"></dc-import></div>
+              <div style="position:absolute;left:24px;right:24px;bottom:40px;"><span style="min-height:52px;border-radius:26px;background:var(--pri);color:var(--onpri);display:flex;align-items:center;justify-content:center;font:600 15px/1.2 Figtree,sans-serif;">Done</span></div>
+              <dc-import name="SystemBars" style="position:absolute;inset:0;z-index:30;pointer-events:none;" hint-size="100%,100%"></dc-import>
+            </div>
+          </div></sc-for>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;font:400 14px/1.55 Figtree,sans-serif;color:#2B3533;">
+          <div style="text-wrap:pretty;"><b>SetupStepList.</b> Each step is checked live, so only unmet steps appear. If none are needed, this screen is skipped. A completed step turns into a check row with the sub "Done", in place and without reordering. The Samsung step only exists on Samsung phones. Skip and Done both go to the timeline. Unmet steps move to Settings → Keep backup running (<a href="Settle I Settings.dc.html#I10">I10</a>) and add no NoticeCard unless a night's backup actually fails.</div>
+          <div style="text-wrap:pretty;"><b>Strings.</b> Help backup run at night / Yedeklemenin gece çalışmasına yardım edin · Android sometimes stops apps in the background. These steps prevent that. Each one is optional. / Android bazen arka plandaki uygulamaları durdurur. Bu adımlar bunu önler. Hepsi isteğe bağlıdır. · Notifications / Bildirimler · Only when something needs you. / Yalnızca bir şey sizi beklediğinde. · Unrestricted battery use / Kısıtlamasız pil kullanımı · Never sleeping apps / Hiç uyumayan uygulamalar · Allow / İzin ver · Open settings / Ayarları aç · Done / Bitti · Skip / Atla.</div>
+        </div>
+      </div>
+
+      <div id="A8" style="display:flex;flex-direction:column;gap:16px;width:788px;">
+        <div style="display:flex;align-items:center;gap:12px;"><a href="#A8" style="font:700 14px/1 Figtree,sans-serif;background:#141D1B;color:#fff;padding:7px 11px;border-radius:999px;text-decoration:none;">A8</a><span style="font:600 22px/1.2 Figtree,sans-serif;">Samsung: “Never sleeping apps” guide</span></div>
+        <div style="display:flex;gap:28px;">
+          <sc-for list="{{ themes }}" as="m" hint-placeholder-count="2"><div style="{{ m.vars }}">
+            <div style="position:relative;width:380px;height:824px;border-radius:36px;overflow:hidden;background:var(--bg);box-shadow:0 0 0 1px rgba(0,0,0,.14),0 24px 48px -24px rgba(0,0,0,.35);">
+              <div style="position:absolute;top:248px;left:0;right:0;"><dc-import name="SettingsList" groups="{{ setupGroups }}" hint-size="100%,300px"></dc-import></div>
+              <div style="position:absolute;inset:0;background:rgba(0,0,0,.5);"></div>
+              <div style="position:absolute;left:0;right:0;bottom:0;background:var(--surf);border-radius:28px 28px 0 0;padding:10px 24px 36px;display:flex;flex-direction:column;gap:14px;">
+                <div style="align-self:center;width:32px;height:4px;border-radius:2px;background:var(--ink2);opacity:.4;margin-bottom:6px;"></div>
+                <div style="font:600 22px/1.25 Figtree,sans-serif;color:var(--ink);">Add Settle to Never sleeping apps</div>
+                <div style="font:400 15px/1.5 Figtree,sans-serif;color:var(--ink2);text-wrap:pretty;">Samsung phones put apps to sleep on their own. This keeps Settle awake for its night backup.</div>
+                <div style="border-radius:20px;background:var(--c1);padding:14px 16px;display:flex;flex-direction:column;gap:10px;">
+                  <sc-for list="{{ samsungSteps }}" as="s" hint-placeholder-count="4"><div style="display:flex;gap:12px;align-items:center;"><span style="width:24px;height:24px;border-radius:50%;background:var(--surf);color:var(--ink);font:600 12.5px/24px Figtree,sans-serif;text-align:center;flex:none;">{{ s.n }}</span><span style="font:400 14px/1.4 Figtree,sans-serif;color:var(--ink);">{{ s.t }}</span></div></sc-for>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:8px;margin-top:4px;">
+                  <span style="min-height:48px;border-radius:24px;background:var(--pri);color:var(--onpri);display:flex;align-items:center;justify-content:center;gap:8px;font:600 15px/1.2 Figtree,sans-serif;">Open battery settings<span style="font:400 18px/1 'Material Symbols Rounded';">open_in_new</span></span>
+                  <span style="min-height:48px;display:flex;align-items:center;justify-content:center;font:600 15px/1.2 Figtree,sans-serif;color:var(--pri);">I’ve done this</span>
+                </div>
+              </div>
+              <dc-import name="SystemBars" on-dark="{{ true }}" style="position:absolute;inset:0;z-index:30;pointer-events:none;" hint-size="100%,100%"></dc-import>
+            </div>
+          </div></sc-for>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;font:400 14px/1.55 Figtree,sans-serif;color:#2B3533;">
+          <div style="text-wrap:pretty;"><b>Why a guide.</b> Samsung offers no API to check or request this, so Settle explains the path and trusts "I’ve done this". If the nightly worker is later killed twice in a row, the step comes back in Settings with the warn tone.</div>
+          <div style="text-wrap:pretty;"><b>Strings.</b> Add Settle to Never sleeping apps / Settle'ı Hiç uyumayan uygulamalara ekleyin · Samsung phones put apps to sleep on their own. This keeps Settle awake for its night backup. / Samsung telefonlar uygulamaları kendiliğinden uyutur. Bu, Settle'ı gece yedeklemesi için uyanık tutar. · Battery / Pil · Background usage limits / Arka plan kullanım sınırları · Never sleeping apps / Hiç uyumayan uygulamalar · Add Settle / Settle'ı ekle · Open battery settings / Pil ayarlarını aç · I’ve done this / Bunu yaptım.</div>
+        </div>
+      </div>
+
+      <div id="A9" style="display:flex;flex-direction:column;gap:16px;width:788px;">
+        <div style="display:flex;align-items:center;gap:12px;"><a href="#A9" style="font:700 14px/1 Figtree,sans-serif;background:#141D1B;color:#fff;padding:7px 11px;border-radius:999px;text-decoration:none;">A9</a><span style="font:600 22px/1.2 Figtree,sans-serif;">Ready: first backup tonight</span></div>
+        <div style="display:flex;gap:28px;">
+          <sc-for list="{{ themes }}" as="m" hint-placeholder-count="2"><div style="{{ m.vars }}">
+            <div style="position:relative;width:380px;height:824px;border-radius:36px;overflow:hidden;background:var(--bg);box-shadow:0 0 0 1px rgba(0,0,0,.14),0 24px 48px -24px rgba(0,0,0,.35);">
+              <div style="position:absolute;top:100px;left:0;right:0;bottom:0;overflow:hidden;">
+                <dc-import name="NoticeCard" tone="info" icon="nightlight" title="First backup starts tonight" body="602 items from Camera back up on Wi-Fi while charging. Photos from the last 24 hours wait a little longer." primary="Back up now" dismissible="{{ true }}" hint-size="100%,170px"></dc-import>
+                <dc-import name="PhotoGrid" sections="{{ readySecs }}" cols="{{ 4 }}" hint-size="100%,500px"></dc-import>
+              </div>
+              <dc-import name="TopBar" title="Photos" chip="{{ chipTonight }}" style="position:absolute;top:36px;left:0;right:0;z-index:10;" hint-size="100%,64px"></dc-import>
+              <dc-import name="NavBar" active="photos" style="position:absolute;left:0;right:0;bottom:0;z-index:10;" hint-size="100%,104px"></dc-import>
+              <dc-import name="SystemBars" style="position:absolute;inset:0;z-index:30;pointer-events:none;" hint-size="100%,100%"></dc-import>
+            </div>
+          </div></sc-for>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;font:400 14px/1.55 Figtree,sans-serif;color:#2B3533;">
+          <div style="text-wrap:pretty;"><b>Honest first state.</b> Nothing is in Drive yet, so the chip never says "All in Drive". It says "First backup tonight" (ok tone, nightlight icon) until the first verified upload. The avatar now shows the account initial. Cells carry no badges: they are Queued, which is a quiet status. Dismissing the card leaves the chip.</div>
+          <div style="text-wrap:pretty;"><b>Strings.</b> First backup starts tonight / İlk yedekleme bu gece başlıyor · 602 items from Camera back up on Wi-Fi while charging. Photos from the last 24 hours wait a little longer. / Kamera'daki 602 öğe şarj olurken Wi-Fi üzerinden yedeklenir. Son 24 saatteki fotoğraflar biraz daha bekler. · Back up now / Şimdi yedekle · Chip: First backup tonight / İlk yedekleme bu gece.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:32px;">
+    <div style="font:700 32px/1.1 Figtree,sans-serif;">H · Folders</div>
+    <div style="display:flex;flex-wrap:wrap;gap:72px 64px;">
+
+      <div id="H1" style="display:flex;flex-direction:column;gap:16px;width:788px;">
+        <div style="display:flex;align-items:center;gap:12px;"><a href="#H1" style="font:700 14px/1 Figtree,sans-serif;background:#141D1B;color:#fff;padding:7px 11px;border-radius:999px;text-decoration:none;">H1</a><span style="font:600 22px/1.2 Figtree,sans-serif;">Folders tab</span></div>
+        <div style="display:flex;gap:28px;">
+          <sc-for list="{{ themes }}" as="m" hint-placeholder-count="2"><div style="{{ m.vars }}">
+            <div style="position:relative;width:380px;height:824px;border-radius:36px;overflow:hidden;background:var(--bg);box-shadow:0 0 0 1px rgba(0,0,0,.14),0 24px 48px -24px rgba(0,0,0,.35);">
+              <div style="position:absolute;top:100px;left:0;right:0;bottom:0;overflow:hidden;padding:4px 12px 0;display:flex;flex-direction:column;gap:18px;">
+                <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;">
+                  <div style="min-height:64px;padding:12px 14px;box-sizing:border-box;border-radius:16px;background:var(--c1);display:flex;align-items:center;gap:12px;"><span style="font:400 24px/1 'Material Symbols Rounded';font-variation-settings:'FILL' 1;color:var(--pri);">favorite</span><div style="display:flex;flex-direction:column;gap:2px;"><span style="font:600 14px/1.2 Figtree,sans-serif;color:var(--ink);">Favourites</span><span style="font:400 12.5px/1.2 Figtree,sans-serif;color:var(--ink2);">28 items</span></div></div>
+                  <div style="min-height:64px;padding:12px 14px;box-sizing:border-box;border-radius:16px;background:var(--c1);display:flex;align-items:center;gap:12px;"><span style="font:400 24px/1 'Material Symbols Rounded';color:var(--ink2);">delete</span><div style="display:flex;flex-direction:column;gap:2px;"><span style="font:600 14px/1.2 Figtree,sans-serif;color:var(--ink);">Trash</span><span style="font:400 12.5px/1.2 Figtree,sans-serif;color:var(--ink2);">12 items</span></div></div>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:10px;">
+                  <span style="padding:0 4px;font:600 14px/1.3 Figtree,sans-serif;color:var(--ink);">On this phone</span>
+                  <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 10px;">
+                    <sc-for list="{{ folders }}" as="f" hint-placeholder-count="6">
+                      <div style="display:flex;flex-direction:column;gap:8px;">
+                        <div style="position:relative;border-radius:16px;overflow:hidden;aspect-ratio:1/1;background:var(--c2);">
+                          <img src="{{ f.src }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:{{ f.op }};">
+                          <sc-if value="{{ f.hidden }}"><span style="position:absolute;left:8px;top:8px;height:26px;padding:0 9px 0 7px;border-radius:13px;background:rgba(0,0,0,.6);color:#fff;display:flex;align-items:center;gap:4px;font:600 12px/1 Figtree,sans-serif;"><span style="font:400 15px/1 'Material Symbols Rounded';">visibility_off</span>Hidden</span></sc-if>
+                        </div>
+                        <div style="display:flex;flex-direction:column;gap:3px;padding:0 4px;">
+                          <span style="font:600 14.5px/1.25 Figtree,sans-serif;color:var(--ink);">{{ f.name }}</span>
+                          <span style="display:flex;align-items:center;gap:5px;font:400 13px/1.25 Figtree,sans-serif;color:var(--ink2);">{{ f.count }}<sc-if value="{{ f.backs }}"><span style="display:flex;align-items:center;gap:3px;"> · <span style="font:400 15px/1 'Material Symbols Rounded';font-variation-settings:'FILL' 1;color:var(--pri);">cloud_done</span>Backs up</span></sc-if></span>
+                        </div>
+                      </div>
+                    </sc-for>
+                  </div>
+                </div>
+              </div>
+              <dc-import name="TopBar" title="Folders" chip="{{ chipSafe }}" style="position:absolute;top:36px;left:0;right:0;z-index:10;" hint-size="100%,64px"></dc-import>
+              <dc-import name="NavBar" active="folders" style="position:absolute;left:0;right:0;bottom:0;z-index:10;" hint-size="100%,104px"></dc-import>
+              <dc-import name="SystemBars" style="position:absolute;inset:0;z-index:30;pointer-events:none;" hint-size="100%,100%"></dc-import>
+            </div>
+          </div></sc-for>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;font:400 14px/1.55 Figtree,sans-serif;color:#2B3533;">
+          <div style="text-wrap:pretty;"><b>Components.</b> UtilityTile: Favourites and Trash, 64 dp minimum, c1, radius 16, pinned at the top. FolderTile: square cover (the newest item), radius 16, name 14.5/600 and a meta line with count, plus a "Backs up" marker (icon and text) only when backup is on. Hidden folders get a "Hidden" pill on a 55% dimmed cover and sort into the same grid by item count. Long-press a FolderTile to open its options (H3).</div>
+          <div style="text-wrap:pretty;"><b>Strings.</b> Folders / Klasörler · On this phone / Bu telefonda · Favourites / Favoriler · Trash / Çöp kutusu · 412 items / 412 öğe · Backs up / Yedekleniyor · Hidden / Gizli · Camera / Kamera · Screenshots / Ekran görüntüleri · WhatsApp Images / WhatsApp Görselleri · Downloads / İndirilenler.</div>
+        </div>
+      </div>
+
+      <div id="H2" style="display:flex;flex-direction:column;gap:16px;width:788px;">
+        <div style="display:flex;align-items:center;gap:12px;"><a href="#H2" style="font:700 14px/1 Figtree,sans-serif;background:#141D1B;color:#fff;padding:7px 11px;border-radius:999px;text-decoration:none;">H2</a><span style="font:600 22px/1.2 Figtree,sans-serif;">A folder’s page</span></div>
+        <div style="display:flex;gap:28px;">
+          <sc-for list="{{ themes }}" as="m" hint-placeholder-count="2"><div style="{{ m.vars }}">
+            <div style="position:relative;width:380px;height:824px;border-radius:36px;overflow:hidden;background:var(--bg);box-shadow:0 0 0 1px rgba(0,0,0,.14),0 24px 48px -24px rgba(0,0,0,.35);">
+              <div style="position:absolute;top:100px;left:0;right:0;bottom:0;overflow:hidden;">
+                <div style="display:flex;flex-wrap:wrap;gap:8px;padding:4px 16px 4px;">
+                  <span style="height:32px;padding:0 12px 0 8px;border-radius:16px;background:var(--c1);color:var(--ink);display:flex;align-items:center;gap:6px;font:600 13px/1 Figtree,sans-serif;"><span style="font:400 18px/1 'Material Symbols Rounded';font-variation-settings:'FILL' 1;color:var(--pri);">cloud_done</span>Backs up</span>
+                  <span style="height:32px;padding:0 12px 0 8px;border-radius:16px;background:var(--c1);color:var(--ink);display:flex;align-items:center;gap:6px;font:600 13px/1 Figtree,sans-serif;"><span style="font:400 18px/1 'Material Symbols Rounded';color:var(--ink2);">visibility</span>Shown in Photos</span>
+                </div>
+                <dc-import name="PhotoGrid" sections="{{ cameraSecs }}" cols="{{ 4 }}" hint-size="100%,500px"></dc-import>
+              </div>
+              <div style="position:absolute;top:36px;left:0;right:0;height:64px;padding:0 4px;display:flex;align-items:center;gap:4px;background:var(--bg);z-index:10;">
+                <span style="width:48px;height:48px;display:flex;align-items:center;justify-content:center;font:400 24px/1 'Material Symbols Rounded';color:var(--ink);">arrow_back</span>
+                <div style="flex:1;display:flex;flex-direction:column;gap:2px;"><span style="font:600 20px/1.2 Figtree,sans-serif;color:var(--ink);">Camera</span><span style="font:400 12.5px/1.2 Figtree,sans-serif;color:var(--ink2);">412 items · DCIM/Camera</span></div>
+                <span style="width:48px;height:48px;display:flex;align-items:center;justify-content:center;font:400 24px/1 'Material Symbols Rounded';color:var(--ink);">tune</span>
+              </div>
+              <dc-import name="SystemBars" style="position:absolute;inset:0;z-index:30;pointer-events:none;" hint-size="100%,100%"></dc-import>
+            </div>
+          </div></sc-for>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;font:400 14px/1.55 Figtree,sans-serif;color:#2B3533;">
+          <div style="text-wrap:pretty;"><b>Pushed screen, no NavBar</b>, consistent with the other pushed screens (E4). The title bar shows the name, count and path. The tune button and both FolderStateChips (32 dp, c1) open the options sheet (H3). The grid is the same PhotoGrid with the same status rules, selection and pinch. Back returns to Folders at the same scroll position.</div>
+          <div style="text-wrap:pretty;"><b>Strings.</b> Camera / Kamera · 412 items · DCIM/Camera / 412 öğe · DCIM/Camera · Backs up / Yedekleniyor · Shown in Photos / Fotoğraflar'da gösteriliyor · Folder options / Klasör seçenekleri (content description for tune).</div>
+        </div>
+      </div>
+
+      <div id="H3" style="display:flex;flex-direction:column;gap:16px;width:788px;">
+        <div style="display:flex;align-items:center;gap:12px;"><a href="#H3" style="font:700 14px/1 Figtree,sans-serif;background:#141D1B;color:#fff;padding:7px 11px;border-radius:999px;text-decoration:none;">H3</a><span style="font:600 22px/1.2 Figtree,sans-serif;">Per-folder options</span></div>
+        <div style="display:flex;gap:28px;">
+          <sc-for list="{{ themes }}" as="m" hint-placeholder-count="2"><div style="{{ m.vars }}">
+            <div style="position:relative;width:380px;height:824px;border-radius:36px;overflow:hidden;background:var(--bg);box-shadow:0 0 0 1px rgba(0,0,0,.14),0 24px 48px -24px rgba(0,0,0,.35);">
+              <div style="position:absolute;top:100px;left:0;right:0;bottom:0;overflow:hidden;"><dc-import name="PhotoGrid" sections="{{ waSecs }}" cols="{{ 4 }}" hint-size="100%,500px"></dc-import></div>
+              <div style="position:absolute;inset:0;background:rgba(0,0,0,.5);z-index:15;"></div>
+              <div style="position:absolute;left:0;right:0;bottom:0;z-index:16;background:var(--surf);border-radius:28px 28px 0 0;padding:10px 0 28px;display:flex;flex-direction:column;">
+                <div style="align-self:center;width:32px;height:4px;border-radius:2px;background:var(--ink2);opacity:.4;margin-bottom:14px;"></div>
+                <div style="padding:0 24px 12px;display:flex;flex-direction:column;gap:4px;"><span style="font:600 20px/1.25 Figtree,sans-serif;color:var(--ink);">WhatsApp Images</span><span style="font:400 13px/1.4 Figtree,sans-serif;color:var(--ink2);word-break:break-word;">61 items · 248 MB · Android/media/com.whatsapp/WhatsApp/Media</span></div>
+                <dc-import name="SettingsList" groups="{{ folderOpts }}" card-bg="var(--c1)" hint-size="100%,220px"></dc-import>
+              </div>
+              <dc-import name="SystemBars" on-dark="{{ true }}" style="position:absolute;inset:0;z-index:30;pointer-events:none;" hint-size="100%,100%"></dc-import>
+            </div>
+          </div></sc-for>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;font:400 14px/1.55 Figtree,sans-serif;color:#2B3533;">
+          <div style="text-wrap:pretty;"><b>FolderOptionsSheet.</b> Two switch rows in a c1 group. Only Camera backs up by default; the note says so on every other folder. Turning Back up on applies immediately with a snackbar: "WhatsApp Images will back up. 61 items go tonight." Turning it off for a folder that already has backups asks first (H4). Hiding a folder applies immediately with Undo.</div>
+          <div style="text-wrap:pretty;"><b>Strings.</b> Show in Photos / Fotoğraflar'da göster · Its photos and videos appear in your timeline / Fotoğraf ve videoları zaman akışınızda görünür · Back up / Yedekle · Copies its photos and videos to your Drive / Fotoğraf ve videolarını Drive'ınıza kopyalar · Only Camera backs up unless you turn this on. / Siz açmadıkça yalnızca Kamera yedeklenir. · WhatsApp Images will back up. 61 items go tonight. / WhatsApp Görselleri yedeklenecek. 61 öğe bu gece gidecek.</div>
+        </div>
+      </div>
+
+      <div id="H4" style="display:flex;flex-direction:column;gap:16px;width:788px;">
+        <div style="display:flex;align-items:center;gap:12px;"><a href="#H4" style="font:700 14px/1 Figtree,sans-serif;background:#141D1B;color:#fff;padding:7px 11px;border-radius:999px;text-decoration:none;">H4</a><span style="font:600 22px/1.2 Figtree,sans-serif;">Turning off backup for a folder</span></div>
+        <div style="display:flex;gap:28px;">
+          <sc-for list="{{ themes }}" as="m" hint-placeholder-count="2"><div style="{{ m.vars }}">
+            <div style="position:relative;width:380px;height:824px;border-radius:36px;overflow:hidden;background:var(--bg);box-shadow:0 0 0 1px rgba(0,0,0,.14),0 24px 48px -24px rgba(0,0,0,.35);">
+              <div style="position:absolute;top:100px;left:0;right:0;bottom:0;overflow:hidden;"><dc-import name="PhotoGrid" sections="{{ cameraSecs }}" cols="{{ 4 }}" hint-size="100%,500px"></dc-import></div>
+              <div style="position:absolute;inset:0;background:rgba(0,0,0,.5);z-index:20;"></div>
+              <div style="position:absolute;left:24px;right:24px;top:250px;z-index:21;background:var(--surf);border-radius:28px;padding:24px 24px 16px;display:flex;flex-direction:column;gap:14px;">
+                <div style="font:600 22px/1.3 Figtree,sans-serif;color:var(--ink);">Stop backing up Camera?</div>
+                <div style="font:400 15px/1.5 Figtree,sans-serif;color:var(--ink2);text-wrap:pretty;">Copies already in Drive stay there. New photos from Camera won’t be backed up until you turn this on again.</div>
+                <div style="display:flex;flex-wrap:wrap;justify-content:flex-end;gap:8px;margin-top:8px;">
+                  <span style="min-height:48px;padding:0 16px;display:flex;align-items:center;font:600 14px/1.2 Figtree,sans-serif;color:var(--pri);">Cancel</span>
+                  <span style="min-height:48px;padding:0 20px;border-radius:24px;background:var(--pri);color:var(--onpri);display:flex;align-items:center;font:600 14px/1.2 Figtree,sans-serif;">Stop backing up</span>
+                </div>
+              </div>
+              <dc-import name="SystemBars" style="position:absolute;inset:0;z-index:30;pointer-events:none;" hint-size="100%,100%"></dc-import>
+            </div>
+          </div></sc-for>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;font:400 14px/1.55 Figtree,sans-serif;color:#2B3533;">
+          <div style="text-wrap:pretty;"><b>Reversible, so not red.</b> This is the standard ConfirmDialog with a pri confirm. Afterwards, new items in the folder show the Not backed up badge, which always shows, so the consequence stays visible on the grid. Items already in Drive stay Backed up and still delete everywhere.</div>
+          <div style="text-wrap:pretty;"><b>Strings.</b> Stop backing up Camera? / Kamera'nın yedeklenmesi durdurulsun mu? · Copies already in Drive stay there. New photos from Camera won’t be backed up until you turn this on again. / Drive'daki kopyalar orada kalır. Bunu tekrar açana kadar Kamera'daki yeni fotoğraflar yedeklenmez. · Stop backing up / Yedeklemeyi durdur · Cancel / İptal.</div>
+        </div>
+      </div>
+
+      <div id="H5" style="display:flex;flex-direction:column;gap:16px;width:788px;">
+        <div style="display:flex;align-items:center;gap:12px;"><a href="#H5" style="font:700 14px/1 Figtree,sans-serif;background:#141D1B;color:#fff;padding:7px 11px;border-radius:999px;text-decoration:none;">H5</a><span style="font:600 22px/1.2 Figtree,sans-serif;">A hidden folder’s page</span></div>
+        <div style="display:flex;gap:28px;">
+          <sc-for list="{{ themes }}" as="m" hint-placeholder-count="2"><div style="{{ m.vars }}">
+            <div style="position:relative;width:380px;height:824px;border-radius:36px;overflow:hidden;background:var(--bg);box-shadow:0 0 0 1px rgba(0,0,0,.14),0 24px 48px -24px rgba(0,0,0,.35);">
+              <div style="position:absolute;top:100px;left:0;right:0;bottom:0;overflow:hidden;">
+                <dc-import name="NoticeCard" tone="info" icon="visibility_off" title="Hidden from Photos" body="Screenshots don’t appear in your timeline. They’re still on this phone and aren’t backed up." primary="Show in Photos" hint-size="100%,150px"></dc-import>
+                <dc-import name="PhotoGrid" sections="{{ shotSecs }}" cols="{{ 4 }}" hint-size="100%,500px"></dc-import>
+              </div>
+              <div style="position:absolute;top:36px;left:0;right:0;height:64px;padding:0 4px;display:flex;align-items:center;gap:4px;background:var(--bg);z-index:10;">
+                <span style="width:48px;height:48px;display:flex;align-items:center;justify-content:center;font:400 24px/1 'Material Symbols Rounded';color:var(--ink);">arrow_back</span>
+                <div style="flex:1;display:flex;flex-direction:column;gap:2px;"><span style="font:600 20px/1.2 Figtree,sans-serif;color:var(--ink);">Screenshots</span><span style="font:400 12.5px/1.2 Figtree,sans-serif;color:var(--ink2);">96 items · Pictures/Screenshots</span></div>
+                <span style="width:48px;height:48px;display:flex;align-items:center;justify-content:center;font:400 24px/1 'Material Symbols Rounded';color:var(--ink);">tune</span>
+              </div>
+              <dc-import name="SystemBars" style="position:absolute;inset:0;z-index:30;pointer-events:none;" hint-size="100%,100%"></dc-import>
+            </div>
+          </div></sc-for>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;font:400 14px/1.55 Figtree,sans-serif;color:#2B3533;">
+          <div style="text-wrap:pretty;"><b>Hidden ≠ gone.</b> The page works normally. The NoticeCard explains and offers the switch directly. Cells show the Not backed up badge because this folder isn't backed up. That stays visible here, though it never shows in the timeline since the folder is hidden.</div>
+          <div style="text-wrap:pretty;"><b>Strings.</b> Hidden from Photos / Fotoğraflar'dan gizli · Screenshots don’t appear in your timeline. They’re still on this phone and aren’t backed up. / Ekran görüntüleri zaman akışınızda görünmez. Hâlâ bu telefondalar ve yedeklenmiyorlar. · Show in Photos / Fotoğraflar'da göster.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() {
+    if (!this._v) this._v = this.build();
+    return this._v;
+  }
+  build() {
+    const L = { '--bg': '#F4F8F7', '--surf': '#FFFFFF', '--c1': '#E6EFEC', '--c2': '#D6E4E0', '--c3': '#C2D4CF', '--ink': '#141D1B', '--ink2': '#3F4D49', '--line': '#CBD8D4', '--pri': '#1F6A64', '--onpri': '#FFFFFF', '--pc': '#BFEDE6', '--onpc': '#00201D', '--wc': '#FFDDAE', '--onwc': '#2A1800', '--warn': '#7A5000', '--err': '#B3261E', '--onerr': '#FFFFFF', '--ec': '#F9DEDC', '--onec': '#410E0B', '--inv': '#2A3230', '--oninv': '#EDF2F0', '--invpri': '#8ED5CC' };
+    const D = { '--bg': '#0E1413', '--surf': '#172020', '--c1': '#1B2524', '--c2': '#24302E', '--c3': '#34423F', '--ink': '#DDE4E2', '--ink2': '#A8B6B2', '--line': '#2F3B39', '--pri': '#8ED5CC', '--onpri': '#003732', '--pc': '#1E4F49', '--onpc': '#BFEDE6', '--wc': '#4D3500', '--onwc': '#FFDDAE', '--warn': '#F0BE6E', '--err': '#F2B8B5', '--onerr': '#601410', '--ec': '#8C1D18', '--onec': '#FFDAD6', '--inv': '#DDE4E2', '--oninv': '#2A3230', '--invpri': '#1F6A64' };
+    const POOL = [1035, 1036, 1037, 1038, 1039, 1040, 1041, 1042, 1043, 1044, 1047, 1048, 1049, 1050, 1051, 1052, 1053, 1054, 1055, 1056, 1057, 1058, 1059, 1060, 1061, 1062, 1063, 1064, 1065, 1066];
+    const src = i => `https://picsum.photos/id/${POOL[i % POOL.length]}/240/240`;
+    const it = (i, o = {}) => ({ src: src(i), st: 'ok', ...o });
+    const days = (st, extra = () => ({})) => [
+      { title: 'Today', items: [0, 1, 2].map(i => it(i, { st: st === 'ok' ? 'waiting' : st, ...extra(i) })) },
+      { title: 'Yesterday', items: [3, 4, 5, 6, 7, 8].map(i => it(i, { st: st === 'ok' ? 'queued' : st, ...extra(i) })) },
+      { title: 'Thursday, 29 October', items: [9, 10, 11, 12, 13, 14, 15, 16].map(i => it(i, { st, ...extra(i) })) },
+      { title: 'Sunday, 25 October', items: [17, 18, 19, 20, 21, 22, 23, 24].map(i => it(i, { st, ...extra(i) })) },
+    ];
+    const R = (o) => o;
+    return {
+      themes: [{ label: 'Light', vars: L }, { label: 'Dark', vars: D }],
+      chipSafe: { icon: 'cloud_done', text: 'All in Drive', tone: 'ok' },
+      chipTonight: { icon: 'nightlight', text: 'First backup tonight', tone: 'ok' },
+      collage: [1015, 1025, 1043, 1018, 1050, 1039].map(id => `https://picsum.photos/id/${id}/300/300`),
+      blockedSteps: [{ n: '1', t: 'Permissions' }, { n: '2', t: 'Photos and videos' }, { n: '3', t: 'Allow all' }],
+      samsungSteps: [{ n: '1', t: 'Battery' }, { n: '2', t: 'Background usage limits' }, { n: '3', t: 'Never sleeping apps' }, { n: '4', t: 'Add Settle' }],
+      promises: [
+        { icon: 'schedule', t: 'Waits before it uploads', s: 'New photos wait 24 hours, so shots you delete soon never reach Drive.' },
+        { icon: 'nightlight', t: 'Works at night', s: 'On Wi-Fi and the charger, unnoticed. Each copy is checked.' },
+        { icon: 'delete', t: 'Delete once, everywhere', s: 'Phone and Drive go to the trash together, with 30 days to undo.' },
+      ],
+      accounts: [{ i: 'D', name: 'Deniz Aydın', mail: 'deniz.aydin@gmail.com', bg: '#1F6A64' }, { i: 'D', name: 'Deniz Aydın', mail: 'deniz@aydinstudio.com.tr', bg: '#7A5000' }],
+      partialSecs: [
+        { title: 'Yesterday', items: [3, 4, 5, 6, 7].map(i => it(i)) },
+        { title: 'Thursday, 29 October', items: [9, 10, 11, 12, 13, 14].map(i => it(i, { dur: i === 11 ? '0:42' : '' })) },
+        { title: 'Sunday, 25 October', items: [17, 18, 19, 20, 21, 22, 23, 24].map(i => it(i)) },
+      ],
+      readySecs: days('ok', () => ({})).map((s, si) => ({ ...s, items: s.items.map(x => ({ ...x, st: si < 2 ? x.st : 'queued' })) })),
+      setupGroups: [{ rows: [
+        R({ icon: 'notifications', title: 'Notifications', sub: 'Done', trail: 'done' }),
+        R({ icon: 'battery_charging_full', title: 'Unrestricted battery use', sub: 'So Android doesn’t stop backup at night.', button: 'Allow', btn: 'tonal' }),
+        R({ icon: 'bedtime_off', title: 'Never sleeping apps', sub: 'A Samsung setting. Keeps Settle awake for its night backup.', button: 'Open settings', btn: 'outline' }),
+      ] }],
+      folders: [
+        { name: 'Camera', count: '412', backs: true, hidden: false, op: 1, src: 'https://picsum.photos/id/1018/400/400' },
+        { name: 'Screenshots', count: '96', backs: false, hidden: true, op: 0.55, src: 'https://picsum.photos/id/1043/400/400' },
+        { name: 'WhatsApp Images', count: '61', backs: false, hidden: false, op: 1, src: 'https://picsum.photos/id/1025/400/400' },
+        { name: 'Downloads', count: '18', backs: false, hidden: false, op: 1, src: 'https://picsum.photos/id/1050/400/400' },
+        { name: 'Instagram', count: '9', backs: false, hidden: false, op: 1, src: 'https://picsum.photos/id/1039/400/400' },
+        { name: 'Telegram', count: '6', backs: false, hidden: true, op: 0.55, src: 'https://picsum.photos/id/1062/400/400' },
+      ],
+      cameraSecs: days('ok', i => ({ dur: i === 11 ? '0:42' : '', fav: i === 14, motion: i === 4 })),
+      waSecs: [{ title: 'Friday, 30 October', items: [40, 41, 42, 43, 44].map(i => it(i, { st: 'notbacked' })) }, { title: 'Monday, 26 October', items: [45, 46, 47, 48, 49, 50, 51, 52].map(i => it(i, { st: 'notbacked' })) }],
+      shotSecs: [{ title: 'Yesterday', items: [53, 54, 55].map(i => it(i, { st: 'notbacked' })) }, { title: 'Thursday, 29 October', items: [56, 57, 58, 59, 60, 61, 62, 63].map(i => it(i, { st: 'notbacked' })) }, { title: 'Tuesday, 27 October', items: [64, 65, 66, 67].map(i => it(i, { st: 'notbacked' })) }],
+      folderOpts: [{ rows: [
+        R({ icon: 'visibility', title: 'Show in Photos', sub: 'Its photos and videos appear in your timeline', trail: 'switch', on: true }),
+        R({ icon: 'cloud_upload', title: 'Back up', sub: 'Copies its photos and videos to your Drive', trail: 'switch', on: false }),
+      ], note: 'Only Camera backs up unless you turn this on.' }],
+    };
+  }
+}
+</script>
+</body>
+</html>

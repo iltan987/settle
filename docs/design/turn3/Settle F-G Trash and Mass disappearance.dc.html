@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Roboto:wght@500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,300..500,0..1,0&display=block">
+<style>html,body{margin:0;background:#DFE5E3;-webkit-font-smoothing:antialiased;}a{color:#1F6A64;}a:hover{color:#0E3F3B;}</style>
+</helmet>
+<section style="display:flex;flex-direction:column;gap:64px;padding:64px;font-family:Figtree,sans-serif;color:#141D1B;">
+  <div style="display:flex;flex-direction:column;gap:12px;max-width:1200px;">
+    <div style="font:600 14px/1 Figtree,sans-serif;color:#3F4D49;">Settle · Tidepool · Part 3 of 3</div>
+    <div style="font:700 52px/1.05 Figtree,sans-serif;letter-spacing:-0.02em;">F Trash · G Mass disappearance</div>
+    <div style="font:400 18px/1.5 Figtree,sans-serif;color:#3F4D49;text-wrap:pretty;">Error colour appears only on actions that can't be undone. Other parts: <a href="Settle B-C Timeline and Selection.dc.html">B–C Timeline and selection</a> · <a href="Settle D-E Viewer and Delete.dc.html">D–E Viewer and delete</a>.</div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:32px;">
+    <div style="font:700 32px/1.1 Figtree,sans-serif;">F · Trash</div>
+    <div style="display:flex;flex-wrap:wrap;gap:72px 64px;">
+
+      <div id="F1" style="display:flex;flex-direction:column;gap:16px;width:788px;">
+        <div style="display:flex;align-items:center;gap:12px;"><a href="#F1" style="font:700 14px/1 Figtree,sans-serif;background:#141D1B;color:#fff;padding:7px 11px;border-radius:999px;text-decoration:none;">F1</a><span style="font:600 22px/1.2 Figtree,sans-serif;">Trash</span></div>
+        <div style="display:flex;gap:28px;">
+          <sc-for list="{{ themes }}" as="m" hint-placeholder-count="2"><div style="{{ m.vars }}">
+            <div style="position:relative;width:380px;height:824px;border-radius:36px;overflow:hidden;background:var(--bg);box-shadow:0 0 0 1px rgba(0,0,0,.14),0 24px 48px -24px rgba(0,0,0,.35);">
+              <div style="position:absolute;top:36px;left:0;right:0;height:64px;padding:0 4px;display:flex;align-items:center;gap:4px;background:var(--bg);z-index:10;">
+                <span style="width:48px;height:48px;display:flex;align-items:center;justify-content:center;font:400 24px/1 'Material Symbols Rounded';color:var(--ink);">arrow_back</span>
+                <span style="flex:1;font:600 22px/1.2 Figtree,sans-serif;color:var(--ink);">Trash</span>
+                <span style="width:48px;height:48px;display:flex;align-items:center;justify-content:center;font:400 24px/1 'Material Symbols Rounded';color:var(--ink);">checklist</span>
+              </div>
+              <div style="position:absolute;top:100px;left:0;right:0;bottom:0;overflow:hidden;">
+                <div style="margin:4px 10px 4px;padding:14px 8px 8px 16px;border-radius:24px;background:var(--c1);display:flex;flex-direction:column;gap:6px;">
+                  <div style="display:flex;gap:12px;align-items:flex-start;padding-right:8px;"><span style="font:400 22px/1 'Material Symbols Rounded';color:var(--ink2);">auto_delete</span><span style="font:400 14px/1.45 Figtree,sans-serif;color:var(--ink);text-wrap:pretty;">Items stay here and in your Drive’s trash for 30 days, then they’re deleted for good.</span></div>
+                  <div style="display:flex;justify-content:flex-end;"><span style="min-height:48px;display:flex;align-items:center;"><span style="min-height:40px;padding:0 16px;border-radius:20px;box-shadow:inset 0 0 0 1px var(--err);color:var(--err);display:flex;align-items:center;gap:6px;font:600 14px/1.2 Figtree,sans-serif;"><span style="font:400 18px/1 'Material Symbols Rounded';">delete_forever</span>Empty trash</span></span></div>
+                </div>
+                <dc-import name="PhotoGrid" sections="{{ trashDefault }}" cols="{{ 4 }}" hint-size="100%,600px"></dc-import>
+              </div>
+              <dc-import name="SystemBars" style="position:absolute;inset:0;z-index:30;pointer-events:none;" hint-size="100%,100%"></dc-import>
+            </div>
+          </div></sc-for>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;font:400 14px/1.55 Figtree,sans-serif;color:#2B3533;">
+          <div style="text-wrap:pretty;"><b>Components.</b> TrashExplainer is a c1 card, radius 24, with an outlined err button, Empty trash, 40 dp (48 dp touch). Groups are by deletion date, newest first. DaysLeftChip sits in the status corner, neutral scrim until 3 days or fewer, then wc. A cloud_off badge at bottom-left marks items that were never backed up (they exist nowhere else). "Deleted in another app" gets an explanatory banner. Tapping opens the viewer with Restore and Delete forever in its toolbar.</div>
+          <div style="text-wrap:pretty;"><b>Strings.</b> Trash / Çöp kutusu · Items stay here and in your Drive’s trash for 30 days, then they’re deleted for good. / Öğeler 30 gün boyunca burada ve Drive'ınızın çöp kutusunda kalır, ardından kalıcı olarak silinir. · Empty trash / Çöp kutusunu boşalt · 30 days / 30 gün · Deleted today / Bugün silindi · Deleted in another app / Başka bir uygulamada silindi.</div>
+        </div>
+      </div>
+
+      <div id="F2" style="display:flex;flex-direction:column;gap:16px;width:788px;">
+        <div style="display:flex;align-items:center;gap:12px;"><a href="#F2" style="font:700 14px/1 Figtree,sans-serif;background:#141D1B;color:#fff;padding:7px 11px;border-radius:999px;text-decoration:none;">F2</a><span style="font:600 22px/1.2 Figtree,sans-serif;">Way in: Trash tile on Folders</span></div>
+        <div style="display:flex;gap:28px;">
+          <sc-for list="{{ themes }}" as="m" hint-placeholder-count="2"><div style="{{ m.vars }}">
+            <div style="position:relative;width:380px;height:824px;border-radius:36px;overflow:hidden;background:var(--bg);box-shadow:0 0 0 1px rgba(0,0,0,.14),0 24px 48px -24px rgba(0,0,0,.35);">
+              <dc-import name="TopBar" title="Folders" chip="{{ chipSafe }}" style="position:absolute;top:36px;left:0;right:0;z-index:10;" hint-size="100%,64px"></dc-import>
+              <div style="position:absolute;top:190px;left:12px;right:12px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 10px;">
+                <sc-for list="{{ folders }}" as="f" hint-placeholder-count="4">
+                  <div style="display:flex;flex-direction:column;gap:8px;">
+                    <img src="{{ f.src }}" alt="" style="width:100%;aspect-ratio:1/1;object-fit:cover;border-radius:16px;display:block;">
+                    <div style="display:flex;flex-direction:column;gap:2px;padding:0 4px;"><span style="font:600 14.5px/1.25 Figtree,sans-serif;color:var(--ink);">{{ f.name }}</span><span style="font:400 13px/1.25 Figtree,sans-serif;color:var(--ink2);">{{ f.meta }}</span></div>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="position:absolute;left:12px;right:12px;top:108px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;">
+                <div style="min-height:64px;padding:12px 14px;box-sizing:border-box;border-radius:16px;background:var(--c1);display:flex;align-items:center;gap:12px;"><span style="font:400 24px/1 'Material Symbols Rounded';font-variation-settings:'FILL' 1;color:var(--pri);">favorite</span><div style="display:flex;flex-direction:column;gap:2px;"><span style="font:600 14px/1.2 Figtree,sans-serif;color:var(--ink);">Favourites</span><span style="font:400 12.5px/1.2 Figtree,sans-serif;color:var(--ink2);">28 items</span></div></div>
+                <div style="min-height:64px;padding:12px 14px;box-sizing:border-box;border-radius:16px;background:var(--c1);display:flex;align-items:center;gap:12px;"><span style="font:400 24px/1 'Material Symbols Rounded';color:var(--ink2);">delete</span><div style="display:flex;flex-direction:column;gap:2px;"><span style="font:600 14px/1.2 Figtree,sans-serif;color:var(--ink);">Trash</span><span style="font:400 12.5px/1.2 Figtree,sans-serif;color:var(--ink2);">12 items</span></div></div>
+              </div>
+              <dc-import name="NavBar" active="folders" style="position:absolute;left:0;right:0;bottom:0;z-index:10;" hint-size="100%,104px"></dc-import>
+              <dc-import name="SystemBars" style="position:absolute;inset:0;z-index:30;pointer-events:none;" hint-size="100%,100%"></dc-import>
+            </div>
+          </div></sc-for>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;font:400 14px/1.55 Figtree,sans-serif;color:#2B3533;">
+          <div style="text-wrap:pretty;"><b>Placement.</b> Favourites and Trash are pinned UtilityTiles (64 dp minimum, c1, radius 16) at the top of Folders, always in the same place (see <a href="Settle A-H Onboarding and Folders.dc.html#H1">H1</a>). Folder tiles are square, radius 16, with a name and count. The second way in is the "View trash" action that follows deletes. Full Folders design comes with screen H.</div>
+          <div style="text-wrap:pretty;"><b>Strings.</b> Folders / Klasörler · Favourites / Favoriler · Trash / Çöp kutusu · 12 items / 12 öğe · Camera / Kamera · Screenshots / Ekran görüntüleri.</div>
+        </div>
+      </div>
+
+      <div id="F3" style="display:flex;flex-direction:column;gap:16px;width:788px;">
+        <div style="display:flex;align-items:center;gap:12px;"><a href="#F3" style="font:700 14px/1 Figtree,sans-serif;background:#141D1B;color:#fff;padding:7px 11px;border-radius:999px;text-decoration:none;">F3</a><span style="font:600 22px/1.2 Figtree,sans-serif;">Selection in Trash</span></div>
+        <div style="display:flex;gap:28px;">
+          <sc-for list="{{ themes }}" as="m" hint-placeholder-count="2"><div style="{{ m.vars }}">
+            <div style="position:relative;width:380px;height:824px;border-radius:36px;overflow:hidden;background:var(--bg);box-shadow:0 0 0 1px rgba(0,0,0,.14),0 24px 48px -24px rgba(0,0,0,.35);">
+              <div style="position:absolute;top:100px;left:0;right:0;bottom:0;overflow:hidden;">
+                <div style="height:124px;"></div>
+                <dc-import name="PhotoGrid" sections="{{ trashSel }}" cols="{{ 4 }}" hint-size="100%,600px"></dc-import>
+              </div>
+              <div style="position:absolute;top:0;left:0;right:0;height:100px;padding:36px 4px 0;box-sizing:border-box;display:flex;align-items:center;gap:2px;background:var(--c1);z-index:10;">
+                <span style="width:48px;height:48px;display:flex;align-items:center;justify-content:center;font:400 24px/1 'Material Symbols Rounded';color:var(--ink);">close</span>
+                <span style="flex:1;font:600 20px/1.2 Figtree,sans-serif;color:var(--ink);">3 selected</span>
+                <span style="width:48px;height:48px;display:flex;align-items:center;justify-content:center;font:400 24px/1 'Material Symbols Rounded';color:var(--ink);">select_all</span>
+              </div>
+              <dc-import name="SelectionBar" actions="{{ trashActs }}" style="position:absolute;left:0;right:0;bottom:0;z-index:10;" hint-size="100%,104px"></dc-import>
+              <dc-import name="SystemBars" style="position:absolute;inset:0;z-index:30;pointer-events:none;" hint-size="100%,100%"></dc-import>
+            </div>
+          </div></sc-for>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;font:400 14px/1.55 Figtree,sans-serif;color:#2B3533;">
+          <div style="text-wrap:pretty;"><b>Same mechanics as C.</b> Long-press, drag and select-day all work, with no grid shift. The scrolled-away explainer stays in the content (shown as a blank gap here). The SelectionBar has two actions: Restore (ink) and Delete forever (err, opens <a href="#F4">F4</a>). Restore needs no confirmation. Its snackbar says where items went: "3 items restored to Camera" plus Undo.</div>
+          <div style="text-wrap:pretty;"><b>Strings.</b> 3 selected / 3 seçildi · Restore / Geri yükle · Delete forever / Kalıcı olarak sil · 3 items restored to Camera / 3 öğe Kamera'ya geri yüklendi.</div>
+        </div>
+      </div>
+
+      <div id="F4" style="display:flex;flex-direction:column;gap:16px;width:788px;">
+        <div style="display:flex;align-items:center;gap:12px;"><a href="#F4" style="font:700 14px/1 Figtree,sans-serif;background:#141D1B;color:#fff;padding:7px 11px;border-radius:999px;text-decoration:none;">F4</a><span style="font:600 22px/1.2 Figtree,sans-serif;">Irreversible: delete forever</span></div>
+        <div style="display:flex;gap:28px;">
+          <sc-for list="{{ themes }}" as="m" hint-placeholder-count="2"><div style="{{ m.vars }}">
+            <div style="position:relative;width:380px;height:824px;border-radius:36px;overflow:hidden;background:var(--bg);box-shadow:0 0 0 1px rgba(0,0,0,.14),0 24px 48px -24px rgba(0,0,0,.35);">
+              <div style="position:absolute;top:224px;left:0;right:0;bottom:0;overflow:hidden;"><dc-import name="PhotoGrid" sections="{{ trashSel }}" cols="{{ 4 }}" hint-size="100%,600px"></dc-import></div>
+              <div style="position:absolute;inset:0;background:rgba(0,0,0,.5);z-index:20;"></div>
+              <div style="position:absolute;left:24px;right:24px;top:250px;z-index:21;background:var(--surf);border-radius:28px;padding:24px 24px 16px;display:flex;flex-direction:column;gap:14px;">
+                <span style="align-self:center;font:400 28px/1 'Material Symbols Rounded';color:var(--err);">delete_forever</span>
+                <div style="font:600 22px/1.3 Figtree,sans-serif;color:var(--ink);text-align:center;">Delete 3 items forever?</div>
+                <div style="font:400 15px/1.5 Figtree,sans-serif;color:var(--ink2);text-wrap:pretty;">They’ll be removed from this phone and from Google Drive. This can’t be undone.</div>
+                <div style="display:flex;flex-wrap:wrap;justify-content:flex-end;gap:8px;margin-top:8px;">
+                  <span style="min-height:48px;padding:0 16px;display:flex;align-items:center;font:600 14px/1.2 Figtree,sans-serif;color:var(--pri);">Cancel</span>
+                  <span style="min-height:48px;padding:0 20px;border-radius:24px;background:var(--err);color:var(--onerr);display:flex;align-items:center;font:600 14px/1.2 Figtree,sans-serif;">Delete forever</span>
+                </div>
+              </div>
+              <dc-import name="SystemBars" style="position:absolute;inset:0;z-index:30;pointer-events:none;" hint-size="100%,100%"></dc-import>
+            </div>
+          </div></sc-for>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;font:400 14px/1.55 Figtree,sans-serif;color:#2B3533;">
+          <div style="text-wrap:pretty;"><b>ConfirmDialog, destructive.</b> Radius 28, err icon, the only filled err button in the app. Cancel sits left, and the back gesture also cancels. The confirm button doesn't take default focus. If any item was never backed up, a line is added: "1 of them was never backed up and exists nowhere else." Android may also show its own delete dialog afterwards (see E2).</div>
+          <div style="text-wrap:pretty;"><b>Strings.</b> Delete 3 items forever? / 3 öğe kalıcı olarak silinsin mi? · They’ll be removed from this phone and from Google Drive. This can’t be undone. / Bu telefondan ve Google Drive'dan kaldırılacaklar. Bu işlem geri alınamaz. · Empty trash: Empty the trash? 12 items will be removed from this phone and from Google Drive. This can’t be undone. / Çöp kutusu boşaltılsın mı? 12 öğe bu telefondan ve Google Drive'dan kaldırılacak. Bu işlem geri alınamaz. · Cancel / İptal.</div>
+        </div>
+      </div>
+
+      <div id="F5" style="display:flex;flex-direction:column;gap:16px;width:788px;">
+        <div style="display:flex;align-items:center;gap:12px;"><a href="#F5" style="font:700 14px/1 Figtree,sans-serif;background:#141D1B;color:#fff;padding:7px 11px;border-radius:999px;text-decoration:none;">F5</a><span style="font:600 22px/1.2 Figtree,sans-serif;">Restoring items deleted in another app</span></div>
+        <div style="display:flex;gap:28px;">
+          <sc-for list="{{ themes }}" as="m" hint-placeholder-count="2"><div style="{{ m.vars }}">
+            <div style="position:relative;width:380px;height:824px;border-radius:36px;overflow:hidden;background:var(--bg);box-shadow:0 0 0 1px rgba(0,0,0,.14),0 24px 48px -24px rgba(0,0,0,.35);">
+              <div style="position:absolute;top:36px;left:0;right:0;height:64px;padding:0 4px;display:flex;align-items:center;gap:4px;background:var(--bg);z-index:10;">
+                <span style="width:48px;height:48px;display:flex;align-items:center;justify-content:center;font:400 24px/1 'Material Symbols Rounded';color:var(--ink);">arrow_back</span>
+                <span style="flex:1;font:600 22px/1.2 Figtree,sans-serif;color:var(--ink);">Trash</span>
+                <span style="width:48px;height:48px;display:flex;align-items:center;justify-content:center;font:400 24px/1 'Material Symbols Rounded';color:var(--ink);">checklist</span>
+              </div>
+              <div style="position:absolute;top:100px;left:0;right:0;bottom:0;overflow:hidden;"><dc-import name="PhotoGrid" sections="{{ trashRestoring }}" cols="{{ 4 }}" hint-size="100%,600px"></dc-import></div>
+              <dc-import name="SystemBars" style="position:absolute;inset:0;z-index:30;pointer-events:none;" hint-size="100%,100%"></dc-import>
+            </div>
+          </div></sc-for>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;font:400 14px/1.55 Figtree,sans-serif;color:#2B3533;">
+          <div style="text-wrap:pretty;"><b>Restore from Drive.</b> Each cell shows a 32 dp download ring. Waiting cells show an empty ring. When a file is downloaded and its checksum matches, the cell shows a check for 600 ms and then leaves the trash (collapse 250 ms). The section meta carries the total. Restores keep going if the user leaves Trash; progress shows in the Backup tab and as a silent notification.</div>
+          <div style="text-wrap:pretty;"><b>Strings.</b> Restoring 2 of 4 · 18 MB / 4 öğeden 2'si geri yükleniyor · 18 MB · Downloading from Drive and checking each file. / Drive'dan indiriliyor ve her dosya kontrol ediliyor.</div>
+        </div>
+      </div>
+
+      <div id="F6" style="display:flex;flex-direction:column;gap:16px;width:788px;">
+        <div style="display:flex;align-items:center;gap:12px;"><a href="#F6" style="font:700 14px/1 Figtree,sans-serif;background:#141D1B;color:#fff;padding:7px 11px;border-radius:999px;text-decoration:none;">F6</a><span style="font:600 22px/1.2 Figtree,sans-serif;">Restore finished: success and partial failure</span></div>
+        <div style="display:flex;gap:28px;">
+          <div style="{{ lightVars }}">
+            <div style="position:relative;width:380px;height:824px;border-radius:36px;overflow:hidden;background:var(--bg);box-shadow:0 0 0 1px rgba(0,0,0,.14),0 24px 48px -24px rgba(0,0,0,.35);">
+              <div style="position:absolute;top:36px;left:0;right:0;height:64px;padding:0 4px;display:flex;align-items:center;gap:4px;background:var(--bg);z-index:10;">
+                <span style="width:48px;height:48px;display:flex;align-items:center;justify-content:center;font:400 24px/1 'Material Symbols Rounded';color:var(--ink);">arrow_back</span>
+                <span style="flex:1;font:600 22px/1.2 Figtree,sans-serif;color:var(--ink);">Trash</span>
+              </div>
+              <div style="position:absolute;top:100px;left:0;right:0;bottom:0;overflow:hidden;"><dc-import name="PhotoGrid" sections="{{ trashAfter }}" cols="{{ 4 }}" hint-size="100%,600px"></dc-import></div>
+              <dc-import name="Snackbar" text="4 items restored to Camera and checked. Nothing was lost." action="Show" style="position:absolute;left:0;right:0;bottom:40px;z-index:12;" hint-size="100%,72px"></dc-import>
+              <dc-import name="SystemBars" style="position:absolute;inset:0;z-index:30;pointer-events:none;" hint-size="100%,100%"></dc-import>
+            </div>
+          </div>
+          <div style="{{ darkVars }}">
+            <div style="position:relative;width:380px;height:824px;border-radius:36px;overflow:hidden;background:var(--bg);box-shadow:0 0 0 1px rgba(0,0,0,.14),0 24px 48px -24px rgba(0,0,0,.35);">
+              <div style="position:absolute;top:36px;left:0;right:0;height:64px;padding:0 4px;display:flex;align-items:center;gap:4px;background:var(--bg);z-index:10;">
+                <span style="width:48px;height:48px;display:flex;align-items:center;justify-content:center;font:400 24px/1 'Material Symbols Rounded';color:var(--ink);">arrow_back</span>
+                <span style="flex:1;font:600 22px/1.2 Figtree,sans-serif;color:var(--ink);">Trash</span>
+              </div>
+              <div style="position:absolute;top:100px;left:0;right:0;bottom:0;overflow:hidden;">
+                <dc-import name="NoticeCard" tone="err" icon="error" title="2 items couldn’t be restored" body="2 others are back in Camera. The 2 left here are unchanged and still in Drive." primary="See why" hint-size="100%,150px"></dc-import>
+                <dc-import name="PhotoGrid" sections="{{ trashFailed }}" cols="{{ 4 }}" hint-size="100%,600px"></dc-import>
+              </div>
+              <dc-import name="SystemBars" style="position:absolute;inset:0;z-index:30;pointer-events:none;" hint-size="100%,100%"></dc-import>
+            </div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;font:400 14px/1.55 Figtree,sans-serif;color:#2B3533;">
+          <div style="text-wrap:pretty;"><b>Left (light): all good.</b> The section is gone and the snackbar confirms with "Nothing was lost". "Show" opens Camera at the restored items. <b>Right (dark): partly failed.</b> Failed cells are dimmed and carry an err badge. A NoticeCard opens the reasons sheet (<a href="#F7">F7</a>). Both states exist in both themes; the theme split here just saves space.</div>
+          <div style="text-wrap:pretty;"><b>Strings.</b> 4 items restored to Camera and checked. Nothing was lost. / 4 öğe Kamera'ya geri yüklendi ve kontrol edildi. Hiçbir şey kaybolmadı. · Show / Göster · 2 items couldn’t be restored / 2 öğe geri yüklenemedi · 2 others are back in Camera. The 2 left here are unchanged and still in Drive. / Diğer 2 öğe Kamera'ya döndü. Burada kalan 2 öğe değişmedi ve hâlâ Drive'da. · See why / Nedenini gör.</div>
+        </div>
+      </div>
+
+      <div id="F7" style="display:flex;flex-direction:column;gap:16px;width:788px;">
+        <div style="display:flex;align-items:center;gap:12px;"><a href="#F7" style="font:700 14px/1 Figtree,sans-serif;background:#141D1B;color:#fff;padding:7px 11px;border-radius:999px;text-decoration:none;">F7</a><span style="font:600 22px/1.2 Figtree,sans-serif;">Why a restore stopped (all five reasons)</span></div>
+        <div style="display:flex;gap:28px;">
+          <sc-for list="{{ themes }}" as="m" hint-placeholder-count="2"><div style="{{ m.vars }}">
+            <div style="position:relative;width:380px;height:824px;border-radius:36px;overflow:hidden;background:var(--bg);box-shadow:0 0 0 1px rgba(0,0,0,.14),0 24px 48px -24px rgba(0,0,0,.35);">
+              <div style="position:absolute;inset:0;background:rgba(0,0,0,.5);"></div>
+              <div style="position:absolute;top:84px;left:0;right:0;bottom:0;background:var(--surf);border-radius:28px 28px 0 0;padding:10px 0 0;display:flex;flex-direction:column;">
+                <div style="align-self:center;width:32px;height:4px;border-radius:2px;background:var(--ink2);opacity:.4;margin-bottom:14px;"></div>
+                <div style="padding:0 20px 8px;font:600 20px/1.25 Figtree,sans-serif;color:var(--ink);">Why these weren’t restored</div>
+                <sc-for list="{{ reasons }}" as="r" hint-placeholder-count="5">
+                  <div style="padding:12px 16px 4px 20px;display:flex;gap:14px;align-items:flex-start;border-top:1px solid var(--line);">
+                    <span style="font:400 22px/1.1 'Material Symbols Rounded';color:var(--ink2);">{{ r.icon }}</span>
+                    <div style="flex:1;display:flex;flex-direction:column;gap:3px;">
+                      <span style="font:600 14.5px/1.3 Figtree,sans-serif;color:var(--ink);">{{ r.label }}</span>
+                      <span style="font:400 13px/1.45 Figtree,sans-serif;color:var(--ink2);text-wrap:pretty;">{{ r.body }}</span>
+                      <sc-if value="{{ r.hasAction }}"><span style="align-self:flex-start;min-height:44px;display:flex;align-items:center;font:700 14px/1 Figtree,sans-serif;color:var(--pri);">{{ r.action }}</span></sc-if>
+                      <sc-if value="{{ r.noAction }}"><span style="height:10px;"></span></sc-if>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+              <dc-import name="SystemBars" on-dark="{{ true }}" style="position:absolute;inset:0;z-index:30;pointer-events:none;" hint-size="100%,100%"></dc-import>
+            </div>
+          </div></sc-for>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;font:400 14px/1.55 Figtree,sans-serif;color:#2B3533;">
+          <div style="text-wrap:pretty;"><b>RestoreIssueSheet.</b> Only the reasons that apply are listed, each with the count of items affected. All five appear here for reference. Each row has a short label (used on the cell's long-press tooltip and in the viewer chip), a fuller explanation, and at most one action. Offline and Reconnect retry automatically once fixed. Every explanation says what wasn't touched.</div>
+          <div style="text-wrap:pretty;"><b>Turkish labels.</b> Google'a yeniden bağlanın · Çevrimdışısınız · Artık Drive'da değil · Drive kopyası eşleşmiyor · Telefon dolu. Actions: Oturum aç · Drive'da aç · Yer aç.</div>
+        </div>
+      </div>
+
+      <div id="F8" style="display:flex;flex-direction:column;gap:16px;width:788px;">
+        <div style="display:flex;align-items:center;gap:12px;"><a href="#F8" style="font:700 14px/1 Figtree,sans-serif;background:#141D1B;color:#fff;padding:7px 11px;border-radius:999px;text-decoration:none;">F8</a><span style="font:600 22px/1.2 Figtree,sans-serif;">Setting “Ask me first”: items deleted elsewhere wait</span></div>
+        <div style="display:flex;gap:28px;">
+          <sc-for list="{{ themes }}" as="m" hint-placeholder-count="2"><div style="{{ m.vars }}">
+            <div style="position:relative;width:380px;height:824px;border-radius:36px;overflow:hidden;background:var(--bg);box-shadow:0 0 0 1px rgba(0,0,0,.14),0 24px 48px -24px rgba(0,0,0,.35);">
+              <div style="position:absolute;top:36px;left:0;right:0;height:64px;padding:0 4px;display:flex;align-items:center;gap:4px;background:var(--bg);z-index:10;">
+                <span style="width:48px;height:48px;display:flex;align-items:center;justify-content:center;font:400 24px/1 'Material Symbols Rounded';color:var(--ink);">arrow_back</span>
+                <span style="flex:1;font:600 22px/1.2 Figtree,sans-serif;color:var(--ink);">Trash</span>
+                <span style="width:48px;height:48px;display:flex;align-items:center;justify-content:center;font:400 24px/1 'Material Symbols Rounded';color:var(--ink);">checklist</span>
+              </div>
+              <div style="position:absolute;top:100px;left:0;right:0;bottom:0;overflow:hidden;">
+                <dc-import name="NoticeCard" tone="info" icon="help" title="4 items were deleted in Samsung Gallery" body="Their Drive copies are still in Drive. Choose what happens to all 4." primary="Keep in Drive" secondary="Move Drive copies to trash" hint-size="100%,170px"></dc-import>
+                <dc-import name="PhotoGrid" sections="{{ trashAsk }}" cols="{{ 4 }}" hint-size="100%,600px"></dc-import>
+              </div>
+              <dc-import name="SystemBars" style="position:absolute;inset:0;z-index:30;pointer-events:none;" hint-size="100%,100%"></dc-import>
+            </div>
+          </div></sc-for>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;font:400 14px/1.55 Figtree,sans-serif;color:#2B3533;">
+          <div style="text-wrap:pretty;"><b>Behaviour.</b> These items show "Waiting for you" instead of a countdown: no 30-day clock runs until the user chooses. Keep in Drive is the safe primary. They leave the trash and show as Cloud only in Photos. Move Drive copies to trash starts the normal 30 days. Both act on all items at once. Selecting individual cells offers the same two actions per item. The Photos timeline shows a matching NoticeCard until answered.</div>
+          <div style="text-wrap:pretty;"><b>Strings.</b> 4 items were deleted in Samsung Gallery / 4 öğe Samsung Galeri'de silindi · Their Drive copies are still in Drive. Choose what happens to all 4. / Drive kopyaları hâlâ Drive'da. 4 öğenin hepsine ne olacağını seçin. · Keep in Drive / Drive'da tut · Move Drive copies to trash / Drive kopyalarını çöp kutusuna taşı · Waiting for you / Kararınızı bekliyor.</div>
+        </div>
+      </div>
+
+      <div id="F9" style="display:flex;flex-direction:column;gap:16px;width:788px;">
+        <div style="display:flex;align-items:center;gap:12px;"><a href="#F9" style="font:700 14px/1 Figtree,sans-serif;background:#141D1B;color:#fff;padding:7px 11px;border-radius:999px;text-decoration:none;">F9</a><span style="font:600 22px/1.2 Figtree,sans-serif;">Trash is empty</span></div>
+        <div style="display:flex;gap:28px;">
+          <sc-for list="{{ themes }}" as="m" hint-placeholder-count="2"><div style="{{ m.vars }}">
+            <div style="position:relative;width:380px;height:824px;border-radius:36px;overflow:hidden;background:var(--bg);box-shadow:0 0 0 1px rgba(0,0,0,.14),0 24px 48px -24px rgba(0,0,0,.35);">
+              <div style="position:absolute;top:36px;left:0;right:0;height:64px;padding:0 4px;display:flex;align-items:center;gap:4px;">
+                <span style="width:48px;height:48px;display:flex;align-items:center;justify-content:center;font:400 24px/1 'Material Symbols Rounded';color:var(--ink);">arrow_back</span>
+                <span style="flex:1;font:600 22px/1.2 Figtree,sans-serif;color:var(--ink);">Trash</span>
+              </div>
+              <div style="position:absolute;top:100px;left:0;right:0;bottom:60px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:0 40px;text-align:center;">
+                <div style="width:96px;height:96px;border-radius:32px;background:var(--c1);color:var(--pri);display:flex;align-items:center;justify-content:center;font:300 44px/1 'Material Symbols Rounded';">delete</div>
+                <div style="font:600 22px/1.25 Figtree,sans-serif;color:var(--ink);">Trash is empty</div>
+                <div style="font:400 15px/1.5 Figtree,sans-serif;color:var(--ink2);text-wrap:pretty;">When you delete something, it waits here for 30 days in case you change your mind.</div>
+              </div>
+              <dc-import name="SystemBars" style="position:absolute;inset:0;z-index:30;pointer-events:none;" hint-size="100%,100%"></dc-import>
+            </div>
+          </div></sc-for>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;font:400 14px/1.55 Figtree,sans-serif;color:#2B3533;">
+          <div style="text-wrap:pretty;"><b>EmptyState</b>, same component as B11, with no action. Select is hidden.</div>
+          <div style="text-wrap:pretty;"><b>Strings.</b> Trash is empty / Çöp kutusu boş · When you delete something, it waits here for 30 days in case you change your mind. / Bir şeyi sildiğinizde, fikrinizi değiştirirseniz diye 30 gün burada bekler.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:32px;">
+    <div style="font:700 32px/1.1 Figtree,sans-serif;">G · Mass disappearance</div>
+    <div style="max-width:1200px;font:400 16px/1.55 Figtree,sans-serif;color:#2B3533;text-wrap:pretty;"><b>Tone.</b> Warn (amber), never error: nothing has been lost, and Settle is pausing on purpose. The copy leads with what is safe, then the likely cause, then the choices, with the safest one first and largest. The timeline notice that leads here is <a href="Settle B-C Timeline and Selection.dc.html#B9">B9</a>. It can't be dismissed and survives restarts until answered.</div>
+    <div style="display:flex;flex-wrap:wrap;gap:72px 64px;">
+
+      <div id="G1" style="display:flex;flex-direction:column;gap:16px;width:788px;">
+        <div style="display:flex;align-items:center;gap:12px;"><a href="#G1" style="font:700 14px/1 Figtree,sans-serif;background:#141D1B;color:#fff;padding:7px 11px;border-radius:999px;text-decoration:none;">G1</a><span style="font:600 22px/1.2 Figtree,sans-serif;">Review screen</span></div>
+        <div style="display:flex;gap:28px;">
+          <sc-for list="{{ themes }}" as="m" hint-placeholder-count="2"><div style="{{ m.vars }}">
+            <div style="position:relative;width:380px;height:824px;border-radius:36px;overflow:hidden;background:var(--bg);box-shadow:0 0 0 1px rgba(0,0,0,.14),0 24px 48px -24px rgba(0,0,0,.35);">
+              <div style="position:absolute;top:36px;left:0;right:0;height:56px;padding:0 4px;display:flex;align-items:center;">
+                <span style="width:48px;height:48px;display:flex;align-items:center;justify-content:center;font:400 24px/1 'Material Symbols Rounded';color:var(--ink);">arrow_back</span>
+              </div>
+              <div style="position:absolute;top:96px;left:0;right:0;padding:0 24px;display:flex;flex-direction:column;gap:14px;">
+                <div style="width:48px;height:48px;border-radius:16px;background:var(--wc);color:var(--onwc);display:flex;align-items:center;justify-content:center;font:400 26px/1 'Material Symbols Rounded';">hide_image</div>
+                <div style="font:600 24px/1.25 Figtree,sans-serif;color:var(--ink);text-wrap:pretty;">312 photos and videos disappeared from this phone at once</div>
+                <div style="font:400 15px/1.5 Figtree,sans-serif;color:var(--ink2);text-wrap:pretty;">Their Drive copies are untouched. This usually means an SD card was removed, a permission changed or the phone was reset, not that you deleted them.</div>
+                <div style="display:flex;flex-direction:column;border-radius:20px;background:var(--c1);overflow:hidden;">
+                  <div style="padding:12px 16px;display:flex;gap:12px;align-items:center;"><span style="font:400 20px/1 'Material Symbols Rounded';color:var(--ink2);">schedule</span><span style="font:400 13.5px/1.35 Figtree,sans-serif;color:var(--ink);">Noticed Saturday 31 October, 22:10</span></div>
+                  <div style="padding:12px 16px;display:flex;gap:12px;align-items:center;border-top:1px solid var(--line);"><span style="font:400 20px/1 'Material Symbols Rounded';color:var(--ink2);">sd_card</span><span style="font:400 13.5px/1.35 Figtree,sans-serif;color:var(--ink);">Mostly from the SD card · 2019 to 2024</span></div>
+                  <div style="padding:10px 8px 10px 16px;display:flex;gap:6px;align-items:center;border-top:1px solid var(--line);">
+                    <sc-for list="{{ goneThumbs }}" as="g" hint-placeholder-count="4"><img src="{{ g }}" alt="" style="width:44px;height:44px;border-radius:4px;object-fit:cover;"></sc-for>
+                    <span style="flex:1;min-height:48px;display:flex;align-items:center;justify-content:flex-end;gap:2px;font:700 14px/1 Figtree,sans-serif;color:var(--pri);">See all<span style="font:400 20px/1 'Material Symbols Rounded';">chevron_right</span></span>
+                  </div>
+                </div>
+              </div>
+              <div style="position:absolute;left:24px;right:24px;bottom:32px;display:flex;flex-direction:column;gap:8px;">
+                <span style="min-height:52px;border-radius:26px;background:var(--pri);color:var(--onpri);display:flex;align-items:center;justify-content:center;text-align:center;padding:0 16px;font:600 15px/1.2 Figtree,sans-serif;">Keep Drive copies</span>
+                <span style="min-height:48px;border-radius:24px;background:var(--c1);color:var(--ink);display:flex;align-items:center;justify-content:center;text-align:center;padding:0 16px;font:600 15px/1.2 Figtree,sans-serif;">Check again</span>
+                <span style="min-height:48px;display:flex;align-items:center;justify-content:center;text-align:center;padding:0 16px;font:600 15px/1.2 Figtree,sans-serif;color:var(--ink2);">Move Drive copies to trash…</span>
+              </div>
+              <dc-import name="SystemBars" style="position:absolute;inset:0;z-index:30;pointer-events:none;" hint-size="100%,100%"></dc-import>
+            </div>
+          </div></sc-for>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;font:400 14px/1.55 Figtree,sans-serif;color:#2B3533;">
+          <div style="text-wrap:pretty;"><b>Layout.</b> A full screen, not a dialog: it needs room to reassure. A 48 dp wc icon tile, headline 24/600, body 15/400. FactList is a c1 card (radius 20) with 44 dp thumbnails from Drive previews. The ActionStack is pinned to the bottom: filled 52 dp (safe default), tonal 48 dp, then a text button. The risky choice is neutral text with an ellipsis: it opens a confirmation (<a href="#G3">G3</a>), so no red here. Back leaves the question open, and the notice stays.</div>
+          <div style="text-wrap:pretty;"><b>Strings.</b> 312 photos and videos disappeared from this phone at once / 312 fotoğraf ve video bu telefondan aynı anda kayboldu · Their Drive copies are untouched. This usually means an SD card was removed, a permission changed or the phone was reset, not that you deleted them. (proposed) / Drive kopyalarına dokunulmadı. Bu genellikle bir SD kartın çıkarıldığı, bir iznin değiştiği veya telefonun sıfırlandığı anlamına gelir; sizin sildiğiniz anlamına gelmez. · Keep Drive copies / Drive kopyalarını tut · Check again / Tekrar kontrol et · Move Drive copies to trash… / Drive kopyalarını çöp kutusuna taşı… · See all / Tümünü gör.</div>
+        </div>
+      </div>
+
+      <div id="G2" style="display:flex;flex-direction:column;gap:16px;width:788px;">
+        <div style="display:flex;align-items:center;gap:12px;"><a href="#G2" style="font:700 14px/1 Figtree,sans-serif;background:#141D1B;color:#fff;padding:7px 11px;border-radius:999px;text-decoration:none;">G2</a><span style="font:600 22px/1.2 Figtree,sans-serif;">Which items</span></div>
+        <div style="display:flex;gap:28px;">
+          <sc-for list="{{ themes }}" as="m" hint-placeholder-count="2"><div style="{{ m.vars }}">
+            <div style="position:relative;width:380px;height:824px;border-radius:36px;overflow:hidden;background:var(--bg);box-shadow:0 0 0 1px rgba(0,0,0,.14),0 24px 48px -24px rgba(0,0,0,.35);">
+              <div style="position:absolute;top:36px;left:0;right:0;height:64px;padding:0 4px;display:flex;align-items:center;gap:4px;background:var(--bg);z-index:10;">
+                <span style="width:48px;height:48px;display:flex;align-items:center;justify-content:center;font:400 24px/1 'Material Symbols Rounded';color:var(--ink);">arrow_back</span>
+                <div style="flex:1;display:flex;flex-direction:column;gap:2px;"><span style="font:600 20px/1.2 Figtree,sans-serif;color:var(--ink);">312 missing items</span><span style="font:400 12.5px/1.2 Figtree,sans-serif;color:var(--ink2);">Previews from Drive</span></div>
+              </div>
+              <div style="position:absolute;top:100px;left:0;right:0;bottom:0;overflow:hidden;"><dc-import name="PhotoGrid" sections="{{ goneSecs }}" cols="{{ 4 }}" hint-size="100%,600px"></dc-import></div>
+              <dc-import name="SystemBars" style="position:absolute;inset:0;z-index:30;pointer-events:none;" hint-size="100%,100%"></dc-import>
+            </div>
+          </div></sc-for>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;font:400 14px/1.55 Figtree,sans-serif;color:#2B3533;">
+          <div style="text-wrap:pretty;"><b>Grouping.</b> By original folder and storage (the most useful clue to the cause), then by date. Cells use Drive previews with the Cloud only badge, since that is what they are now. Read-only: no selection or deletion here, so the decision stays in one place (G1). Tapping opens the viewer with the full Drive preview.</div>
+          <div style="text-wrap:pretty;"><b>Strings.</b> 312 missing items / 312 kayıp öğe · Previews from Drive / Drive'dan önizlemeler · SD card · DCIM/Camera / SD kart · DCIM/Camera · SD card · WhatsApp Images / SD kart · WhatsApp Görselleri.</div>
+        </div>
+      </div>
+
+      <div id="G3" style="display:flex;flex-direction:column;gap:16px;width:788px;">
+        <div style="display:flex;align-items:center;gap:12px;"><a href="#G3" style="font:700 14px/1 Figtree,sans-serif;background:#141D1B;color:#fff;padding:7px 11px;border-radius:999px;text-decoration:none;">G3</a><span style="font:600 22px/1.2 Figtree,sans-serif;">Confirm: move Drive copies to trash</span></div>
+        <div style="display:flex;gap:28px;">
+          <sc-for list="{{ themes }}" as="m" hint-placeholder-count="2"><div style="{{ m.vars }}">
+            <div style="position:relative;width:380px;height:824px;border-radius:36px;overflow:hidden;background:var(--bg);box-shadow:0 0 0 1px rgba(0,0,0,.14),0 24px 48px -24px rgba(0,0,0,.35);">
+              <div style="position:absolute;inset:0;background:rgba(0,0,0,.5);z-index:20;"></div>
+              <div style="position:absolute;left:24px;right:24px;top:230px;z-index:21;background:var(--surf);border-radius:28px;padding:24px 24px 16px;display:flex;flex-direction:column;gap:14px;">
+                <div style="font:600 22px/1.3 Figtree,sans-serif;color:var(--ink);">Move 312 Drive copies to the trash?</div>
+                <div style="font:400 15px/1.5 Figtree,sans-serif;color:var(--ink2);text-wrap:pretty;">They’ll stay in Drive’s trash for 30 days, then they’re deleted for good. If the files come back on this phone, Settle backs them up again.</div>
+                <div style="display:flex;flex-wrap:wrap;justify-content:flex-end;gap:8px;margin-top:8px;">
+                  <span style="min-height:48px;padding:0 16px;display:flex;align-items:center;font:600 14px/1.2 Figtree,sans-serif;color:var(--pri);">Cancel</span>
+                  <span style="min-height:48px;padding:0 20px;border-radius:24px;background:var(--pri);color:var(--onpri);display:flex;align-items:center;font:600 14px/1.2 Figtree,sans-serif;">Move to trash</span>
+                </div>
+              </div>
+              <dc-import name="SystemBars" style="position:absolute;inset:0;z-index:30;pointer-events:none;" hint-size="100%,100%"></dc-import>
+            </div>
+          </div></sc-for>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;font:400 14px/1.55 Figtree,sans-serif;color:#2B3533;">
+          <div style="text-wrap:pretty;"><b>Why not red.</b> This is reversible for 30 days from Trash, so it uses the standard ConfirmDialog with a pri button. Red is kept for "forever". After confirming, the items appear in Trash under "Disappeared from this phone" with the normal countdown, and a snackbar says so.</div>
+          <div style="text-wrap:pretty;"><b>Strings.</b> Move 312 Drive copies to the trash? / 312 Drive kopyası çöp kutusuna taşınsın mı? · They’ll stay in Drive’s trash for 30 days, then they’re deleted for good. If the files come back on this phone, Settle backs them up again. / Drive'ın çöp kutusunda 30 gün kalacak, ardından kalıcı olarak silinecekler. Dosyalar bu telefona geri gelirse Settle onları yeniden yedekler. · Move to trash / Çöp kutusuna taşı.</div>
+        </div>
+      </div>
+
+      <div id="G4" style="display:flex;flex-direction:column;gap:16px;width:788px;">
+        <div style="display:flex;align-items:center;gap:12px;"><a href="#G4" style="font:700 14px/1 Figtree,sans-serif;background:#141D1B;color:#fff;padding:7px 11px;border-radius:999px;text-decoration:none;">G4</a><span style="font:600 22px/1.2 Figtree,sans-serif;">Check again, and the answer kept</span></div>
+        <div style="display:flex;gap:28px;">
+          <div style="{{ lightVars }}">
+            <div style="position:relative;width:380px;height:824px;border-radius:36px;overflow:hidden;background:var(--bg);box-shadow:0 0 0 1px rgba(0,0,0,.14),0 24px 48px -24px rgba(0,0,0,.35);">
+              <div style="position:absolute;top:100px;left:0;right:0;bottom:0;overflow:hidden;">
+                <div style="margin:4px 10px 8px;background:var(--wc);color:var(--onwc);border-radius:24px;padding:16px;display:flex;gap:12px;align-items:center;">
+                  <span style="width:24px;height:24px;border-radius:50%;background:conic-gradient(var(--onwc) 0 110deg,transparent 0);-webkit-mask:radial-gradient(circle,transparent 8px,#000 9px);mask:radial-gradient(circle,transparent 8px,#000 9px);"></span>
+                  <div style="flex:1;display:flex;flex-direction:column;gap:3px;"><span style="font:600 15px/1.3 Figtree,sans-serif;">Checking this phone again…</span><span style="font:400 13.5px/1.4 Figtree,sans-serif;">Nothing in Drive will change.</span></div>
+                </div>
+                <dc-import name="PhotoGrid" sections="{{ tl }}" cols="{{ 4 }}" hint-size="100%,600px"></dc-import>
+              </div>
+              <dc-import name="TopBar" title="Photos" style="position:absolute;top:36px;left:0;right:0;z-index:10;" hint-size="100%,64px"></dc-import>
+              <dc-import name="NavBar" active="photos" style="position:absolute;left:0;right:0;bottom:0;z-index:10;" hint-size="100%,104px"></dc-import>
+              <dc-import name="SystemBars" style="position:absolute;inset:0;z-index:30;pointer-events:none;" hint-size="100%,100%"></dc-import>
+            </div>
+          </div>
+          <div style="{{ darkVars }}">
+            <div style="position:relative;width:380px;height:824px;border-radius:36px;overflow:hidden;background:var(--bg);box-shadow:0 0 0 1px rgba(0,0,0,.14),0 24px 48px -24px rgba(0,0,0,.35);">
+              <div style="position:absolute;top:100px;left:0;right:0;bottom:0;overflow:hidden;"><dc-import name="PhotoGrid" sections="{{ tlKept }}" cols="{{ 4 }}" hint-size="100%,600px"></dc-import></div>
+              <dc-import name="TopBar" title="Photos" chip="{{ chipSafe }}" style="position:absolute;top:36px;left:0;right:0;z-index:10;" hint-size="100%,64px"></dc-import>
+              <dc-import name="Snackbar" text="Drive copies kept. The 312 items stay in your library as cloud only." action="Show" style="position:absolute;left:0;right:0;bottom:116px;z-index:12;" hint-size="100%,72px"></dc-import>
+              <dc-import name="NavBar" active="photos" style="position:absolute;left:0;right:0;bottom:0;z-index:10;" hint-size="100%,104px"></dc-import>
+              <dc-import name="SystemBars" style="position:absolute;inset:0;z-index:30;pointer-events:none;" hint-size="100%,100%"></dc-import>
+            </div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;font:400 14px/1.55 Figtree,sans-serif;color:#2B3533;">
+          <div style="text-wrap:pretty;"><b>Left (light): Check again.</b> The notice turns into a progress state in place, at the same height. Outcomes: all back means the notice disappears with "All 312 are back on this phone. Nothing was lost.". Some back means the count updates and the question stays. None back means the count stays: "Still missing. Nothing in Drive changed." <b>Right (dark): Keep Drive copies.</b> Items stay as Cloud only and the notice is gone. Both states exist in both themes.</div>
+          <div style="text-wrap:pretty;"><b>Strings.</b> Checking this phone again… / Bu telefon tekrar kontrol ediliyor… · Nothing in Drive will change. / Drive'da hiçbir şey değişmeyecek. · All 312 are back on this phone. Nothing was lost. / 312 öğenin hepsi bu telefona geri döndü. Hiçbir şey kaybolmadı. · Still missing. Nothing in Drive changed. / Hâlâ kayıp. Drive'da hiçbir şey değişmedi. · Drive copies kept. The 312 items stay in your library as cloud only. / Drive kopyaları tutuldu. 312 öğe kitaplığınızda yalnızca bulutta olarak kalıyor.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() {
+    if (!this._v) this._v = this.build();
+    return this._v;
+  }
+  build() {
+    const L = { '--bg': '#F4F8F7', '--surf': '#FFFFFF', '--c1': '#E6EFEC', '--c2': '#D6E4E0', '--c3': '#C2D4CF', '--ink': '#141D1B', '--ink2': '#3F4D49', '--line': '#CBD8D4', '--pri': '#1F6A64', '--onpri': '#FFFFFF', '--pc': '#BFEDE6', '--onpc': '#00201D', '--wc': '#FFDDAE', '--onwc': '#2A1800', '--warn': '#7A5000', '--err': '#B3261E', '--onerr': '#FFFFFF', '--ec': '#F9DEDC', '--onec': '#410E0B', '--inv': '#2A3230', '--oninv': '#EDF2F0', '--invpri': '#8ED5CC' };
+    const D = { '--bg': '#0E1413', '--surf': '#172020', '--c1': '#1B2524', '--c2': '#24302E', '--c3': '#34423F', '--ink': '#DDE4E2', '--ink2': '#A8B6B2', '--line': '#2F3B39', '--pri': '#8ED5CC', '--onpri': '#003732', '--pc': '#1E4F49', '--onpc': '#BFEDE6', '--wc': '#4D3500', '--onwc': '#FFDDAE', '--warn': '#F0BE6E', '--err': '#F2B8B5', '--onerr': '#601410', '--ec': '#8C1D18', '--onec': '#FFDAD6', '--inv': '#DDE4E2', '--oninv': '#2A3230', '--invpri': '#1F6A64' };
+    const POOL = [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60];
+    const P2 = [1035, 1036, 1037, 1038, 1039, 1040, 1041, 1042, 1043, 1044, 1047, 1048, 1049, 1050, 1051, 1052, 1053, 1054, 1055, 1056, 1057, 1058, 1059, 1060];
+    const src = i => `https://picsum.photos/id/${POOL[i % POOL.length]}/240/240`;
+    const src2 = i => `https://picsum.photos/id/${P2[i % P2.length]}/240/240`;
+    const it = (i, o = {}) => ({ src: src(i), ...o });
+    const today = [it(0, { days: '30 days' }), it(1, { days: '30 days', phoneOnly: true }), it(2, { days: '30 days', dur: '0:21' })];
+    const other = [3, 4, 5, 6].map(i => it(i, { days: '28 days' }));
+    const old = [7, 8, 9, 10, 11].map(i => it(i, { days: '2 days', soon: true }));
+    const otherBanner = { icon: 'apps', text: 'Deleted in Samsung Gallery. Their Drive copies are in Drive’s trash too. Restore brings them back to this phone and checks them.' };
+    const trashDefault = [
+      { title: 'Deleted today', meta: '3', items: today },
+      { title: 'Deleted in another app', sub: '29 Oct', meta: '4', banner: otherBanner, items: other },
+      { title: 'Deleted 4 October', meta: '5', items: old },
+    ];
+    const S = (arr, pick) => arr.map((x, i) => ({ ...x, selecting: true, selected: pick(i) }));
+    const trashSel = [
+      { title: 'Deleted today', sel: 'some', items: S(today, i => i < 2) },
+      { title: 'Deleted in another app', sub: '29 Oct', sel: 'some', items: S(other, i => i === 0) },
+    ];
+    const trashRestoring = [
+      { title: 'Deleted in another app', sub: '29 Oct', meta: 'Restoring 2 of 4 · 18 MB', banner: { icon: 'download', text: 'Downloading from Drive and checking each file.' }, items: other.map((x, i) => ({ ...x, done: i === 0, restoring: i === 0 ? undefined : [0, 100, 45, 0][i] })) },
+      { title: 'Deleted today', meta: '3', items: today },
+      { title: 'Deleted 4 October', meta: '5', items: old },
+    ];
+    trashRestoring[0].items[1] = { ...other[1], done: true };
+    const trashAfter = [{ title: 'Deleted today', meta: '3', items: today }, { title: 'Deleted 4 October', meta: '5', items: old }];
+    const trashFailed = [
+      { title: 'Deleted in another app', sub: '29 Oct', meta: '2 not restored', items: [it(5, { failed: true }), it(6, { failed: true })] },
+      { title: 'Deleted today', meta: '3', items: today },
+      { title: 'Deleted 4 October', meta: '5', items: old },
+    ];
+    const trashAsk = [
+      { title: 'Deleted in another app', sub: 'Waiting for you', items: other },
+      { title: 'Deleted today', meta: '3', items: today },
+      { title: 'Deleted 4 October', meta: '5', items: old },
+    ];
+    const R = (icon, label, body, action = '') => ({ icon, label, body, action, hasAction: !!action, noAction: !action });
+    const tlBase = [
+      { title: 'Today', items: [0, 1, 2].map(i => ({ src: src2(i), st: 'waiting' })) },
+      { title: 'Yesterday', items: [3, 4, 5, 6, 7, 8].map(i => ({ src: src2(i), st: 'queued' })) },
+      { title: 'Thursday, 29 October', items: [9, 10, 11, 12, 13, 14, 15, 16].map(i => ({ src: src2(i) })) },
+      { title: 'Sunday, 25 October', items: [17, 18, 19, 20, 21, 22, 23, 24].map(i => ({ src: src2(i) })) },
+    ];
+    return {
+      themes: [{ label: 'Light', vars: L }, { label: 'Dark', vars: D }], lightVars: L, darkVars: D,
+      chipSafe: { icon: 'cloud_done', text: 'All in Drive', tone: 'ok' },
+      trashDefault, trashSel, trashRestoring, trashAfter, trashFailed, trashAsk,
+      trashActs: [{ icon: 'restore', label: 'Restore' }, { icon: 'delete_forever', label: 'Delete forever', tone: 'err' }],
+      folders: [['Camera', '412 items', 1018], ['Screenshots', '96 items', 1043], ['WhatsApp Images', '61 items', 1025], ['Downloads', '18 items', 1050]].map(([name, meta, id]) => ({ name, meta, src: `https://picsum.photos/id/${id}/400/400` })),
+      reasons: [
+        R('account_circle', 'Reconnect to Google', 'Google needs you to sign in again before Settle can download from Drive. Restore continues by itself afterwards.', 'Sign in'),
+        R('wifi_off', 'You’re offline', 'Restore continues by itself when this phone is back online.'),
+        R('cloud_off', 'Not in Drive anymore', 'Drive’s trash no longer has this copy. It may have been emptied in Drive. Nothing else was changed.'),
+        R('difference', 'Drive copy doesn’t match', 'The copy in Drive differs from what Settle backed up, so it wasn’t restored. The Drive copy is untouched.', 'Open in Drive'),
+        R('storage', 'Phone is full', 'Free up 240 MB on this phone, then Settle tries again.', 'Free up space'),
+      ],
+      goneThumbs: [30, 31, 32, 33].map(i => src(i)),
+      goneSecs: [
+        { title: 'SD card · DCIM/Camera', meta: '298', items: Array.from({ length: 20 }, (_, k) => it(20 + k, { st: 'cloud' })) },
+        { title: 'SD card · WhatsApp Images', meta: '14', items: Array.from({ length: 8 }, (_, k) => it(40 + k, { st: 'cloud' })) },
+      ],
+      tl: tlBase, tlKept: tlBase,
+    };
+  }
+}
+</script>
+</body>
+</html>

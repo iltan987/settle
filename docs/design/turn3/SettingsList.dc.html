@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<div style="display:flex;flex-direction:column;gap:20px;padding:4px 12px 24px;">
+  <sc-for list="{{ gs }}" as="g" hint-placeholder-count="3">
+    <div style="display:flex;flex-direction:column;gap:8px;">
+      <sc-if value="{{ g.hasTitle }}"><div style="padding:0 8px;font:600 13.5px/1.3 Figtree,sans-serif;color:var(--pri);">{{ g.title }}</div></sc-if>
+      <sc-if value="{{ g.hasLead }}"><div style="padding:0 8px;font:400 14px/1.5 Figtree,sans-serif;color:var(--ink2);text-wrap:pretty;">{{ g.lead }}</div></sc-if>
+      <sc-if value="{{ g.hasCard }}"><dc-import name="NoticeCard" flush="{{ true }}" tone="{{ g.card.tone }}" icon="{{ g.card.icon }}" title="{{ g.card.title }}" body="{{ g.card.body }}" primary="{{ g.card.primary }}" secondary="{{ g.card.secondary }}" hint-size="100%,140px"></dc-import></sc-if>
+      <sc-if value="{{ g.hasRows }}">
+        <div style="border-radius:20px;background:{{ cardBg }};overflow:hidden;display:flex;flex-direction:column;">
+          <sc-for list="{{ g.rows }}" as="r" hint-placeholder-count="3">
+            <div style="min-height:56px;box-sizing:border-box;padding:12px 12px 12px 16px;display:flex;align-items:center;gap:16px;border-top:{{ r.border }};opacity:{{ r.op }};">
+              <sc-if value="{{ r.isRadio }}"><span style="font:400 24px/1 'Material Symbols Rounded';font-variation-settings:'FILL' {{ r.radioFill }};color:{{ r.radioColor }};flex:none;">{{ r.radioIcon }}</span></sc-if>
+              <sc-if value="{{ r.hasIcon }}"><span style="font:400 24px/1 'Material Symbols Rounded';font-variation-settings:'FILL' {{ r.iconFill }};color:{{ r.iconColor }};flex:none;">{{ r.icon }}</span></sc-if>
+              <sc-if value="{{ r.hasAvatar }}"><span style="width:40px;height:40px;border-radius:50%;background:var(--pc);color:var(--onpc);font:600 17px/40px Figtree,sans-serif;text-align:center;flex:none;">{{ r.avatar }}</span></sc-if>
+              <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;">
+                <span style="font:500 15px/1.3 Figtree,sans-serif;color:{{ r.titleColor }};text-wrap:pretty;">{{ r.title }}</span>
+                <sc-if value="{{ r.hasSub }}"><span style="font:400 13px/1.4 Figtree,sans-serif;color:{{ r.subColor }};text-wrap:pretty;">{{ r.sub }}</span></sc-if>
+                <sc-if value="{{ r.hasMeter }}"><div style="margin-top:6px;height:8px;border-radius:4px;background:var(--c2);overflow:hidden;"><div style="height:100%;width:{{ r.meterW }};background:var(--pri);border-radius:4px;"></div></div></sc-if>
+              </div>
+              <sc-if value="{{ r.isValue }}"><span style="font:500 13.5px/1.3 Figtree,sans-serif;color:var(--ink2);text-align:right;max-width:42%;">{{ r.value }}</span></sc-if>
+              <sc-if value="{{ r.isSwitch }}"><span style="{{ r.trackStyle }}"><span style="{{ r.thumbStyle }}">{{ r.thumbIcon }}</span></span></sc-if>
+              <sc-if value="{{ r.isChevron }}"><span style="font:400 24px/1 'Material Symbols Rounded';color:var(--ink2);flex:none;">chevron_right</span></sc-if>
+              <sc-if value="{{ r.isExternal }}"><span style="font:400 20px/1 'Material Symbols Rounded';color:var(--ink2);flex:none;">open_in_new</span></sc-if>
+              <sc-if value="{{ r.isDone }}"><span style="font:400 24px/1 'Material Symbols Rounded';font-variation-settings:'FILL' 1;color:var(--pri);flex:none;">check_circle</span></sc-if>
+              <sc-if value="{{ r.hasButton }}"><span style="min-height:48px;display:flex;align-items:center;flex:none;"><span style="{{ r.btnStyle }}">{{ r.button }}</span></span></sc-if>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+      <sc-if value="{{ g.hasNote }}"><div style="padding:0 8px;font:400 12.5px/1.45 Figtree,sans-serif;color:var(--ink2);text-wrap:pretty;">{{ g.note }}</div></sc-if>
+    </div>
+  </sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:380,&quot;height&quot;:600},&quot;groups&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;{title?:string, lead?:string, note?:string, card?:NoticeCardProps, rows?:{icon?:string, avatar?:string, title:string, sub?:string, tone?:'warn'|'err'|'pri', trail?:'switch'|'chevron'|'value'|'radio'|'external'|'done', on?:boolean, selected?:boolean, value?:string, meter?:number, button?:string, btn?:'filled'|'tonal'|'outline'|'danger', danger?:boolean, disabled?:boolean}[]}[]&quot;},&quot;cardBg&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;var(--surf)&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+class Component extends DCLogic {
+  row(r, i) {
+    const tone = { warn: 'var(--warn)', err: 'var(--err)', pri: 'var(--pri)' }[r.tone] || 'var(--ink2)';
+    const on = !!r.on;
+    const BTN = {
+      filled: ['var(--pri)', 'var(--onpri)', 'none'], tonal: ['var(--pc)', 'var(--onpc)', 'none'],
+      outline: ['transparent', 'var(--ink)', 'inset 0 0 0 1px var(--ink2)'], danger: ['transparent', 'var(--err)', 'inset 0 0 0 1px var(--err)'],
+    }[r.btn || 'tonal'];
+    return {
+      border: i === 0 ? 'none' : '1px solid var(--line)', op: r.disabled ? 0.5 : 1,
+      isRadio: r.trail === 'radio', radioIcon: r.selected ? 'radio_button_checked' : 'radio_button_unchecked', radioFill: 0, radioColor: r.selected ? 'var(--pri)' : 'var(--ink2)',
+      hasIcon: !!r.icon, icon: r.icon || '', iconColor: tone, iconFill: r.fill ? 1 : 0,
+      hasAvatar: !!r.avatar, avatar: r.avatar || '',
+      title: r.title, titleColor: r.danger ? 'var(--err)' : 'var(--ink)',
+      hasSub: !!r.sub, sub: r.sub || '', subColor: r.subTone === 'warn' ? 'var(--warn)' : 'var(--ink2)',
+      hasMeter: r.meter != null, meterW: `${Math.max(2, r.meter ?? 0)}%`,
+      isValue: r.trail === 'value', value: r.value || '',
+      isSwitch: r.trail === 'switch',
+      trackStyle: { position: 'relative', flex: 'none', width: 52, height: 32, borderRadius: 16, boxSizing: 'border-box', background: on ? 'var(--pri)' : 'var(--c2)', boxShadow: on ? 'none' : 'inset 0 0 0 2px var(--ink2)' },
+      thumbStyle: on ? { position: 'absolute', top: 4, right: 4, width: 24, height: 24, borderRadius: '50%', background: 'var(--onpri)', color: 'var(--pri)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Material Symbols Rounded'", fontSize: 16, lineHeight: 1 } : { position: 'absolute', top: 8, left: 8, width: 16, height: 16, borderRadius: '50%', background: 'var(--ink2)' },
+      thumbIcon: on ? 'check' : '',
+      isChevron: r.trail === 'chevron' || r.trail === 'value', isExternal: r.trail === 'external', isDone: r.trail === 'done',
+      hasButton: !!r.button, button: r.button || '',
+      btnStyle: { minHeight: 40, padding: '0 16px', borderRadius: 20, display: 'flex', alignItems: 'center', font: '600 14px/1.2 Figtree,sans-serif', background: BTN[0], color: BTN[1], boxShadow: BTN[2], whiteSpace: 'nowrap' },
+    };
+  }
+  renderVals() {
+    const key = this.props.groups;
+    if (this._k === key && this._v) return this._v;
+    this._k = key;
+    const gs = (key || []).map(g => ({
+      hasTitle: !!g.title, title: g.title || '', hasLead: !!g.lead, lead: g.lead || '',
+      hasCard: !!g.card, card: g.card ? { secondary: '', primary: '', ...g.card } : {},
+      hasRows: !!(g.rows && g.rows.length), rows: (g.rows || []).map((r, i) => this.row(r, i)),
+      hasNote: !!g.note, note: g.note || '',
+    }));
+    this._v = { gs, cardBg: this.props.cardBg ?? 'var(--surf)' };
+    return this._v;
+  }
+}
+</script>
+</body>
+</html>

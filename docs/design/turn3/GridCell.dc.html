@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<div style="position:relative;aspect-ratio:1/1;border-radius:4px;overflow:hidden;background:{{ bg }};">
+  <sc-if value="{{ showImg }}" hint-placeholder-val="{{ true }}"><img src="{{ src }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;"></sc-if>
+  <sc-if value="{{ sel }}"><img src="{{ src }}" alt="" style="position:absolute;top:8px;left:8px;width:calc(100% - 16px);height:calc(100% - 16px);object-fit:cover;border-radius:6px;"></sc-if>
+  <sc-if value="{{ scrimTop }}"><div style="position:absolute;left:0;right:0;top:0;height:45%;background:linear-gradient(rgba(0,0,0,.32),rgba(0,0,0,0));"></div></sc-if>
+  <sc-if value="{{ scrimBot }}"><div style="position:absolute;left:0;right:0;bottom:0;height:45%;background:linear-gradient(rgba(0,0,0,0),rgba(0,0,0,.36));"></div></sc-if>
+  <sc-if value="{{ hasDur }}"><span style="position:absolute;left:6px;bottom:6px;font:600 11px/1 Figtree,sans-serif;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.6);">{{ dur }}</span></sc-if>
+  <sc-if value="{{ motion }}"><span style="position:absolute;left:5px;bottom:4px;font:400 15px/1 'Material Symbols Rounded';color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.6);">motion_photos_on</span></sc-if>
+  <sc-if value="{{ fav }}"><span style="position:absolute;right:5px;top:5px;font:400 15px/1 'Material Symbols Rounded';font-variation-settings:'FILL' 1;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.6);">favorite</span></sc-if>
+  <sc-if value="{{ showNeutral }}"><span style="position:absolute;right:4px;bottom:4px;width:18px;height:18px;border-radius:50%;background:rgba(0,0,0,.46);color:#fff;display:flex;align-items:center;justify-content:center;font:400 12px/1 'Material Symbols Rounded';">{{ icon }}</span></sc-if>
+  <sc-if value="{{ showAttention }}"><span style="position:absolute;inset:0;border-radius:4px;box-shadow:inset 0 0 0 2px var(--err);"></span><span style="position:absolute;right:4px;bottom:4px;width:18px;height:18px;border-radius:50%;background:var(--err);color:var(--onerr);display:flex;align-items:center;justify-content:center;font:600 13px/1 'Material Symbols Rounded';">priority_high</span></sc-if>
+  <sc-if value="{{ showUploading }}"><span style="position:absolute;right:3px;bottom:3px;width:20px;height:20px;border-radius:50%;background:{{ ring }};display:flex;align-items:center;justify-content:center;"><span style="width:15px;height:15px;border-radius:50%;background:rgba(0,0,0,.6);color:#fff;display:flex;align-items:center;justify-content:center;font:500 11px/1 'Material Symbols Rounded';">arrow_upward</span></span></sc-if>
+  <sc-if value="{{ unsel }}"><span style="position:absolute;left:6px;top:6px;width:20px;height:20px;border-radius:50%;box-shadow:inset 0 0 0 2px #fff;background:rgba(0,0,0,.18);"></span></sc-if>
+  <sc-if value="{{ sel }}"><span style="position:absolute;left:3px;top:3px;width:24px;height:24px;border-radius:50%;background:var(--pri);color:var(--onpri);box-shadow:0 0 0 2px var(--pc);display:flex;align-items:center;justify-content:center;font:600 16px/1 'Material Symbols Rounded';">check</span></sc-if>
+  <sc-if value="{{ daysPlain }}"><span style="position:absolute;right:4px;bottom:4px;padding:3px 6px;border-radius:8px;background:rgba(0,0,0,.52);color:#fff;font:600 10.5px/1 Figtree,sans-serif;">{{ days }}</span></sc-if>
+  <sc-if value="{{ daysSoon }}"><span style="position:absolute;right:4px;bottom:4px;padding:3px 6px;border-radius:8px;background:var(--wc);color:var(--onwc);font:700 10.5px/1 Figtree,sans-serif;">{{ days }}</span></sc-if>
+  <sc-if value="{{ restoring }}"><div style="position:absolute;inset:0;background:rgba(0,0,0,.42);display:flex;align-items:center;justify-content:center;"><span style="width:32px;height:32px;border-radius:50%;background:{{ rRing }};display:flex;align-items:center;justify-content:center;"><span style="width:26px;height:26px;border-radius:50%;background:rgba(0,0,0,.55);color:#fff;display:flex;align-items:center;justify-content:center;font:400 15px/1 'Material Symbols Rounded';">download</span></span></div></sc-if>
+  <sc-if value="{{ done }}"><div style="position:absolute;inset:0;background:rgba(0,0,0,.22);display:flex;align-items:center;justify-content:center;font:400 28px/1 'Material Symbols Rounded';font-variation-settings:'FILL' 1;color:#fff;">check_circle</div></sc-if>
+  <sc-if value="{{ failed }}"><div style="position:absolute;inset:0;background:rgba(0,0,0,.4);"></div><span style="position:absolute;right:4px;bottom:4px;width:18px;height:18px;border-radius:50%;background:var(--err);color:var(--onerr);display:flex;align-items:center;justify-content:center;font:600 13px/1 'Material Symbols Rounded';">priority_high</span></sc-if>
+  <sc-if value="{{ finger }}"><span style="position:absolute;left:50%;top:50%;width:46px;height:46px;margin:-23px 0 0 -23px;border-radius:50%;background:rgba(255,255,255,.32);box-shadow:0 0 0 2px rgba(255,255,255,.8);"></span></sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:120,&quot;height&quot;:120},&quot;cell&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;{src:string, st?:'ok'|'waiting'|'queued'|'uploading'|'notbacked'|'attention'|'cloud', showQuiet?:boolean, progress?:number, dur?:string, motion?:boolean, fav?:boolean, selecting?:boolean, selected?:boolean, days?:string, soon?:boolean, restoring?:number, done?:boolean, failed?:boolean, skeleton?:boolean, finger?:boolean}&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const c = this.props.cell || {};
+    const st = c.st || 'ok';
+    const quiet = st === 'waiting' || st === 'queued';
+    const showSt = !c.days && !c.failed && st !== 'ok' && (!quiet || !!c.showQuiet || !!c.selecting);
+    const icons = { waiting: 'schedule', queued: 'cloud_upload', notbacked: 'cloud_off', cloud: 'cloud' };
+    const sel = !!c.selecting && !!c.selected;
+    const p = c.progress ?? 0, r = c.restoring ?? 0;
+    const showNeutral = showSt && !!icons[st];
+    return {
+      src: c.src, bg: sel ? 'var(--pc)' : 'var(--c2)',
+      showImg: !c.skeleton && !sel, sel, unsel: !!c.selecting && !c.selected,
+      scrimTop: !!c.fav || !!c.selecting, scrimBot: !!c.dur || !!c.motion,
+      hasDur: !!c.dur, dur: c.dur, motion: !!c.motion && !c.dur, fav: !!c.fav,
+      showNeutral, icon: icons[st] || '',
+      showAttention: showSt && st === 'attention', showUploading: showSt && st === 'uploading',
+      ring: `conic-gradient(#fff ${p * 3.6}deg, rgba(255,255,255,.3) 0)`,
+      daysPlain: !!c.days && !c.soon && !c.failed && c.restoring == null && !c.done, daysSoon: !!c.days && !!c.soon,
+      days: c.days, restoring: c.restoring != null, rRing: `conic-gradient(#fff ${r * 3.6}deg, rgba(255,255,255,.3) 0)`,
+      done: !!c.done, failed: !!c.failed, finger: !!c.finger,
+    };
+  }
+}
+</script>
+</body>
+</html>
