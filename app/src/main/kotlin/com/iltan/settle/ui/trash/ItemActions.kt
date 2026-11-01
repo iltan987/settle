@@ -78,6 +78,8 @@ class ItemActions(
     val delete: (entries: List<MediaEntry>, onDeleted: () -> Unit) -> Unit,
     val backUp: (List<MediaEntry>) -> Unit,
     val share: (List<MediaEntry>) -> Unit,
+    /** Marks the items as favourites, or unmarks them with false. */
+    val favorite: (entries: List<MediaEntry>, favorite: Boolean) -> Unit = { _, _ -> },
 )
 
 /** The item actions of the whole app, provided by [SettleApp][com.iltan.settle.ui.SettleApp]. */
@@ -136,6 +138,9 @@ fun rememberItemActions(messages: AppMessages): ItemActions {
                 }
             },
             share = { entries -> share(context, entries) },
+            favorite = { entries, favorite ->
+                graph.appScope.launch { graph.library.setFavorites(entries, favorite) }
+            },
         )
     }
 }

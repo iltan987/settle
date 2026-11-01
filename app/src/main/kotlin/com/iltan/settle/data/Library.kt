@@ -58,13 +58,18 @@ class Library(private val dao: LibraryDao, private val resolver: ContentResolver
      * there so other apps see it, and scans copy it back. Room is updated right away so the UI
      * doesn't wait for the next scan.
      */
-    suspend fun setFavorite(entry: MediaEntry, favorite: Boolean) {
+    suspend fun setFavorite(entry: MediaEntry, favorite: Boolean) =
+        setFavorites(listOf(entry), favorite)
+
+    /** Marks or unmarks [entries] as favourites, in MediaStore too, in one request. */
+    suspend fun setFavorites(entries: List<MediaEntry>, favorite: Boolean) {
+        if (entries.isEmpty()) return
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA) {
             withContext(Dispatchers.IO) {
-                MediaStore.markIsFavoriteStatus(resolver, listOf(entry.contentUri), favorite)
+                MediaStore.markIsFavoriteStatus(resolver, entries.map { it.contentUri }, favorite)
             }
         }
-        dao.setFavorite(entry.id, favorite)
+        entries.forEach { dao.setFavorite(it.id, favorite) }
     }
 
     /** Byte offset of a motion photo's embedded video; see [MotionPhotos]. */
