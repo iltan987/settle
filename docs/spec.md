@@ -83,7 +83,8 @@ Play Store release later must stay possible, so Play-policy-forbidden permission
 
 ### Experience
 - R17. UI in English and Turkish, switchable in the app and in system settings.
-- R18. Material 3 Expressive look with the wallpaper's colours; few prompts; sensible defaults.
+- R18. Material 3 Expressive look in Settle's Tidepool design (ADR-016): the wallpaper's colours,
+  Figtree, photos first with light chrome; few prompts; sensible defaults.
 
 ## Later (not scheduled)
 Storage overview, duplicates and similar shots, a "temporary" tag with auto-delete, exposing
