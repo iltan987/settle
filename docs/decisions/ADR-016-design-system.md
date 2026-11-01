@@ -5,8 +5,10 @@
 
 ## Context
 - **Origin.** Claude Design offered three directions from `docs/design/brief.md`. The owner chose
-  Tidepool, with the borrowings and corrections listed in the brief. Its full screen set, rounds
-  2–3, is in `docs/design/turn2/` and `turn3/`.
+  Tidepool, with the borrowings and corrections listed in the brief. The finished project is in
+  `docs/design/turn4/`: every screen, the app icon, and a handoff sheet (`Settle Handoff.dc.html`)
+  with the colour tokens, their light and dark values and nearest Material 3 roles, type, corners,
+  spacing, layering, motion and shared strings.
 - **What Tidepool asks for:**
   - The Figtree typeface.
   - Corners of 4 dp (grid cells) to 28 dp (header, sheets).
@@ -38,6 +40,8 @@
 - **Layering.** The top bar, navigation bar and selection bar float over the grid and have the same
   height. Entering selection therefore moves nothing under the finger. Notice cards scroll with the
   grid.
+- **The app icon.** A dome settling on two layers: an adaptive icon with a monochrome layer for
+  themed icons, and a tonal brand mark for use inside the app.
 - **Status in the grid.** Backed up shows nothing. Not backed up, uploading, needs attention and cloud
   only have a badge. Waiting and queued show only while selecting and on the Backup tab.
 
@@ -45,4 +49,5 @@
 - The app no longer looks like stock One UI. It keeps the wallpaper's hue through dynamic colour.
 - Figtree adds 62 KB to the APK. A missing glyph would fall back to the system font.
 - New icons have to be fetched one by one. The fetch is a short `curl` per symbol.
-- When Claude Design's consolidated token table arrives, these values are checked against it.
+- The handoff sheet is the reference for tokens, type and motion. Where it and a screen frame
+  disagree, the sheet wins.

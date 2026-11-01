@@ -11,12 +11,13 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 
 /*
- * Tidepool's tokens (docs/design/turn3) and the Material 3 roles they map to (ADR-016):
+ * Tidepool's tokens and the Material 3 roles they map to, from the handoff sheet
+ * (docs/design/turn4/Settle Handoff.dc.html, ADR-016):
  *
  * | Tidepool      | M3 role                              |
  * |---------------|--------------------------------------|
  * | bg            | background, surface                  |
- * | surf          | surfaceContainerLowest (cards, sheets)|
+ * | surf          | cards, sheets: see [SettleColors.card]|
  * | c1 / c2 / c3  | surfaceContainer / High / Highest    |
  * | ink / ink2    | onSurface / onSurfaceVariant         |
  * | line          | outlineVariant                       |
@@ -101,17 +102,20 @@ data class SettleColors(
     val warning: Color,
     val warningContainer: Color,
     val onWarningContainer: Color,
+    val dark: Boolean,
 ) {
     /**
-     * The viewer's stage, its toolbar and the markers drawn over photos: the same in both themes.
+     * The viewer's stage, its chrome and the markers drawn over photos: the same in both themes.
      */
     val stage: Color = Color.Black
     val onStage: Color = Color.White
-    val stageToolbar: Color = Color(0xEB202020)
-    val stageChip: Color = Color(0x2EFFFFFF)
+    /** #202020 at 92%, no blur: the viewer's toolbar and status chip. */
+    val stageChrome: Color = Color(0xEB202020)
     val onPhoto: Color = Color.White
+    /** Behind a cell's status glyph (black at 46%). */
     val photoBadge: Color = Color(0x75000000)
-    val photoScrim: Color = Color(0x5C000000)
+    /** Behind sheets and dialogs (black at 50%). */
+    val scrim: Color = Color(0x80000000)
 
     companion object {
         val Light =
@@ -119,12 +123,14 @@ data class SettleColors(
                 warning = Color(0xFF7A5000),
                 warningContainer = Color(0xFFFFDDAE),
                 onWarningContainer = Color(0xFF2A1800),
+                dark = false,
             )
         val Dark =
             SettleColors(
                 warning = Color(0xFFF0BE6E),
                 warningContainer = Color(0xFF4D3500),
                 onWarningContainer = Color(0xFFFFDDAE),
+                dark = true,
             )
     }
 }
@@ -134,3 +140,11 @@ internal val LocalSettleColors = staticCompositionLocalOf { SettleColors.Light }
 /** Settle's own colours, next to [MaterialTheme.colorScheme]. */
 val MaterialTheme.settleColors: SettleColors
     @Composable @ReadOnlyComposable get() = LocalSettleColors.current
+
+/** Tidepool's `surf`: settings cards, sheets, dialogs, attention lists. */
+val MaterialTheme.cardColor: Color
+    @Composable
+    @ReadOnlyComposable
+    get() =
+        if (LocalSettleColors.current.dark) colorScheme.surfaceContainerLow
+        else colorScheme.surfaceContainerLowest

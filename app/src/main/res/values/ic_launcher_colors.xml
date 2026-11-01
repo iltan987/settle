@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Placeholder launcher colors until the real icon is designed. -->
-    <color name="ic_launcher_background">#2F5D62</color>
+    <!-- Tidepool's app icon (docs/design/turn4, L1): the background layer is pri (light). -->
+    <color name="ic_launcher_background">#1F6A64</color>
+    <!-- The in-app brand mark's tonal layers (L2); values-night holds the dark ones. -->
+    <color name="brand_mark_dome">#1F6A64</color>
+    <color name="brand_mark_upper">#5E9C95</color>
+    <color name="brand_mark_lower">#9CC7C1</color>
 </resources>
