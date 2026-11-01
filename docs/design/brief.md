@@ -220,8 +220,21 @@ G. Mass disappearance
 
 ## Message 3: the rest of today's app
 
+Round 2 (B–G) is in `turn2/`. The opening adjusts it and answers the two questions it left open:
+the Backup tab and where Settings lives.
+
 ```
-Next, design these for the same direction, with handoff notes.
+Round 2 is excellent. Keep its system (tokens, components, the layering rule, Figtree) for
+everything below. Three adjustments that also apply to what you have already drawn:
+- No backdrop blur anywhere: the viewer's floating toolbar and the video controls are solid
+  (#202020 at 92%).
+- The Details sheet shows the address line without a map thumbnail; tapping the row opens Maps.
+- The avatar shows the initial of the connected Google account (Settle has no profile photo).
+  While Drive isn't connected it is a plain account_circle icon.
+
+Next, design these in the same detail as round 2, light and dark, with handoff notes. The NavBar is
+now final: Photos, Folders, Backup. Settings opens from the avatar as a pushed screen with a back
+arrow, not a tab.
 
 A. Onboarding: welcome and full photo access ("Settle shows every photo and video on this phone in
    one place. To do that it needs access to all of them. Nothing leaves your phone until you
@@ -252,10 +265,13 @@ I. Settings, grouped and scannable:
 - Keep backup running (setup steps, only while needed), Language (System default, English,
   Türkçe), About and version.
 
-J. Backup activity: where the user watches "Back up everything now" (12 of 40, speed, time left),
-   pauses and resumes it, and sees why backup is paused with the one action that fixes it. Decide
-   whether this is a sheet from a status element in the timeline's top bar or something else; it
-   must not compete with the photos.
+J. The Backup tab: the place the status chip opens. At the top, the overall state in one sentence
+   with its one action (the same states as the chip and NoticeCards: all in Drive, backing up,
+   paused with each reason, needs attention). Then the running backup ("12 of 40", speed, time
+   left) with Pause and Resume; "Back up everything now"; items waiting (with "backs up in …") and
+   queued for tonight, where the Waiting and Queued badges show; items needing attention with
+   their reasons; restores from the trash in progress (F5). Empty and first-run states. Keep the
+   preferences in Settings → Backup; this tab shows state and actions, not switches.
 ```
 
 ## Message 4: later screens and the icon

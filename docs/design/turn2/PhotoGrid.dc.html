@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<div style="display:flex;flex-direction:column;padding:0 2px;">
+  <sc-for list="{{ secs }}" as="s" hint-placeholder-count="3">
+    <div style="display:flex;flex-direction:column;">
+      <div style="min-height:44px;padding:10px 6px 6px 14px;box-sizing:border-box;display:flex;align-items:center;gap:8px;">
+        <sc-if value="{{ s.skel }}"><span style="width:96px;height:12px;border-radius:6px;background:var(--c2);"></span></sc-if>
+        <div style="flex:1;min-width:0;display:flex;align-items:baseline;flex-wrap:wrap;column-gap:8px;row-gap:2px;">
+          <span style="font:600 14px/1.3 Figtree,sans-serif;color:var(--ink);">{{ s.title }}</span>
+          <span style="font:400 13px/1.3 Figtree,sans-serif;color:var(--ink2);">{{ s.sub }}</span>
+        </div>
+        <sc-if value="{{ s.hasMeta }}"><span style="font:500 12.5px/1.3 Figtree,sans-serif;color:var(--ink2);padding-right:8px;text-align:right;">{{ s.meta }}</span></sc-if>
+        <sc-if value="{{ s.hasSel }}"><span style="width:48px;height:48px;margin:-12px 0;display:flex;align-items:center;justify-content:center;font:400 24px/1 'Material Symbols Rounded';font-variation-settings:'FILL' {{ s.selFill }};color:{{ s.selColor }};">{{ s.selIcon }}</span></sc-if>
+      </div>
+      <sc-if value="{{ s.hasBanner }}">
+        <div style="margin:0 10px 8px;padding:10px 12px;border-radius:16px;background:var(--c1);display:flex;gap:10px;align-items:flex-start;">
+          <span style="font:400 20px/1.1 'Material Symbols Rounded';color:var(--ink2);">{{ s.bannerIcon }}</span>
+          <span style="flex:1;font:400 13px/1.45 Figtree,sans-serif;color:var(--ink2);text-wrap:pretty;">{{ s.bannerText }}</span>
+        </div>
+      </sc-if>
+      <div style="display:grid;grid-template-columns:{{ gtc }};gap:2px;">
+        <sc-for list="{{ s.cells }}" as="c" hint-placeholder-count="8">
+          <div style="position:relative;aspect-ratio:1/1;border-radius:4px;overflow:hidden;background:{{ c.bg }};">
+            <sc-if value="{{ c.showImg }}"><img src="{{ c.src }}" alt="" style="{{ c.imgStyle }}"></sc-if>
+            <sc-for list="{{ c.marks }}" as="k"><span style="{{ k.style }}"><sc-if value="{{ k.hasInner }}"><span style="{{ k.innerStyle }}">{{ k.innerText }}</span></sc-if>{{ k.text }}</span></sc-for>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:380,&quot;height&quot;:600},&quot;sections&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;{title:string, sub?:string, meta?:string, sel?:'none'|'some'|'all', skel?:boolean, banner?:{icon:string,text:string}, items:Cell[]}[]&quot;},&quot;cols&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;min&quot;:3,&quot;max&quot;:6,&quot;default&quot;:4,&quot;tsType&quot;:&quot;number&quot;}}">
+const ICONF = "'Material Symbols Rounded'";
+const ABS = { position: 'absolute' };
+const glyph = (size, extra = {}) => ({ ...ABS, fontFamily: ICONF, fontSize: size + 'px', lineHeight: 1, fontWeight: 400, ...extra });
+const circle = (d, bg, color, extra = {}) => ({ ...ABS, width: d, height: d, borderRadius: '50%', background: bg, color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: ICONF, lineHeight: 1, ...extra });
+const SH = '0 1px 2px rgba(0,0,0,.6)';
+const M = (style, text = '', inner) => ({ style, text, hasInner: !!inner, innerStyle: inner?.style || {}, innerText: inner?.text || '' });
+
+class Component extends DCLogic {
+  cell(c) {
+    const st = c.st || 'ok';
+    const quiet = st === 'waiting' || st === 'queued';
+    const showSt = !c.days && !c.failed && st !== 'ok' && (!quiet || !!c.showQuiet || !!c.selecting);
+    const icons = { waiting: 'schedule', queued: 'cloud_upload', notbacked: 'cloud_off', cloud: 'cloud' };
+    const sel = !!c.selecting && !!c.selected;
+    const marks = [];
+    if (c.fav || c.selecting) marks.push(M({ ...ABS, left: 0, right: 0, top: 0, height: '45%', background: 'linear-gradient(rgba(0,0,0,.32),rgba(0,0,0,0))' }));
+    if (c.dur || c.motion) marks.push(M({ ...ABS, left: 0, right: 0, bottom: 0, height: '45%', background: 'linear-gradient(rgba(0,0,0,0),rgba(0,0,0,.36))' }));
+    if (c.phoneOnly) marks.push(M(circle(18, 'rgba(0,0,0,.52)', '#fff', { left: 4, bottom: 4, fontSize: 12 }), 'cloud_off'));
+    else if (c.dur) marks.push(M({ ...ABS, left: 6, bottom: 6, font: '600 11px/1 Figtree,sans-serif', color: '#fff', textShadow: SH }, c.dur));
+    else if (c.motion) marks.push(M(glyph(15, { left: 5, bottom: 4, color: '#fff', textShadow: SH }), 'motion_photos_on'));
+    if (c.fav) marks.push(M(glyph(15, { right: 5, top: 5, color: '#fff', textShadow: SH, fontVariationSettings: "'FILL' 1" }), 'favorite'));
+    if (showSt && icons[st]) marks.push(M(circle(18, 'rgba(0,0,0,.46)', '#fff', { right: 4, bottom: 4, fontSize: 12 }), icons[st]));
+    if (showSt && st === 'attention') {
+      marks.push(M({ ...ABS, inset: 0, borderRadius: 4, boxShadow: 'inset 0 0 0 2px var(--err)' }));
+      marks.push(M(circle(18, 'var(--err)', 'var(--onerr)', { right: 4, bottom: 4, fontSize: 13, fontWeight: 600 }), 'priority_high'));
+    }
+    if (showSt && st === 'uploading') {
+      const p = c.progress ?? 0;
+      marks.push(M(circle(20, `conic-gradient(#fff ${p * 3.6}deg, rgba(255,255,255,.3) 0)`, '#fff', { right: 3, bottom: 3 }), '', { style: { width: 15, height: 15, borderRadius: '50%', background: 'rgba(0,0,0,.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: ICONF, fontSize: 11, lineHeight: 1, fontWeight: 500 }, text: 'arrow_upward' }));
+    }
+    if (c.selecting && !sel) marks.push(M({ ...ABS, left: 6, top: 6, width: 20, height: 20, borderRadius: '50%', boxShadow: 'inset 0 0 0 2px #fff', background: 'rgba(0,0,0,.18)' }));
+    if (sel) marks.push(M(circle(24, 'var(--pri)', 'var(--onpri)', { left: 3, top: 3, fontSize: 16, fontWeight: 600, boxShadow: '0 0 0 2px var(--pc)' }), 'check'));
+    if (c.days && c.restoring == null && !c.failed && !c.done) marks.push(M({ ...ABS, right: 4, bottom: 4, padding: '3px 6px', borderRadius: 8, background: c.soon ? 'var(--wc)' : 'rgba(0,0,0,.52)', color: c.soon ? 'var(--onwc)' : '#fff', font: `${c.soon ? 700 : 600} 10.5px/1 Figtree,sans-serif` }, c.days));
+    if (c.restoring != null) {
+      const r = c.restoring;
+      marks.push(M({ ...ABS, inset: 0, background: 'rgba(0,0,0,.42)' }));
+      marks.push(M(circle(32, `conic-gradient(#fff ${r * 3.6}deg, rgba(255,255,255,.3) 0)`, '#fff', { left: '50%', top: '50%', marginLeft: -16, marginTop: -16 }), '', { style: { width: 26, height: 26, borderRadius: '50%', background: 'rgba(0,0,0,.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: ICONF, fontSize: 15, lineHeight: 1 }, text: 'download' }));
+    }
+    if (c.done) marks.push(M({ ...ABS, inset: 0, background: 'rgba(0,0,0,.22)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: ICONF, fontSize: 28, lineHeight: 1, color: '#fff', fontVariationSettings: "'FILL' 1" }, 'check_circle'));
+    if (c.failed) {
+      marks.push(M({ ...ABS, inset: 0, background: 'rgba(0,0,0,.4)' }));
+      marks.push(M(circle(18, 'var(--err)', 'var(--onerr)', { right: 4, bottom: 4, fontSize: 13, fontWeight: 600 }), 'priority_high'));
+    }
+    if (c.finger) marks.push(M({ ...ABS, left: '50%', top: '50%', width: 46, height: 46, margin: '-23px 0 0 -23px', borderRadius: '50%', background: 'rgba(255,255,255,.32)', boxShadow: '0 0 0 2px rgba(255,255,255,.8)' }));
+    return {
+      src: c.src, bg: sel ? 'var(--pc)' : 'var(--c2)', showImg: !c.skeleton,
+      imgStyle: sel ? { ...ABS, top: 8, left: 8, width: 'calc(100% - 16px)', height: 'calc(100% - 16px)', objectFit: 'cover', borderRadius: 6 } : { ...ABS, inset: 0, width: '100%', height: '100%', objectFit: 'cover' },
+      marks,
+    };
+  }
+  renderVals() {
+    const key = this.props.sections, cols0 = this.props.cols;
+    if (this._k === key && this._c === cols0 && this._v) return this._v;
+    this._k = key; this._c = cols0;
+    const cols = cols0 ?? 4;
+    const SEL = { none: ['radio_button_unchecked', 0, 'var(--ink2)'], some: ['do_not_disturb_on', 1, 'var(--pri)'], all: ['check_circle', 1, 'var(--pri)'] };
+    const secs = (key || []).map(s => {
+      const sv = SEL[s.sel];
+      return {
+        title: s.title || '', skel: !!s.skel, sub: s.sub || '', hasMeta: !!s.meta && !s.sel, meta: s.meta || '',
+        hasSel: !!sv, selIcon: sv?.[0] || '', selFill: sv?.[1] || 0, selColor: sv?.[2] || '',
+        hasBanner: !!s.banner, bannerIcon: s.banner?.icon || '', bannerText: s.banner?.text || '',
+        cells: (s.items || []).map(c => this.cell(c)),
+      };
+    });
+    this._v = { secs, gtc: `repeat(${cols},minmax(0,1fr))` };
+    return this._v;
+  }
+}
+</script>
+</body>
+</html>
