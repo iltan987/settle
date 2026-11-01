@@ -2,13 +2,16 @@ package com.iltan.settle.data.backup
 
 import com.iltan.settle.data.db.BackupDao
 import com.iltan.settle.data.db.TrashedEntry
+import com.iltan.settle.domain.backup.BackupDecision
 import com.iltan.settle.domain.backup.BackupHeadline
 import com.iltan.settle.domain.backup.BackupPause
 import com.iltan.settle.domain.backup.BackupStatusInputs
 import com.iltan.settle.domain.backup.RunProgress
+import com.iltan.settle.domain.backup.backupDecision
 import com.iltan.settle.domain.backup.backupHeadline
 import com.iltan.settle.domain.backup.planBackup
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
@@ -16,6 +19,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 
@@ -48,28 +52,35 @@ class BackupStatusSource(
         }
     }
 
+    /**
+     * What automatic backup will do with each item on the phone that isn't verified yet, by item
+     * ID: the grid's Waiting, Queued and Needs attention come from here. Null until first read.
+     */
+    val decisions: StateFlow<Map<String, BackupDecision>?> =
+        combine(preferences.choices, dao.observeBackupCandidates(), minutes) { choices, rows, _ ->
+                val now = clock()
+                rows.associate { row ->
+                    row.id to
+                        (row.toCandidate()?.let { backupDecision(it, choices.settings, now) }
+                            ?: BackupDecision.Skip)
+                }
+            }
+            .flowOn(Dispatchers.Default)
+            .distinctUntilChanged()
+            .stateIn(scope, SharingStarted.WhileSubscribed(STOP_MILLIS), null)
+
+    /** The same decisions counted, as [planBackup] would count them. */
     val counts: StateFlow<BackupCounts?> =
-        combine(
-                cloudBackup.pause,
-                preferences.choices,
-                dao.observeBackupCandidates(),
-                dao.backedUpCount(),
-                minutes,
-            ) { pause, choices, rows, backedUp, _ ->
-                val plan =
-                    planBackup(
-                        rows.mapNotNull { it.toCandidate() },
-                        choices.settings,
-                        pause,
-                        clock(),
+        combine(cloudBackup.pause, decisions, dao.backedUpCount()) { pause, decisions, backedUp ->
+                decisions?.values?.let { all ->
+                    BackupCounts(
+                        pause = pause,
+                        waiting = all.count { it is BackupDecision.WaitUntil },
+                        queued = all.count { it == BackupDecision.Ready },
+                        needsAttention = all.count { it == BackupDecision.NeedsAttention },
+                        backedUp = backedUp,
                     )
-                BackupCounts(
-                    pause = plan.pause,
-                    waiting = plan.waiting,
-                    queued = plan.queue.size,
-                    needsAttention = plan.needsAttention,
-                    backedUp = backedUp,
-                )
+                }
             }
             .distinctUntilChanged()
             .stateIn(scope, SharingStarted.WhileSubscribed(STOP_MILLIS), null)
