@@ -224,4 +224,30 @@ class MigrationTest {
             db.close()
         }
     }
+
+    @Test
+    fun version5DataSurvivesTheUpgradeToVersion6() = runTest {
+        createDatabase(5)
+        AndroidSQLiteDriver().open(context.getDatabasePath(name).path).use {
+            it.execSQL(
+                """
+                INSERT INTO backup_settings (id, automatic, grace_ms, only_while_charging,
+                    use_mobile_data, paused, network_use, limit_mbps, blocked, external_deletion)
+                VALUES (0, 1, 60000, 0, 1, 0, 'POLITE', 20, NULL, 'ASK')
+                """
+            )
+        }
+
+        val db =
+            Room.databaseBuilder<SettleDatabase>(context, name)
+                .setDriver(AndroidSQLiteDriver())
+                .build()
+        try {
+            assertEquals(ExternalDeletionPolicy.ASK, db.backupDao().settings()?.externalDeletion)
+            assertNull(db.uiDao().currentPrefs())
+            assertEquals(emptyList<NoticeDismissalEntity>(), db.uiDao().dismissals().first())
+        } finally {
+            db.close()
+        }
+    }
 }

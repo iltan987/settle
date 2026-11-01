@@ -5,6 +5,7 @@ import android.content.pm.ApplicationInfo
 import android.os.Build
 import android.util.Log
 import com.iltan.settle.data.Library
+import com.iltan.settle.data.UiPreferences
 import com.iltan.settle.data.backup.BackupMaintenance
 import com.iltan.settle.data.backup.BackupNotifications
 import com.iltan.settle.data.backup.BackupPlanner
@@ -58,6 +59,8 @@ class AppGraph(context: Context) {
     val database: SettleDatabase = SettleDatabase.create(appContext)
 
     val library = Library(database.libraryDao(), appContext.contentResolver)
+
+    val uiPreferences = UiPreferences(database.uiDao())
 
     val librarySync =
         LibrarySync(

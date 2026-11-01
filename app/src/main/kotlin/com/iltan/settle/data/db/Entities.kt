@@ -267,3 +267,27 @@ data class RestoreRequestEntity(
     /** Why the last try stopped; null while it waits or runs. */
     val problem: RestoreProblem? = null,
 )
+
+/** How the user left Settle's screens (ADR-016). At most one row; absent means the defaults. */
+@Entity(tableName = "ui_prefs")
+data class UiPrefsEntity(
+    @PrimaryKey val id: Int = 0,
+    /** The timeline's density after a pinch: 3 to 6 columns. */
+    @ColumnInfo(name = "grid_columns", defaultValue = "4") val gridColumns: Int = 4,
+    /** Whether the sheet explaining Android's delete dialog was shown once (E1). */
+    @ColumnInfo(name = "media_explainer_shown", defaultValue = "0")
+    val mediaExplainerShown: Boolean = false,
+    /** Whether onboarding ran to its end once (A1–A9). */
+    @ColumnInfo(name = "onboarding_done", defaultValue = "0") val onboardingDone: Boolean = false,
+)
+
+/**
+ * A notice card the user dismissed, by what it is about (for example "pause:QUOTA_FULL"). It comes
+ * back a day later while the problem lasts, and is forgotten once the problem is gone, so the next
+ * occurrence shows at once.
+ */
+@Entity(tableName = "notice_dismissal")
+data class NoticeDismissalEntity(
+    @PrimaryKey val key: String,
+    @ColumnInfo(name = "dismissed_at_ms") val dismissedAtMs: Long,
+)
