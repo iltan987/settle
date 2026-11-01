@@ -2,7 +2,7 @@
 <resources>
     <string name="timeline_title">Fotoğraflar</string>
     <string name="timeline_empty_title">Henüz bir şey yok</string>
-    <string name="timeline_empty_body">Fotoğrafların ve videoların burada görünecek.</string>
+    <string name="timeline_empty_body">Çektiğiniz fotoğraf ve videolar burada görünecek. Settle bunları gece Drive\'ınıza yedekler.</string>
 
     <string name="settings_title">Ayarlar</string>
     <string name="settings_open">Ayarlar</string>
@@ -98,7 +98,6 @@
     <string name="backup_problem_changed">Dosya yüklenirken değişti. Yeniden yedekle.</string>
     <string name="backup_problem_mismatch">Drive\'daki kopya orijinalle eşleşmiyor. Yeniden yedekle.</string>
     <string name="backup_problem_failed">Yedekleme başarısız oldu</string>
-    <string name="media_backed_up">Yedeklendi</string>
 
     <string name="notification_channel_progress">Yedekleme ilerlemesi</string>
     <string name="notification_channel_problems">Yedekleme sorunları</string>
@@ -192,7 +191,6 @@
     </plurals>
     <string name="selection_clear">Seçimi temizle</string>
     <string name="selection_item">Seç</string>
-    <string name="selection_day">Bu günü seç</string>
     <string name="action_delete">Sil</string>
     <plurals name="trash_moved">
         <item quantity="one">Çöp kutusuna taşındı</item>
@@ -251,4 +249,75 @@
     <string name="deletion_policy_ask">Önce bana sor</string>
     <string name="manage_media_title">Her seferinde sormadan sil</string>
     <string name="manage_media_text">Settle\'ın ögeleri Android her seferinde sormadan çöp kutusuna taşımasına izin verir</string>
+    <!-- Faz 5 · M2: sekmeler, üst çubuk, durum, bildirim kartları, ızgara (docs/design/turn4, B ve C) -->
+    <string name="nav_backup">Yedekleme</string>
+    <string name="status_all_in_drive">Tümü Drive\'da</string>
+    <string name="status_backing_up_pct">Yedekleniyor · %%%1$d</string>
+    <plurals name="status_backing_up_n_of_m">
+        <item quantity="one">Yedekleniyor, %2$d öğeden %1$d tanesi</item>
+        <item quantity="other">Yedekleniyor, %2$d öğeden %1$d tanesi</item>
+    </plurals>
+    <string name="status_paused">Yedekleme duraklatıldı</string>
+    <string name="status_paused_by_you">Yedekleme sizin tarafınızdan duraklatıldı</string>
+    <plurals name="status_needs_attention">
+        <item quantity="one">%d ilgi bekliyor</item>
+        <item quantity="other">%d ilgi bekliyor</item>
+    </plurals>
+    <string name="status_first_backup">İlk yedekleme bu gece</string>
+    <string name="status_drive_not_connected">Drive bağlı değil</string>
+    <plurals name="notice_attention_title">
+        <item quantity="one">%d öğe ilgi bekliyor</item>
+        <item quantity="other">%d öğe ilgi bekliyor</item>
+    </plurals>
+    <string name="notice_attention_body">Settle bunu kendi başına tamamlayamadı. Her şey yerinde duruyor. Hiçbir şey kaybolmadı.</string>
+    <string name="action_review">İncele</string>
+    <string name="notice_drive_full_title">Google Drive dolu</string>
+    <plurals name="notice_drive_full_body">
+        <item quantity="one">Yedekleme duraklatıldı. %d öğe bu telefonda güvenle bekliyor. Drive\'da yer açın veya depolama alanı ekleyin.</item>
+        <item quantity="other">Yedekleme duraklatıldı. %d öğe bu telefonda güvenle bekliyor. Drive\'da yer açın veya depolama alanı ekleyin.</item>
+    </plurals>
+    <string name="notice_manage_storage">Depolamayı yönet</string>
+    <string name="notice_signin_title">Google\'da tekrar oturum açın</string>
+    <string name="notice_signin_body">Google, Settle\'ın oturumunu kapattı; yedekleme duraklatıldı. Bu telefonda hiçbir şey değişmedi.</string>
+    <string name="action_sign_in">Oturum aç</string>
+    <string name="notice_backup_details">Yedekleme ayrıntıları</string>
+    <string name="notice_connect_body">Settle fotoğraflarınızı kendi Drive\'ınızdaki Settle klasöründe saklar. Neyin yedekleneceğini seçene kadar hiçbir şey yüklenmez.</string>
+    <string name="action_connect">Bağlan</string>
+    <string name="action_not_now">Şimdi değil</string>
+    <string name="notice_location_title">Fotoğraf konumlarına erişime izin verin</string>
+    <string name="notice_location_body">Bu izin olmadan Android, Settle\'ın okuduğu fotoğraflardan konumları siler; her kopya birebir kalsın diye yedekleme duraklatıldı. Bu telefonda hiçbir şey değişmedi.</string>
+    <plurals name="notice_paused_body">
+        <item quantity="one">Devam ettirene kadar hiçbir şey yüklenmez. %d öğe bu telefonda güvenle bekliyor.</item>
+        <item quantity="other">Devam ettirene kadar hiçbir şey yüklenmez. %d öğe bu telefonda güvenle bekliyor.</item>
+    </plurals>
+    <string name="notice_dismiss">Kapat</string>
+    <plurals name="notice_mass_title">
+        <item quantity="one">%d öğe bu telefondan kayboldu</item>
+        <item quantity="other">%d öğe bu telefondan kayboldu</item>
+    </plurals>
+    <string name="notice_mass_body">Drive\'daki kopyalarına dokunulmadı. Siz karar verene kadar Settle Drive\'da hiçbir şeyi değiştirmeyecek.</string>
+    <string name="timeline_loading">Fotoğraflar yükleniyor</string>
+    <string name="timeline_choose_folders">Gösterilecek klasörleri seçin</string>
+    <string name="density_by_day">Satırda %1$d · güne göre</string>
+    <string name="density_by_month">Satırda %1$d · aya göre</string>
+    <string name="fast_scroll">Tarihe göre kaydır</string>
+    <string name="selection_select_all">Tümünü seç</string>
+    <string name="selection_favorite">Favori</string>
+    <string name="selection_unfavorite">Favoriden çıkar</string>
+    <string name="selection_back_up">Yedekle</string>
+    <string name="selection_already_in_drive">Zaten Drive\'da</string>
+    <plurals name="selection_not_in_drive">
+        <item quantity="one">%2$d öğeden %1$d tanesi henüz Drive\'da değil. Yedekle, onu şimdi gönderir; Sil, 30 gün boyunca geri yüklenebilir tutar.</item>
+        <item quantity="other">%2$d öğeden %1$d tanesi henüz Drive\'da değil. Yedekle, bunları şimdi gönderir; Sil, 30 gün boyunca geri yüklenebilir tutar.</item>
+    </plurals>
+    <plurals name="selection_day_items">
+        <item quantity="one">%1$s seç, %2$d öğe</item>
+        <item quantity="other">%1$s seç, %2$d öğe</item>
+    </plurals>
+    <string name="selection_day_partial">%1$s, %3$d öğeden %2$d tanesi seçili</string>
+    <string name="media_photo">Fotoğraf</string>
+    <string name="cell_waiting">Yedeklenmeyi bekliyor</string>
+    <string name="cell_queued">Yedekleme sırasında</string>
+    <string name="cell_uploading">Yükleniyor · %%%1$d</string>
+    <string name="cell_not_backed_up">Yedeklenmedi</string>
 </resources>

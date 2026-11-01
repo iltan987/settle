@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name" translatable="false">Settle</string>
 
     <string name="timeline_title">Photos</string>
     <string name="timeline_empty_title">Nothing here yet</string>
-    <string name="timeline_empty_body">Your photos and videos will appear here.</string>
+    <string name="timeline_empty_body">Photos and videos you take will show up here. Settle backs them up to your Drive at night.</string>
 
     <string name="settings_title">Settings</string>
     <string name="settings_open">Settings</string>
@@ -103,7 +103,6 @@
     <string name="backup_problem_changed">The file changed while uploading. Back it up again.</string>
     <string name="backup_problem_mismatch">Drive\'s copy doesn\'t match the original. Back it up again.</string>
     <string name="backup_problem_failed">Backup failed</string>
-    <string name="media_backed_up">Backed up</string>
 
     <string name="notification_channel_progress">Backup progress</string>
     <string name="notification_channel_problems">Backup problems</string>
@@ -197,7 +196,6 @@
     </plurals>
     <string name="selection_clear">Clear selection</string>
     <string name="selection_item">Select</string>
-    <string name="selection_day">Select this day</string>
     <string name="action_delete">Delete</string>
     <plurals name="trash_moved">
         <item quantity="one">Moved to the trash</item>
@@ -256,4 +254,75 @@
     <string name="deletion_policy_ask">Ask me first</string>
     <string name="manage_media_title">Delete without asking each time</string>
     <string name="manage_media_text">Lets Settle move items to the trash without Android asking each time</string>
+    <!-- Phase 5 · M2: tabs, top bar, status, notices, grid (docs/design/turn4, B and C) -->
+    <string name="nav_backup">Backup</string>
+    <string name="status_all_in_drive">All in Drive</string>
+    <string name="status_backing_up_pct">Backing up · %1$d%%</string>
+    <plurals name="status_backing_up_n_of_m">
+        <item quantity="one">Backing up, %1$d of %2$d item</item>
+        <item quantity="other">Backing up, %1$d of %2$d items</item>
+    </plurals>
+    <string name="status_paused">Backup paused</string>
+    <string name="status_paused_by_you">Backup paused by you</string>
+    <plurals name="status_needs_attention">
+        <item quantity="one">%d needs attention</item>
+        <item quantity="other">%d need attention</item>
+    </plurals>
+    <string name="status_first_backup">First backup tonight</string>
+    <string name="status_drive_not_connected">Drive not connected</string>
+    <plurals name="notice_attention_title">
+        <item quantity="one">%d item needs attention</item>
+        <item quantity="other">%d items need attention</item>
+    </plurals>
+    <string name="notice_attention_body">Settle couldn’t finish this on its own. Everything is still where it was. Nothing was lost.</string>
+    <string name="action_review">Review</string>
+    <string name="notice_drive_full_title">Google Drive is full</string>
+    <plurals name="notice_drive_full_body">
+        <item quantity="one">Backup is paused. %d item is waiting safely on this phone. Free up space in Drive or add storage.</item>
+        <item quantity="other">Backup is paused. %d items are waiting safely on this phone. Free up space in Drive or add storage.</item>
+    </plurals>
+    <string name="notice_manage_storage">Manage storage</string>
+    <string name="notice_signin_title">Sign in to Google again</string>
+    <string name="notice_signin_body">Google signed Settle out, so backup is paused. Nothing on this phone has changed.</string>
+    <string name="action_sign_in">Sign in</string>
+    <string name="notice_backup_details">Backup details</string>
+    <string name="notice_connect_body">Settle keeps your photos in a Settle folder in your own Drive. Nothing is uploaded until you choose what to back up.</string>
+    <string name="action_connect">Connect</string>
+    <string name="action_not_now">Not now</string>
+    <string name="notice_location_title">Allow access to photo locations</string>
+    <string name="notice_location_body">Without it, Android removes locations from the photos Settle reads, so backup is paused to keep every copy exact. Nothing on this phone has changed.</string>
+    <plurals name="notice_paused_body">
+        <item quantity="one">Nothing uploads until you resume. %d item is waiting safely on this phone.</item>
+        <item quantity="other">Nothing uploads until you resume. %d items are waiting safely on this phone.</item>
+    </plurals>
+    <string name="notice_dismiss">Dismiss</string>
+    <plurals name="notice_mass_title">
+        <item quantity="one">%d item disappeared from this phone</item>
+        <item quantity="other">%d items disappeared from this phone</item>
+    </plurals>
+    <string name="notice_mass_body">Their Drive copies are untouched. Settle won’t change anything in Drive until you decide.</string>
+    <string name="timeline_loading">Loading photos</string>
+    <string name="timeline_choose_folders">Choose folders to show</string>
+    <string name="density_by_day" tools:ignore="PluralsCandidate">%1$d per row · by day</string>
+    <string name="density_by_month" tools:ignore="PluralsCandidate">%1$d per row · by month</string>
+    <string name="fast_scroll">Scroll by date</string>
+    <string name="selection_select_all">Select all</string>
+    <string name="selection_favorite">Favorite</string>
+    <string name="selection_unfavorite">Unfavorite</string>
+    <string name="selection_back_up">Back up</string>
+    <string name="selection_already_in_drive">Already in Drive</string>
+    <plurals name="selection_not_in_drive">
+        <item quantity="one">%1$d of %2$d isn’t in Drive yet. Back up sends it now; Delete keeps it restorable for 30 days.</item>
+        <item quantity="other">%1$d of %2$d aren’t in Drive yet. Back up sends them now; Delete keeps them restorable for 30 days.</item>
+    </plurals>
+    <plurals name="selection_day_items">
+        <item quantity="one">Select %1$s, %2$d item</item>
+        <item quantity="other">Select %1$s, %2$d items</item>
+    </plurals>
+    <string name="selection_day_partial" tools:ignore="PluralsCandidate">%1$s, %2$d of %3$d selected</string>
+    <string name="media_photo">Photo</string>
+    <string name="cell_waiting">Waiting for backup</string>
+    <string name="cell_queued">Queued for backup</string>
+    <string name="cell_uploading">Uploading · %1$d%%</string>
+    <string name="cell_not_backed_up">Not backed up</string>
 </resources>

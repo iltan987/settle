@@ -51,7 +51,7 @@ class SettleAppTest {
         grantFullAccess()
         compose.setContent { SettleTheme { SettleApp() } }
 
-        // The timeline's top bar is the only place with the settings action.
+        // The account button in the timeline's top bar opens Settings.
         compose.onNodeWithContentDescription("Settings").assertIsDisplayed()
     }
 
@@ -65,6 +65,16 @@ class SettleAppTest {
 
         compose.onNodeWithText("Photos").performClick()
         compose.onNodeWithContentDescription("Settings").assertIsDisplayed()
+    }
+
+    @Test
+    fun theBackupTabHoldsDriveAndBackup() {
+        grantFullAccess()
+        compose.setContent { SettleTheme { SettleApp() } }
+
+        compose.onNodeWithText("Backup").performClick()
+
+        compose.onNodeWithText("Connect Google Drive").assertIsDisplayed()
     }
 
     @Test

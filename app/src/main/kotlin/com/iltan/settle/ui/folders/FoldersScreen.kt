@@ -58,6 +58,7 @@ fun FoldersScreen(
     onOpenFolder: (relativePath: String, name: String) -> Unit,
     onOpenFavorites: () -> Unit,
     onSetHidden: (relativePath: String, hidden: Boolean) -> Unit,
+    modifier: Modifier = Modifier,
     onSetBackUp: (relativePath: String, backUp: Boolean) -> Unit = { _, _ -> },
     /** Items in Settle's trash (R12). */
     trashCount: Int = 0,
@@ -70,7 +71,7 @@ fun FoldersScreen(
             folderNames(state.folders.map { it.relativePath }, rootName)
         }
     Scaffold(
-        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+        modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             LargeFlexibleTopAppBar(
                 title = { Text(stringResource(R.string.folders_title)) },

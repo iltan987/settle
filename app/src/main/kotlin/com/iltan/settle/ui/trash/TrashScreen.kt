@@ -62,9 +62,6 @@ import com.iltan.settle.data.media.MediaThumbnail
 import com.iltan.settle.data.mediaContentUri
 import com.iltan.settle.domain.deletion.RestoreProblem
 import com.iltan.settle.domain.deletion.TrashOrigin
-import com.iltan.settle.ui.grid.SelectionAction
-import com.iltan.settle.ui.grid.SelectionMark
-import com.iltan.settle.ui.grid.SelectionTopBar
 import com.iltan.settle.ui.grid.gridGestures
 import com.iltan.settle.ui.grid.rememberSelection
 
@@ -104,7 +101,6 @@ fun TrashScreen(
                 SelectionTopBar(
                     selection.size,
                     onClear = { selection = emptySet() },
-                    subtitle = null,
                     scrollBehavior = scrollBehavior,
                 ) {
                     SelectionAction(R.drawable.ic_restore_from_trash, R.string.trash_restore) {

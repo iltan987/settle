@@ -1,16 +1,32 @@
 package com.iltan.settle.ui.grid
 
+import android.content.res.Resources
 import android.text.format.DateFormat
-import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.calculateCentroid
+import androidx.compose.foundation.gestures.calculateZoom
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.detectVerticalDragGestures
+import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -19,42 +35,64 @@ import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.selection.triStateToggleable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.TransformOrigin
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.onClick
-import androidx.compose.ui.semantics.onLongClick
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.state.ToggleableState
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntRect
 import androidx.compose.ui.unit.dp
-import coil3.compose.AsyncImage
+import androidx.compose.ui.unit.round
 import com.iltan.settle.R
 import com.iltan.settle.data.db.MediaEntry
-import com.iltan.settle.data.thumbnail
 import com.iltan.settle.domain.ItemStatus
-import com.iltan.settle.domain.LocalState
-import com.iltan.settle.domain.deriveStatus
+import com.iltan.settle.domain.backup.cellShowsStatus
 import com.iltan.settle.domain.scan.MediaKind
 import com.iltan.settle.domain.timeline.DaySection
+import com.iltan.settle.ui.theme.SettleMotion
+import com.iltan.settle.ui.theme.SettleType
+import java.time.Instant
 import java.time.LocalDate
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
-
-/** MediaStore's `_special_format` value for motion photos (API 37). */
-const val SPECIAL_FORMAT_MOTION_PHOTO = 2
+import java.util.Locale
+import kotlin.math.roundToInt
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 /** What every photo grid shows: items grouped by day, newest first. */
 data class MediaGridState(
@@ -62,11 +100,54 @@ data class MediaGridState(
     val count: Int = 0,
     /** True until the first scan has filled the library, so "empty" isn't shown too early. */
     val loading: Boolean = true,
+    /** The density the user pinched to: 3 to 6 columns (B4). */
+    val columns: Int = DEFAULT_COLUMNS,
 )
 
+const val DEFAULT_COLUMNS = 4
+private const val MIN_COLUMNS = 3
+private const val MAX_COLUMNS = 6
+
+/** From 5 columns on, headers group by month and hearts are hidden (B4). */
+private fun byMonth(columns: Int) = columns >= 5
+
+/** A header or a cell, in the order the grid shows them. */
+private sealed interface GridRow {
+    val key: String
+    /** The day (or a month's first day) the row belongs to, for the fast scroller's bubble. */
+    val date: LocalDate
+}
+
+private data class HeaderRow(
+    override val date: LocalDate,
+    val month: Boolean,
+    val ids: List<String>,
+) : GridRow {
+    override val key = (if (month) "month-" else "day-") + date
+}
+
+private data class CellRow(val entry: MediaEntry, override val date: LocalDate) : GridRow {
+    override val key = entry.id
+}
+
+private fun rowsOf(sections: List<DaySection<MediaEntry>>, month: Boolean): List<GridRow> {
+    val groups =
+        if (!month) sections.map { it.date to it.items }
+        else {
+            sections
+                .groupBy { it.date.withDayOfMonth(1) }
+                .map { (first, days) -> first to days.flatMap { it.items } }
+        }
+    return groups.flatMap { (date, items) ->
+        listOf(HeaderRow(date, month, items.map { it.id })) + items.map { CellRow(it, date) }
+    }
+}
+
 /**
- * Photos and videos by day. With [onSelectionChange] set, a long-press starts selecting (dragging
- * extends it), taps then toggle items, and a day's header selects the whole day (R3, R12).
+ * Photos and videos by day, or by month when dense (PhotoGrid). With [onSelectionChange] set, a
+ * long-press starts selecting (dragging extends it), taps then toggle items, and a header selects
+ * its whole day (R3, R12, C1–C3). With [onColumnsChange] set, a pinch steps through 3 to 6 columns,
+ * keeping the item under the fingers in place (B4).
  */
 @Composable
 fun MediaGrid(
@@ -75,16 +156,28 @@ fun MediaGrid(
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(),
     state: LazyGridState = rememberLazyGridState(),
+    columns: Int = DEFAULT_COLUMNS,
+    onColumnsChange: ((Int) -> Unit)? = null,
     selection: Set<String> = emptySet(),
     onSelectionChange: ((Set<String>) -> Unit)? = null,
-    /** Shown above the first day, across the grid, e.g. a notice that needs the user. */
+    /** Each item's backup status, or null when unknown; filtered here by where it may show. */
+    backup: (MediaEntry) -> CellBackup? = { null },
+    /** Whether Drive is connected: before that, "Not backed up" isn't badged (B12). */
+    connected: Boolean = false,
+    /** Shown above the first day, across the grid, e.g. notices that need the user. */
     header: (@Composable () -> Unit)? = null,
 ) {
-    val today = remember { LocalDate.now() }
-    val ids = remember(sections) { sections.flatMap { section -> section.items.map { it.id } } }
-    val byId = remember(sections) { sections.flatMap { it.items }.associateBy { it.id } }
+    // The density shown, changed at once by a pinch and kept in step with the saved one.
+    var shown by rememberSaveable { mutableIntStateOf(columns) }
+    LaunchedEffect(columns) { shown = columns }
+    val month = byMonth(shown)
+    val rows = remember(sections, month) { rowsOf(sections, month) }
+    val ids = remember(rows) { rows.mapNotNull { (it as? CellRow)?.entry?.id } }
+    val byId = remember(rows) { rows.mapNotNull { (it as? CellRow)?.entry }.associateBy { it.id } }
     val currentSelection by rememberUpdatedState(selection)
     val selecting = selection.isNotEmpty()
+    val haptics = LocalHapticFeedback.current
+    val changeColumns by rememberUpdatedState(onColumnsChange)
     val tap: (MediaEntry) -> Unit = { entry ->
         if (currentSelection.isNotEmpty() && onSelectionChange != null) {
             onSelectionChange(
@@ -93,232 +186,512 @@ fun MediaGrid(
             )
         } else onOpen(entry)
     }
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(COLUMNS),
-        state = state,
-        modifier =
-            modifier.gridGestures(
-                state,
-                ids,
-                { currentSelection },
-                onTap = { id -> byId[id]?.let(tap) },
-                onSelectionChange = onSelectionChange,
-            ),
-        contentPadding = contentPadding,
-        horizontalArrangement = Arrangement.spacedBy(GAP),
-        verticalArrangement = Arrangement.spacedBy(GAP),
-    ) {
-        if (header != null) {
-            item(key = "header", span = { GridItemSpan(maxLineSpan) }, contentType = "header") {
-                header()
-            }
-        }
-        for (section in sections) {
-            stickyHeader(key = "day-${section.date}", contentType = "day") {
-                val dayIds = section.items.map { it.id }
-                val allSelected = selecting && selection.containsAll(dayIds)
-                DayHeader(
-                    section.date,
-                    today,
-                    selected = if (selecting) allSelected else null,
-                    onToggle = {
-                        onSelectionChange?.invoke(
-                            if (allSelected) selection - dayIds.toSet() else selection + dayIds
-                        )
-                    },
-                )
-            }
-            items(section.items, key = { it.id }, contentType = { "media" }) { entry ->
-                MediaCell(
-                    entry,
-                    selected = if (selecting) entry.id in selection else null,
-                    onClick = { tap(entry) },
-                    onLongClick =
-                        onSelectionChange?.let { change ->
-                            { change(currentSelection + entry.id) }
-                        },
-                )
-            }
+    val today = remember { LocalDate.now() }
+    val labels = rememberDateLabels(today)
+    val scope = rememberCoroutineScope()
+    val zoom = remember { Animatable(1f) }
+    var origin by remember { mutableStateOf(TransformOrigin.Center) }
+    // The item a pinch held on to, and where its line was, until the new density is laid out.
+    var anchor by remember { mutableStateOf<Pair<String, Int>?>(null) }
+    var toast by remember { mutableStateOf<Int?>(null) }
+    LaunchedEffect(shown) {
+        val (key, offset) = anchor ?: return@LaunchedEffect
+        anchor = null
+        val index = rows.indexOfFirst { it.key == key }
+        if (index >= 0) {
+            state.scrollToItem(index + if (header != null) 1 else 0)
+            state.scrollBy(-offset.toFloat())
         }
     }
-}
-
-@Composable
-private fun DayHeader(
-    date: LocalDate,
-    today: LocalDate,
-    /** Null when nothing is being selected. */
-    selected: Boolean? = null,
-    onToggle: () -> Unit = {},
-) {
-    val locale = LocalConfiguration.current.locales[0]
-    val label =
-        when (date) {
-            today -> stringResource(R.string.day_today)
-            today.minusDays(1) -> stringResource(R.string.day_yesterday)
-            else -> {
-                val skeleton = if (date.year == today.year) "EEEEdMMMM" else "EEEEdMMMMyyyy"
-                remember(date, locale) {
-                    DateTimeFormatter.ofPattern(DateFormat.getBestDateTimePattern(locale, skeleton))
-                        .withLocale(locale)
-                        .format(date)
+    LaunchedEffect(toast) {
+        if (toast != null) {
+            delay(DENSITY_TOAST_MILLIS)
+            toast = null
+        }
+    }
+    val direction = LocalLayoutDirection.current
+    val padding =
+        PaddingValues(
+            start = contentPadding.calculateStartPadding(direction) + SIDE_INSET,
+            top = contentPadding.calculateTopPadding(),
+            end = contentPadding.calculateEndPadding(direction) + SIDE_INSET,
+            bottom = contentPadding.calculateBottomPadding(),
+        )
+    BoxWithConstraints(modifier) {
+        val size = constraints
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(shown),
+            state = state,
+            modifier =
+                Modifier.fillMaxSize()
+                    .graphicsLayer {
+                        scaleX = zoom.value
+                        scaleY = zoom.value
+                        transformOrigin = origin
+                    }
+                    .then(
+                        if (onColumnsChange == null) Modifier
+                        else
+                            Modifier.pinchColumns(size) { stepIn, centroid ->
+                                val next = (shown + if (stepIn) -1 else 1)
+                                if (next !in MIN_COLUMNS..MAX_COLUMNS) return@pinchColumns false
+                                anchor =
+                                    itemAt(state, centroid)?.let {
+                                        it.key.toString() to it.offset.y
+                                    }
+                                origin =
+                                    TransformOrigin(
+                                        centroid.x / size.maxWidth.coerceAtLeast(1),
+                                        centroid.y / size.maxHeight.coerceAtLeast(1),
+                                    )
+                                scope.launch {
+                                    zoom.snapTo(next.toFloat() / shown)
+                                    zoom.animateTo(1f, SettleMotion.density())
+                                }
+                                shown = next
+                                toast = next
+                                changeColumns?.invoke(next)
+                                true
+                            }
+                    )
+                    .gridGestures(
+                        state,
+                        ids,
+                        { currentSelection },
+                        onTap = { id -> byId[id]?.let(tap) },
+                        onSelectionChange = onSelectionChange,
+                        haptics = haptics,
+                    ),
+            contentPadding = padding,
+            horizontalArrangement = Arrangement.spacedBy(GAP),
+            verticalArrangement = Arrangement.spacedBy(GAP),
+        ) {
+            if (header != null) {
+                item(
+                    key = "notices",
+                    span = { GridItemSpan(maxLineSpan) },
+                    contentType = "notices",
+                ) {
+                    header()
+                }
+            }
+            items(
+                rows,
+                key = { it.key },
+                span = { if (it is HeaderRow) GridItemSpan(maxLineSpan) else GridItemSpan(1) },
+                contentType = { if (it is HeaderRow) "header" else "media" },
+            ) { row ->
+                when (row) {
+                    is HeaderRow -> {
+                        val chosen = if (selecting) row.ids.count { it in selection } else 0
+                        GroupHeader(
+                            label = labels.header(row),
+                            count = row.ids.size,
+                            chosen = if (selecting) chosen else null,
+                            onToggle = {
+                                onSelectionChange?.invoke(
+                                    if (chosen == row.ids.size) selection - row.ids.toSet()
+                                    else selection + row.ids
+                                )
+                            },
+                            onLongPress =
+                                onSelectionChange?.let { change ->
+                                    {
+                                        haptics.performHapticFeedback(HapticFeedbackType.LongPress)
+                                        change(currentSelection + row.ids)
+                                    }
+                                },
+                        )
+                    }
+                    is CellRow -> {
+                        val entry = row.entry
+                        val status =
+                            backup(entry)?.takeIf {
+                                cellShowsStatus(it.status, connected, selecting)
+                            }
+                        GridCell(
+                            entry,
+                            selected = if (selecting) entry.id in selection else null,
+                            backup = status,
+                            showFavorite = !month,
+                            description = labels.cell(entry, status),
+                            onClick = { tap(entry) },
+                            onLongClick =
+                                onSelectionChange?.let { change ->
+                                    { change(currentSelection + entry.id) }
+                                },
+                        )
+                    }
                 }
             }
         }
-    Row(
-        Modifier.fillMaxWidth()
-            .background(MaterialTheme.colorScheme.surface)
-            .then(if (selected != null) Modifier.clickable(onClick = onToggle) else Modifier)
-            .padding(horizontal = 16.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Text(label, style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
-        if (selected != null) SelectionMark(selected, R.string.selection_day)
+        FastScroller(
+            state,
+            rows,
+            offset = if (header != null) 1 else 0,
+            top = padding.calculateTopPadding(),
+            bottom = padding.calculateBottomPadding(),
+            label = labels::month,
+        )
+        AnimatedVisibility(
+            visible = toast != null,
+            enter = fadeIn(SettleMotion.fade()),
+            exit = fadeOut(SettleMotion.fade()),
+            modifier =
+                Modifier.align(Alignment.BottomCenter)
+                    .padding(bottom = padding.calculateBottomPadding() + 16.dp),
+        ) {
+            DensityToast(toast ?: shown)
+        }
     }
 }
 
+/** The item under [point], in the grid's own coordinates. */
+private fun itemAt(state: LazyGridState, point: Offset) =
+    state.layoutInfo.let { layout ->
+        // Item offsets start inside the top content padding; viewportStartOffset is minus it.
+        val inContent = point.round() + IntOffset(0, layout.viewportStartOffset)
+        layout.visibleItemsInfo.firstOrNull { IntRect(it.offset, it.size).contains(inContent) }
+    }
+
+/**
+ * Two-finger pinches, seen before the grid scrolls so they never also scroll it. [onStep] gets
+ * whether the fingers spread (fewer, larger columns) and where they are, and says whether it acted;
+ * after each step the pinch starts measuring again, so one pinch can step more than once.
+ */
+private fun Modifier.pinchColumns(
+    key: Any,
+    onStep: (stepIn: Boolean, centroid: Offset) -> Boolean,
+) =
+    pointerInput(key) {
+        awaitEachGesture {
+            awaitFirstDown(requireUnconsumed = false)
+            var zoom = 1f
+            do {
+                val event = awaitPointerEvent(PointerEventPass.Initial)
+                if (event.changes.count { it.pressed } >= 2) {
+                    zoom *= event.calculateZoom()
+                    event.changes.forEach { it.consume() }
+                    val stepIn =
+                        when {
+                            zoom > PINCH_STEP -> true
+                            zoom < 1 / PINCH_STEP -> false
+                            else -> null
+                        }
+                    if (stepIn != null && onStep(stepIn, event.calculateCentroid())) zoom = 1f
+                }
+            } while (event.changes.any { it.pressed })
+        }
+    }
+
+/** How far fingers spread or close for one step of density. */
+private const val PINCH_STEP = 1.25f
+
+private const val DENSITY_TOAST_MILLIS = 1_200L
+
 @Composable
-private fun MediaCell(
-    entry: MediaEntry,
-    /** Null when nothing is being selected. */
-    selected: Boolean?,
-    /** Only for accessibility services; the grid handles touches itself (see gridGestures). */
-    onClick: () -> Unit,
-    onLongClick: (() -> Unit)?,
-) {
-    val inset by animateDpAsState(if (selected == true) 12.dp else 0.dp, label = "selected")
-    Box(
-        Modifier.aspectRatio(1f)
-            .background(
-                if (selected == true) MaterialTheme.colorScheme.secondaryContainer
-                else MaterialTheme.colorScheme.surfaceContainerHigh
-            )
-            .semantics {
-                onClick { onClick().let { true } }
-                if (onLongClick != null) onLongClick { onLongClick().let { true } }
-            }
-            .testTag("media-${entry.id}")
+private fun DensityToast(columns: Int) {
+    Surface(
+        shape = RoundedCornerShape(50),
+        color = MaterialTheme.colorScheme.inverseSurface.copy(alpha = 0.92f),
+        contentColor = MaterialTheme.colorScheme.inverseOnSurface,
     ) {
-        AsyncImage(
-            model = entry.thumbnail,
-            contentDescription = null,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier.fillMaxSize().padding(inset).clip(RoundedCornerShape(inset)),
-        )
-        if (entry.kind == MediaKind.VIDEO) {
-            Badge(Modifier.align(Alignment.BottomEnd)) {
-                Text(
-                    formatDuration(entry.durationMs),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = Color.White,
-                )
-                BadgeIcon(R.drawable.ic_play, R.string.media_video)
-            }
-        }
-        if (entry.specialFormat == SPECIAL_FORMAT_MOTION_PHOTO) {
-            Badge(Modifier.align(Alignment.TopEnd)) {
-                BadgeIcon(R.drawable.ic_motion_photo, R.string.media_motion_photo)
-            }
-        }
-        if (entry.isFavorite) {
-            Badge(Modifier.align(Alignment.BottomStart)) {
-                BadgeIcon(R.drawable.ic_favorite_filled, R.string.media_favorite)
-            }
-        }
-        if (selected != null) {
-            Box(Modifier.align(Alignment.TopStart).padding(4.dp)) {
-                SelectionMark(selected, R.string.selection_item, onPhoto = true)
-            }
-        } else {
-            StatusBadge(entry, Modifier.align(Alignment.TopStart))
+        Row(
+            Modifier.height(36.dp).padding(horizontal = 14.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Icon(painterResource(R.drawable.ic_grid_view), null, Modifier.size(18.dp))
+            Text(
+                stringResource(
+                    if (byMonth(columns)) R.string.density_by_month else R.string.density_by_day,
+                    columns,
+                ),
+                style = MaterialTheme.typography.labelMedium,
+            )
         }
     }
 }
 
 /**
- * The item's one status (R11, ADR-002). Grids show items on the phone, so only backed up, uploading
- * and needs attention get a badge; waiting and queued are told in the viewer.
+ * A day's or a month's header (DayHeader), at least 44 dp. While selecting it is a three-state
+ * control for its items, without changing height; otherwise a long-press selects them (C3).
  */
 @Composable
-private fun StatusBadge(entry: MediaEntry, modifier: Modifier) {
-    val status =
-        deriveStatus(
-            local = LocalState.PRESENT,
-            cloud = entry.cloudState,
-            inTrash = false,
-            uploadEligibleAtMillis = null,
-            nowMillis = 0,
-        )
-    val (icon, label) =
-        when (status) {
-            ItemStatus.BACKED_UP -> R.drawable.ic_cloud_done_filled to R.string.media_backed_up
-            ItemStatus.UPLOADING -> R.drawable.ic_cloud_upload to R.string.backup_uploading
-            ItemStatus.NEEDS_ATTENTION -> R.drawable.ic_cloud_off to R.string.media_needs_attention
-            else -> return
+private fun GroupHeader(
+    label: String,
+    count: Int,
+    /** How many of its items are selected; null when nothing is being selected. */
+    chosen: Int?,
+    onToggle: () -> Unit,
+    onLongPress: (() -> Unit)?,
+) {
+    val colors = MaterialTheme.colorScheme
+    val toggle =
+        when (chosen) {
+            null -> null
+            0 -> ToggleableState.Off
+            count -> ToggleableState.On
+            else -> ToggleableState.Indeterminate
         }
-    Badge(modifier) { BadgeIcon(icon, label) }
-}
-
-/** A round check that shows whether an item or a day is selected. */
-@Composable
-fun SelectionMark(selected: Boolean, label: Int, onPhoto: Boolean = false) {
-    Icon(
-        painterResource(
-            if (selected) R.drawable.ic_check_circle_filled
-            else R.drawable.ic_radio_button_unchecked
-        ),
-        contentDescription = stringResource(label),
-        tint =
-            when {
-                selected -> MaterialTheme.colorScheme.primary
-                onPhoto -> Color.White
-                else -> MaterialTheme.colorScheme.onSurfaceVariant
-            },
-        modifier =
-            Modifier.size(24.dp)
-                .then(
-                    if (onPhoto && selected) {
-                        Modifier.background(MaterialTheme.colorScheme.onPrimary, CircleShape)
-                    } else Modifier
-                ),
-    )
-}
-
-/** A small dark pill so white badges stay readable on any photo. */
-@Composable
-private fun Badge(modifier: Modifier, content: @Composable () -> Unit) {
+    val spoken =
+        if (chosen != null && chosen > 0 && chosen < count) {
+            stringResource(R.string.selection_day_partial, label, chosen, count)
+        } else {
+            pluralStringResource(R.plurals.selection_day_items, count, label, count)
+        }
     Row(
-        modifier =
-            modifier
-                .padding(4.dp)
-                .background(Color.Black.copy(alpha = 0.45f), RoundedCornerShape(50))
-                .padding(horizontal = 4.dp, vertical = 2.dp),
+        Modifier.fillMaxWidth()
+            .heightIn(min = 44.dp)
+            .then(
+                if (toggle != null) {
+                    Modifier.triStateToggleable(toggle, onClick = onToggle).semantics {
+                        contentDescription = spoken
+                    }
+                } else if (onLongPress != null) {
+                    Modifier.pointerInput(onLongPress) {
+                        detectTapGestures(onLongPress = { onLongPress() })
+                    }
+                } else Modifier
+            )
+            .padding(start = 14.dp, top = 10.dp, end = 6.dp, bottom = 6.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(2.dp),
     ) {
-        content()
+        Text(
+            label,
+            style = SettleType.dayHeader,
+            color = colors.onSurface,
+            modifier = Modifier.weight(1f),
+        )
+        if (toggle != null) {
+            Box(Modifier.padding(end = 6.dp).size(24.dp), contentAlignment = Alignment.Center) {
+                Icon(
+                    painterResource(
+                        when (toggle) {
+                            ToggleableState.On -> R.drawable.ic_check_circle_filled
+                            ToggleableState.Indeterminate -> R.drawable.ic_do_not_disturb_on_filled
+                            ToggleableState.Off -> R.drawable.ic_radio_button_unchecked
+                        }
+                    ),
+                    contentDescription = null,
+                    tint =
+                        if (toggle == ToggleableState.Off) colors.onSurfaceVariant
+                        else colors.primary,
+                )
+            }
+        }
     }
 }
 
+/** Headers' and cells' words, formatted once per locale. */
+private class DateLabels(
+    private val today: LocalDate,
+    private val resources: Resources,
+    locale: Locale,
+) {
+    private fun pattern(locale: Locale, skeleton: String) =
+        DateTimeFormatter.ofPattern(DateFormat.getBestDateTimePattern(locale, skeleton))
+            .withLocale(locale)
+
+    private val thisYear = pattern(locale, "EEEEdMMMM")
+    private val otherYear = pattern(locale, "EEEEdMMMMyyyy")
+    private val monthYear = pattern(locale, "MMMMyyyy")
+    private val cellDate = pattern(locale, "dMMMMjm")
+    private val zone = ZoneId.systemDefault()
+
+    fun header(row: HeaderRow): String =
+        when {
+            row.month -> monthYear.format(row.date)
+            row.date == today -> resources.getString(R.string.day_today)
+            row.date == today.minusDays(1) -> resources.getString(R.string.day_yesterday)
+            row.date.year == today.year -> thisYear.format(row.date)
+            else -> otherYear.format(row.date)
+        }
+
+    fun month(date: LocalDate): String = monthYear.format(date)
+
+    /** "Photo, Favorite, 29 October, 18:42, Waiting for backup" (B5). */
+    fun cell(entry: MediaEntry, backup: CellBackup?): String = buildList {
+        add(
+            resources.getString(
+                when {
+                    entry.kind == MediaKind.VIDEO -> R.string.media_video
+                    entry.specialFormat == SPECIAL_FORMAT_MOTION_PHOTO ->
+                        R.string.media_motion_photo
+                    else -> R.string.media_photo
+                }
+            )
+        )
+        if (entry.isFavorite) add(resources.getString(R.string.media_favorite))
+        add(cellDate.format(Instant.ofEpochMilli(entry.takenAtMs).atZone(zone)))
+        statusLabel(backup)?.let(::add)
+    }
+        .joinToString(", ")
+
+    private fun statusLabel(backup: CellBackup?): String? =
+        when (backup?.status) {
+            ItemStatus.UPLOADING ->
+                resources.getString(
+                    R.string.cell_uploading,
+                    ((backup.progress ?: 0f) * 100).roundToInt(),
+                )
+            ItemStatus.WAITING -> resources.getString(R.string.cell_waiting)
+            ItemStatus.QUEUED -> resources.getString(R.string.cell_queued)
+            ItemStatus.NOT_BACKED_UP -> resources.getString(R.string.cell_not_backed_up)
+            ItemStatus.NEEDS_ATTENTION -> resources.getString(R.string.media_needs_attention)
+            else -> null
+        }
+}
+
 @Composable
-private fun BadgeIcon(icon: Int, description: Int) {
-    Icon(
-        painterResource(icon),
-        contentDescription = stringResource(description),
-        tint = Color.White,
-        modifier = Modifier.size(14.dp),
-    )
+private fun rememberDateLabels(today: LocalDate): DateLabels {
+    val configuration = LocalConfiguration.current
+    val resources = LocalResources.current
+    return remember(today, configuration, resources) {
+        DateLabels(today, resources, configuration.locales[0])
+    }
 }
 
-/** `0:07`, `12:34` or `1:02:03`. */
-fun formatDuration(millis: Long): String {
-    val total = millis / 1000
-    val hours = total / 3600
-    val minutes = total % 3600 / 60
-    val seconds = total % 60
-    return if (hours > 0) "%d:%02d:%02d".format(hours, minutes, seconds)
-    else "%d:%02d".format(minutes, seconds)
+/**
+ * The draggable thumb on the right edge (FastScroller): shown while the grid scrolls and for 1.5 s
+ * after, only when there are several screens to scroll through. Its position maps to item index, so
+ * dense months take more of the rail; while dragging, a bubble names the month.
+ */
+@Composable
+private fun BoxScope.FastScroller(
+    state: LazyGridState,
+    rows: List<GridRow>,
+    /** Grid items before [rows], such as the notices. */
+    offset: Int,
+    top: Dp,
+    bottom: Dp,
+    label: (LocalDate) -> String,
+) {
+    // Derived, so the scroller recomposes when the first visible item changes, not every frame.
+    val geometry by
+        remember(state) {
+            derivedStateOf {
+                val layout = state.layoutInfo
+                ScrollGeometry(
+                    total = layout.totalItemsCount,
+                    visible = layout.visibleItemsInfo.size,
+                    first = state.firstVisibleItemIndex,
+                    viewport = layout.viewportSize.height,
+                )
+            }
+        }
+    val total = geometry.total
+    val visibleCount = geometry.visible
+    if (total == 0 || visibleCount == 0 || total < visibleCount * MIN_SCREENS) return
+    val haptics = LocalHapticFeedback.current
+    var dragging by remember { mutableStateOf(false) }
+    var dragFraction by remember { mutableFloatStateOf(0f) }
+    var shown by remember { mutableStateOf(false) }
+    val scrolling = state.isScrollInProgress
+    LaunchedEffect(scrolling, dragging) {
+        if (scrolling || dragging) shown = true
+        else {
+            delay(FAST_SCROLL_HIDE_MILLIS)
+            shown = false
+        }
+    }
+    val fraction =
+        if (dragging) dragFraction
+        else (geometry.first.toFloat() / (total - visibleCount).coerceAtLeast(1)).coerceIn(0f, 1f)
+    val currentFraction by rememberUpdatedState(fraction)
+    val density = LocalDensity.current
+    val track =
+        with(density) {
+            (geometry.viewport -
+                    top.roundToPx() -
+                    bottom.roundToPx() -
+                    THUMB_TOUCH_HEIGHT.roundToPx())
+                .coerceAtLeast(1)
+        }
+    val thumbY = with(density) { top.roundToPx() } + (fraction * track).roundToInt()
+    var lastMonth by remember { mutableStateOf<LocalDate?>(null) }
+    val atIndex = (fraction * (total - 1)).roundToInt() - offset
+    val month =
+        rows
+            .getOrNull(atIndex.coerceIn(0, (rows.size - 1).coerceAtLeast(0)))
+            ?.date
+            ?.withDayOfMonth(1)
+    LaunchedEffect(month, dragging) {
+        if (dragging && month != null && lastMonth != null && month != lastMonth) {
+            haptics.performHapticFeedback(HapticFeedbackType.SegmentTick)
+        }
+        lastMonth = month
+    }
+    AnimatedVisibility(
+        visible = shown,
+        enter = fadeIn(SettleMotion.fade()),
+        exit = fadeOut(SettleMotion.fade()),
+        modifier = Modifier.align(Alignment.TopEnd).offset { IntOffset(0, thumbY) },
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            if (dragging && month != null) {
+                Surface(
+                    shape = RoundedCornerShape(26.dp),
+                    color = MaterialTheme.colorScheme.primaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                    modifier = Modifier.padding(end = 8.dp),
+                ) {
+                    Box(
+                        Modifier.height(52.dp).padding(horizontal = 20.dp),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Text(label(month), style = MaterialTheme.typography.titleMedium)
+                    }
+                }
+            }
+            Box(
+                Modifier.size(THUMB_TOUCH_WIDTH, THUMB_TOUCH_HEIGHT).pointerInput(total, track) {
+                    detectVerticalDragGestures(
+                        onDragStart = {
+                            dragFraction = currentFraction
+                            dragging = true
+                        },
+                        onDragEnd = { dragging = false },
+                        onDragCancel = { dragging = false },
+                    ) { change, amount ->
+                        change.consume()
+                        dragFraction = (dragFraction + amount / track).coerceIn(0f, 1f)
+                        state.requestScrollToItem((dragFraction * (total - 1)).roundToInt())
+                    }
+                },
+                contentAlignment = Alignment.CenterEnd,
+            ) {
+                Box(
+                    Modifier.size(40.dp, 52.dp)
+                        .background(
+                            MaterialTheme.colorScheme.primaryContainer,
+                            RoundedCornerShape(topStart = 26.dp, bottomStart = 26.dp),
+                        ),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Icon(
+                        painterResource(R.drawable.ic_unfold_more),
+                        contentDescription = stringResource(R.string.fast_scroll),
+                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                    )
+                }
+            }
+        }
+    }
 }
 
-private const val COLUMNS = 4
+private data class ScrollGeometry(
+    val total: Int,
+    val visible: Int,
+    val first: Int,
+    val viewport: Int,
+)
+
+/** The fast scroller appears only with at least this many screens of items. */
+private const val MIN_SCREENS = 3
+private const val FAST_SCROLL_HIDE_MILLIS = 1_500L
+private val THUMB_TOUCH_WIDTH = 48.dp
+private val THUMB_TOUCH_HEIGHT = 64.dp
+
 private val GAP = 2.dp
+private val SIDE_INSET = 2.dp
