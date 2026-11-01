@@ -11,6 +11,7 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import com.iltan.settle.data.backup.BackupChoices
 import com.iltan.settle.data.db.FolderSummary
+import com.iltan.settle.data.system.SystemState
 import com.iltan.settle.domain.backup.BackupPause
 import com.iltan.settle.domain.backup.BackupSettings
 import com.iltan.settle.domain.scan.MediaKind

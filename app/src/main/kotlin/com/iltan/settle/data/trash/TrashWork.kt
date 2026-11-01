@@ -11,11 +11,22 @@ import com.iltan.settle.domain.deletion.RestoreProblem
 import com.iltan.settle.domain.deletion.RestoreResult
 import com.iltan.settle.domain.deletion.TrashChanges
 import com.iltan.settle.domain.deletion.expiredItems
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
-/** Progress of the restore job: items left and bytes of the current download. */
-data class RestoreProgress(val itemsLeft: Int, val receivedBytes: Long, val totalBytes: Long)
+/** Progress of the restore job: items left, and the current download's item and bytes. */
+data class RestoreProgress(
+    val itemsLeft: Int,
+    val receivedBytes: Long,
+    val totalBytes: Long,
+    val itemId: String = "",
+) {
+    val fraction: Float
+        get() = if (totalBytes > 0) (receivedBytes.toFloat() / totalBytes).coerceIn(0f, 1f) else 0f
+}
 
 /** What the trash's background jobs do (ADR-015). */
 class TrashWork(
@@ -32,6 +43,11 @@ class TrashWork(
     // sent twice at once.
     private val queueLock = Mutex()
 
+    private val _restoring = MutableStateFlow<RestoreProgress?>(null)
+
+    /** The restore download in progress, for the trash and the Backup tab; null when none runs. */
+    val restoring: StateFlow<RestoreProgress?> = _restoring.asStateFlow()
+
     /** Runs the queued Drive changes that are due. */
     suspend fun runDriveChanges() = queueLock.withLock {
         when (val result = driveChanges.run()) {
@@ -46,6 +62,14 @@ class TrashWork(
 
     /** Downloads every requested restore that hasn't stopped, one after another. */
     suspend fun runRestores(onProgress: (RestoreProgress) -> Unit = {}) {
+        try {
+            restoreAll(onProgress)
+        } finally {
+            _restoring.value = null
+        }
+    }
+
+    private suspend fun restoreAll(onProgress: (RestoreProgress) -> Unit) {
         // A copy must be out of Drive's trash before it comes back.
         runDriveChanges()
         while (true) {
@@ -54,7 +78,9 @@ class TrashWork(
             val itemId = checkNotNull(MediaItemId.parseOrNull(request.itemId))
             val result =
                 restoreDownload.restore(itemId) { received, total ->
-                    onProgress(RestoreProgress(waiting.size, received, total))
+                    val progress = RestoreProgress(waiting.size, received, total, request.itemId)
+                    _restoring.value = progress
+                    onProgress(progress)
                 }
             log("$itemId: restore $result")
             when (result) {

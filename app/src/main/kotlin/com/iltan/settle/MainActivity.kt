@@ -30,5 +30,6 @@ class MainActivity : ComponentActivity() {
         super.onResume()
         // Catches changes made while Settle was in the background, and a just-granted permission.
         appGraph.librarySync.requestScan()
+        appGraph.deviceSetup.refresh()
     }
 }

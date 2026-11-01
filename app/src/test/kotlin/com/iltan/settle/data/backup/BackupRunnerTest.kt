@@ -33,8 +33,10 @@ import kotlin.random.Random
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -201,6 +203,26 @@ class BackupRunnerTest {
         }
         assertNull(state(screenshot))
         assertEquals(5, drive.mediaFiles.size)
+    }
+
+    @Test
+    fun aRunReportsWhatItSetOutToSendAndWhatHasFinished() = runTest {
+        connect()
+        val sizes = listOf(2 * chunk, 3 * chunk, chunk + 7)
+        sizes.forEach { item(it) }
+        val runner = runner()
+        val seen = mutableListOf<RunTotals?>()
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            runner.totals.collect { seen += it }
+        }
+
+        runner.run(RunKind.AUTOMATIC)
+
+        val during = seen.filterNotNull()
+        assertTrue(during.all { it.totalItems == 3 && it.totalBytes == sizes.sum().toLong() })
+        assertEquals(listOf(0, 1, 2, 3), during.map { it.doneItems }.distinct())
+        assertEquals(sizes.sum().toLong(), during.last().doneBytes)
+        assertNull(runner.totals.value)
     }
 
     @Test

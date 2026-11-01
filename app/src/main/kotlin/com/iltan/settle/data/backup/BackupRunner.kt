@@ -35,6 +35,18 @@ import kotlinx.coroutines.sync.withLock
 /** Bytes sent so far of one upload. */
 data class UploadProgress(val sentBytes: Long, val totalBytes: Long)
 
+/**
+ * A run of uploads so far: what it set out to send (it grows when items become ready during the
+ * run), what has finished, and a smoothed speed; null until the first pacer tick.
+ */
+data class RunTotals(
+    val doneItems: Int,
+    val doneBytes: Long,
+    val totalItems: Int,
+    val totalBytes: Long,
+    val bytesPerSecond: Long?,
+)
+
 /** How a backup the user asked for ended, for the UI to report. */
 sealed interface BackupOutcome {
     val itemId: String
@@ -102,6 +114,11 @@ class BackupRunner(
     private val _running = MutableStateFlow(false)
     val running: StateFlow<Boolean> = _running.asStateFlow()
 
+    private val _totals = MutableStateFlow<RunTotals?>(null)
+
+    /** The run in progress, for "Backing up 12 of 40"; null between runs. */
+    val totals: StateFlow<RunTotals?> = _totals.asStateFlow()
+
     /**
      * The job's network, as Android reports it. Android calls this for capability changes too, so
      * the pacer starts over only when the network itself is a different one.
@@ -122,6 +139,7 @@ class BackupRunner(
         } finally {
             pacer = null
             meter.setCap(null)
+            _totals.value = null
             _running.value = false
         }
     }
@@ -150,10 +168,15 @@ class BackupRunner(
             while (true) {
                 delay(pacerConfig.tickMillis)
                 val delayMs = pingMillis()
+                val sent = meter.takeSent()
                 val pace =
                     synchronized(pacerLock) {
-                        pacer.onTick(clock(), meter.takeSent(), delayMs, meter.takeRateLimited())
+                        pacer.onTick(clock(), sent, delayMs, meter.takeRateLimited())
                     }
+                val rate = sent * 1000 / pacerConfig.tickMillis
+                _totals.update { t ->
+                    t?.copy(bytesPerSecond = t.bytesPerSecond?.let { smooth(it, rate) } ?: rate)
+                }
                 meter.setCap(pace.capBytesPerSecond)
                 log(
                     "Pace: ${pace.slots} slots, cap ${pace.capBytesPerSecond ?: "none"} B/s, delay $delayMs ms"
@@ -166,6 +189,7 @@ class BackupRunner(
         val finished = Channel<Finished>(Channel.UNLIMITED)
         val tried = mutableSetOf<String>()
         var queue = ArrayDeque(plan.queue.covered(kind))
+        _totals.value = RunTotals(0, 0, queue.size, queue.sumOf { it.sizeBytes }, null)
         var running = 0
         var lastStart = 0L
         var end: RunEnd? = null
@@ -174,6 +198,12 @@ class BackupRunner(
             if (end == null && queue.isEmpty() && running == 0) {
                 plan = planner.plan()
                 queue = ArrayDeque(plan.queue.covered(kind).filter { it.itemId.value !in tried })
+                _totals.update { t ->
+                    t?.copy(
+                        totalItems = t.totalItems + queue.size,
+                        totalBytes = t.totalBytes + queue.sumOf { it.sizeBytes },
+                    )
+                }
                 if (plan.pause != null) end = RunEnd.PAUSED
                 else if (queue.isEmpty()) end = RunEnd.DONE
             }
@@ -200,6 +230,9 @@ class BackupRunner(
                 } ?: continue
             running--
             idleEngines.addLast(done.slot)
+            _totals.update { t ->
+                t?.copy(doneItems = t.doneItems + 1, doneBytes = t.doneBytes + done.item.sizeBytes)
+            }
             if (handle(kind, done)) end = RunEnd.PAUSED
         }
         ticker.cancel()
@@ -279,6 +312,10 @@ class BackupRunner(
 
     private companion object {
         const val IDLE_SAMPLES = 3
+
+        /** A moving average over the pacer's ticks, so the speed shown doesn't jump. */
+        fun smooth(previous: Long, sample: Long): Long = (previous * 7 + sample * 3) / 10
+
         const val MIN_START_GAP_MILLIS = 500L
         const val WAKE_MILLIS = 1_000L
     }

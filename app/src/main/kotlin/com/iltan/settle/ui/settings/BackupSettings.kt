@@ -1,13 +1,9 @@
 package com.iltan.settle.ui.settings
 
 import android.Manifest
-import android.app.ActivityManager
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
-import android.os.Build
-import android.os.PowerManager
 import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -38,6 +34,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.iltan.settle.R
 import com.iltan.settle.appGraph
 import com.iltan.settle.data.db.FolderSummary
+import com.iltan.settle.data.system.SystemState
 import com.iltan.settle.domain.backup.BackupPause
 import com.iltan.settle.domain.backup.HOUR_MILLIS
 import com.iltan.settle.domain.transfer.NetworkUse
@@ -60,19 +57,19 @@ fun BackupSettings() {
         )
     }
     val state by viewModel.state.collectAsStateWithLifecycle()
-    var system by remember { mutableStateOf(SystemState.of(context)) }
+    val system by graph.deviceSetup.state.collectAsStateWithLifecycle()
     // The user comes back from the system's settings pages with things changed.
     LifecycleResumeEffect(Unit) {
-        system = SystemState.of(context)
         viewModel.refresh()
         onPauseOrDispose {}
     }
     val askNotifications =
         rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
-            system = SystemState.of(context)
+            graph.deviceSetup.refresh()
         }
     val askLocation =
         rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
+            graph.deviceSetup.refresh()
             viewModel.refresh()
         }
     BackupSection(
@@ -98,32 +95,6 @@ fun BackupSettings() {
                 openNeverSleeping = { openNeverSleeping(context) },
             ),
     )
-}
-
-/** What the phone says about Settle's background limits and notifications. */
-data class SystemState(
-    val notificationsAllowed: Boolean = true,
-    /** "Unrestricted" battery use; otherwise Android may hold jobs back. */
-    val batteryUnrestricted: Boolean = true,
-    /** "Restricted" battery use: jobs don't run at all. */
-    val backgroundRestricted: Boolean = false,
-    val samsung: Boolean = false,
-) {
-    companion object {
-        fun of(context: Context) =
-            SystemState(
-                notificationsAllowed =
-                    context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) ==
-                        PackageManager.PERMISSION_GRANTED,
-                batteryUnrestricted =
-                    context
-                        .getSystemService(PowerManager::class.java)
-                        .isIgnoringBatteryOptimizations(context.packageName),
-                backgroundRestricted =
-                    context.getSystemService(ActivityManager::class.java).isBackgroundRestricted,
-                samsung = Build.MANUFACTURER.equals("samsung", ignoreCase = true),
-            )
-    }
 }
 
 class BackupActions(

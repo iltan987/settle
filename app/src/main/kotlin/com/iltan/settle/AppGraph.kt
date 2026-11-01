@@ -11,6 +11,7 @@ import com.iltan.settle.data.backup.BackupPlanner
 import com.iltan.settle.data.backup.BackupPreferences
 import com.iltan.settle.data.backup.BackupRunner
 import com.iltan.settle.data.backup.BackupScheduler
+import com.iltan.settle.data.backup.BackupStatusSource
 import com.iltan.settle.data.backup.CloudBackup
 import com.iltan.settle.data.db.SettleDatabase
 import com.iltan.settle.data.drive.DriveAuth
@@ -25,6 +26,7 @@ import com.iltan.settle.data.media.LibrarySync
 import com.iltan.settle.data.media.MediaAccess
 import com.iltan.settle.data.media.MediaChangeObserver
 import com.iltan.settle.data.media.MediaStoreSource
+import com.iltan.settle.data.system.DeviceSetup
 import com.iltan.settle.data.trash.Deletion
 import com.iltan.settle.data.trash.MediaStoreTrash
 import com.iltan.settle.data.trash.TrashStore
@@ -149,6 +151,9 @@ class AppGraph(context: Context) {
     /** Whether originals can be read with their location (R1). */
     fun canReadOriginals(): Boolean = originals.canReadOriginals()
 
+    /** Android's permissions and battery settings, re-read whenever Settle comes to the front. */
+    val deviceSetup by lazy { DeviceSetup(appContext) }
+
     val backupPreferences by lazy { BackupPreferences(database.backupDao()) }
 
     val backupPlanner by lazy {
@@ -240,6 +245,17 @@ class AppGraph(context: Context) {
             database.backupDao(),
             backupPreferences,
             originals,
+            deviceSetup.state,
+        )
+    }
+
+    val backupStatus by lazy {
+        BackupStatusSource(
+            dao = database.backupDao(),
+            preferences = backupPreferences,
+            cloudBackup = cloudBackup,
+            trash = deletion.trash,
+            scope = appScope,
         )
     }
 

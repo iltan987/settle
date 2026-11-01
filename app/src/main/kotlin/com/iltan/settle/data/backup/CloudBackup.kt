@@ -2,6 +2,7 @@ package com.iltan.settle.data.backup
 
 import com.iltan.settle.data.db.BackupDao
 import com.iltan.settle.data.drive.MediaStoreOriginals
+import com.iltan.settle.data.system.SystemState
 import com.iltan.settle.domain.backup.BackupDecision
 import com.iltan.settle.domain.backup.BackupPause
 import com.iltan.settle.domain.backup.backupDecision
@@ -20,6 +21,7 @@ class CloudBackup(
     private val dao: BackupDao,
     private val preferences: BackupPreferences,
     private val originals: MediaStoreOriginals,
+    private val system: StateFlow<SystemState>,
     private val clock: () -> Long = System::currentTimeMillis,
 ) {
     /** Uploads under way, by item ID. */
@@ -28,16 +30,19 @@ class CloudBackup(
     /** Whether a run of uploads is going, so a request is about to be taken. */
     val running: StateFlow<Boolean> = runner.running
 
+    /** The run in progress as a whole; null between runs. */
+    val totals: StateFlow<RunTotals?> = runner.totals
+
     /**
      * Why no backup runs at all right now, the user's own pause included (R6); null when it may.
-     * Media location access is read on each change of the account or the settings.
+     * Media location access follows [DeviceSetup][com.iltan.settle.data.system.DeviceSetup].
      */
     val pause: Flow<BackupPause?> =
-        combine(dao.account(), preferences.choices) { account, choices ->
+        combine(dao.account(), preferences.choices, system) { account, choices, system ->
             backupPause(
                 connected = account != null,
                 blocked = choices.blocked,
-                canReadOriginals = originals::canReadOriginals,
+                canReadOriginals = { system.canReadOriginals },
                 pausedByUser = choices.settings.paused,
             )
         }
