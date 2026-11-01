@@ -56,7 +56,12 @@ Play Store release later must stay possible, so Play-policy-forbidden permission
 - R10. One timeline shows every item, on the phone or only in the cloud, ordered by date taken.
 - R10a. Every folder shows in the timeline by default. A folder can be hidden from the timeline and
   stays browsable under Folders.
-- R11. Every item shows exactly one status: not backed up (its folder isn't chosen), waiting, queued, uploading, backed up, cloud only, in trash, or needs attention.
+- R11. Every item shows exactly one status: not backed up (its folder isn't chosen), waiting,
+  queued, uploading, backed up, cloud only, in trash, or needs attention. In grids it follows the
+  backup plan's decision for the item, the same one the app's backup status counts. Grid cells
+  badge it only where it helps (ADR-016): backed up never; uploading (only while it is live),
+  needs attention and cloud only always; not backed up once Drive is connected; waiting and
+  queued only while selecting and on the Backup tab. The viewer always tells it.
 
 ### Deletion and trash
 - R12. Deleting in Settle, one item or a selection, moves the item to the trash on the phone and
