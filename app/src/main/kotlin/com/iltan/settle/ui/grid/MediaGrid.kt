@@ -83,6 +83,7 @@ import com.iltan.settle.domain.backup.cellShowsStatus
 import com.iltan.settle.domain.scan.MediaKind
 import com.iltan.settle.domain.timeline.DaySection
 import com.iltan.settle.ui.DayTitles
+import com.iltan.settle.ui.LocalMediaFlight
 import com.iltan.settle.ui.theme.SettleMotion
 import com.iltan.settle.ui.theme.SettleType
 import java.time.Instant
@@ -177,13 +178,18 @@ fun MediaGrid(
     val selecting = selection.isNotEmpty()
     val haptics = LocalHapticFeedback.current
     val changeColumns by rememberUpdatedState(onColumnsChange)
+    val flight = LocalMediaFlight.current
     val tap: (MediaEntry) -> Unit = { entry ->
         if (currentSelection.isNotEmpty() && onSelectionChange != null) {
             onSelectionChange(
                 if (entry.id in currentSelection) currentSelection - entry.id
                 else currentSelection + entry.id
             )
-        } else onOpen(entry)
+        } else {
+            // Its cell joins the shared element before the viewer comes in.
+            flight?.itemId = entry.id
+            onOpen(entry)
+        }
     }
     val today = remember { LocalDate.now() }
     val labels = rememberDateLabels(today)

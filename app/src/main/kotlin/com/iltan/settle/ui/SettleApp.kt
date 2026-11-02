@@ -168,9 +168,14 @@ private fun Navigation(openSettings: Boolean, reconnect: Boolean) {
     val scope = rememberCoroutineScope()
     val messages = remember { AppMessages(SnackbarHostState(), scope) }
     val tabBar = remember { TabBarState() }
+    val flight = remember { MediaFlight() }
     val headline by graph.backupStatus.headline.collectAsStateWithLifecycle()
     val breaker by graph.deletion.breakerCount.collectAsStateWithLifecycle(0)
-    CompositionLocalProvider(LocalAppMessages provides messages, LocalTabBar provides tabBar) {
+    CompositionLocalProvider(
+        LocalAppMessages provides messages,
+        LocalTabBar provides tabBar,
+        LocalMediaFlight provides flight,
+    ) {
         val actions = rememberItemActions(messages)
         val trashActions = rememberTrashActions(messages)
         CompositionLocalProvider(

@@ -79,6 +79,7 @@ import com.iltan.settle.domain.scan.MediaKind
 import com.iltan.settle.ui.AppMessages
 import com.iltan.settle.ui.DayTitles
 import com.iltan.settle.ui.LocalAppMessages
+import com.iltan.settle.ui.LocalMediaFlight
 import com.iltan.settle.ui.SnackbarAbove
 import com.iltan.settle.ui.folders.folderNames
 import com.iltan.settle.ui.grid.SPECIAL_FORMAT_MOTION_PHOTO
@@ -202,6 +203,9 @@ private fun Viewer(
     var zoom by remember { mutableFloatStateOf(1f) }
     // Open with true to land on the backup section, as the status chip does.
     var details by remember { mutableStateOf<Boolean?>(null) }
+    // Closing flies back into the cell of the photo shown now, not the one first opened.
+    val flight = LocalMediaFlight.current
+    LaunchedEffect(settled.id) { flight?.itemId = settled.id }
     LaunchedEffect(pagerState.settledPage) {
         playingMotion = false
         videoPlaying = false
