@@ -427,4 +427,22 @@ class TimelineScreenTest {
         assertEquals(3, changes.firstOrNull())
         compose.onNodeWithText("3 per row · by day").assertIsDisplayed()
     }
+
+    @Test
+    fun onePinchStepsOnceHoweverFarTheFingersMove() {
+        val changes = mutableListOf<Int>()
+        show(twoDays(), onColumnsChange = { changes += it })
+
+        // From 4 columns, closing the fingers far enough for three steps.
+        compose.onRoot().performTouchInput {
+            pinch(
+                start0 = center - Offset(150f, 0f),
+                end0 = center - Offset(10f, 0f),
+                start1 = center + Offset(150f, 0f),
+                end1 = center + Offset(10f, 0f),
+            )
+        }
+
+        assertEquals(listOf(5), changes)
+    }
 }

@@ -93,8 +93,9 @@ fun Modifier.gridGestures(
     }
     // Set when this press became a long-press, so its release isn't also a tap.
     var longPressed = false
+    // Built on a fresh Modifier: on the receiver it would repeat the whole chain before it.
     val taps =
-        pointerInput(ids) {
+        Modifier.pointerInput(ids) {
             detectTapGestures(
                 onPress = { longPressed = false },
                 onTap = { point -> if (!longPressed) itemAt(point)?.let { onTap(ids[it]) } },

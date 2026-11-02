@@ -228,41 +228,46 @@ fun MediaGrid(
         )
     BoxWithConstraints(modifier) {
         val size = constraints
+        val pinchStep by rememberUpdatedState { stepIn: Boolean, centroid: Offset ->
+            val from = shown
+            val next = from + if (stepIn) -1 else 1
+            if (next !in MIN_COLUMNS..MAX_COLUMNS) return@rememberUpdatedState false
+            anchor = itemAt(state, centroid)?.let { it.key.toString() to it.offset.y }
+            origin =
+                TransformOrigin(
+                    centroid.x / size.maxWidth.coerceAtLeast(1),
+                    centroid.y / size.maxHeight.coerceAtLeast(1),
+                )
+            scope.launch {
+                zoom.snapTo(next.toFloat() / from)
+                zoom.animateTo(1f, SettleMotion.density())
+            }
+            shown = next
+            toast = next
+            changeColumns?.invoke(next)
+            true
+        }
+        // One handler for the grid's life: a new lambda would restart the pinch detector mid-pinch,
+        // and it would step again.
+        val onPinch = remember {
+            { stepIn: Boolean, centroid: Offset -> pinchStep(stepIn, centroid) }
+        }
         LazyVerticalGrid(
             columns = GridCells.Fixed(shown),
             state = state,
             modifier =
                 Modifier.fillMaxSize()
+                    // Outside the zoom layer: inside it, the layer's own scale animation would move
+                    // the fingers' positions and read as more pinching.
+                    .then(
+                        if (onColumnsChange == null) Modifier
+                        else Modifier.pinchColumns(size, onPinch)
+                    )
                     .graphicsLayer {
                         scaleX = zoom.value
                         scaleY = zoom.value
                         transformOrigin = origin
                     }
-                    .then(
-                        if (onColumnsChange == null) Modifier
-                        else
-                            Modifier.pinchColumns(size) { stepIn, centroid ->
-                                val next = (shown + if (stepIn) -1 else 1)
-                                if (next !in MIN_COLUMNS..MAX_COLUMNS) return@pinchColumns false
-                                anchor =
-                                    itemAt(state, centroid)?.let {
-                                        it.key.toString() to it.offset.y
-                                    }
-                                origin =
-                                    TransformOrigin(
-                                        centroid.x / size.maxWidth.coerceAtLeast(1),
-                                        centroid.y / size.maxHeight.coerceAtLeast(1),
-                                    )
-                                scope.launch {
-                                    zoom.snapTo(next.toFloat() / shown)
-                                    zoom.animateTo(1f, SettleMotion.density())
-                                }
-                                shown = next
-                                toast = next
-                                changeColumns?.invoke(next)
-                                true
-                            }
-                    )
                     .gridGestures(
                         state,
                         ids,
@@ -365,8 +370,9 @@ private fun itemAt(state: LazyGridState, point: Offset) =
 
 /**
  * Two-finger pinches, seen before the grid scrolls so they never also scroll it. [onStep] gets
- * whether the fingers spread (fewer, larger columns) and where they are, and says whether it acted;
- * after each step the pinch starts measuring again, so one pinch can step more than once.
+ * whether the fingers spread (fewer, larger columns) and where they are, and says whether it acted.
+ * One pinch makes at most one step; the next needs the fingers lifted, so a small pinch can't run
+ * through several densities.
  */
 private fun Modifier.pinchColumns(
     key: Any,
@@ -376,18 +382,21 @@ private fun Modifier.pinchColumns(
         awaitEachGesture {
             awaitFirstDown(requireUnconsumed = false)
             var zoom = 1f
+            var stepped = false
             do {
                 val event = awaitPointerEvent(PointerEventPass.Initial)
                 if (event.changes.count { it.pressed } >= 2) {
-                    zoom *= event.calculateZoom()
                     event.changes.forEach { it.consume() }
-                    val stepIn =
-                        when {
-                            zoom > PINCH_STEP -> true
-                            zoom < 1 / PINCH_STEP -> false
-                            else -> null
-                        }
-                    if (stepIn != null && onStep(stepIn, event.calculateCentroid())) zoom = 1f
+                    if (!stepped) {
+                        zoom *= event.calculateZoom()
+                        val stepIn =
+                            when {
+                                zoom > PINCH_STEP -> true
+                                zoom < 1 / PINCH_STEP -> false
+                                else -> null
+                            }
+                        if (stepIn != null) stepped = onStep(stepIn, event.calculateCentroid())
+                    }
                 }
             } while (event.changes.any { it.pressed })
         }
