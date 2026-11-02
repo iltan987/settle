@@ -41,9 +41,15 @@
   height. Entering selection therefore moves nothing under the finger. Notice cards scroll with the
   grid.
 - **The app icon.** A dome settling on two layers: an adaptive icon with a monochrome layer for
-  themed icons, and a tonal brand mark for use inside the app.
+  themed icons, and a tonal brand mark for use inside the app. The welcome screen's art, built
+  from the same shapes, is drawn in Compose (`BrandArt`) rather than bundled: its fills are theme
+  tokens, so it follows the wallpaper, and its tiles drift into place.
 - **Status in the grid.** Backed up shows nothing. Not backed up, uploading, needs attention and cloud
-  only have a badge. Waiting and queued show only while selecting and on the Backup tab.
+  only have a badge; Not backed up only once Drive is connected, Uploading only while an upload is
+  live. Waiting and queued show only while selecting and on the Backup tab.
+- **One status, one message host.** The chip, notice cards, Backup tab header and navigation dot
+  read one backup headline, which never says "All in Drive" before the first verified upload.
+  Snackbars come from one host above navigation, so Undo outlives the screen that started it.
 
 ## Consequences
 - The app no longer looks like stock One UI. It keeps the wallpaper's hue through dynamic colour.

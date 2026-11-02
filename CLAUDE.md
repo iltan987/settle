@@ -99,6 +99,24 @@ harmless "user 150" SecurityException.
   from it lives in the repo. Its consent screen is published, with the home page and privacy
   policy on the `gh-pages` branch: keep `privacy.html` true when Settle's data use changes.
 
+UI (ADR-016, Tidepool; designs in `docs/design/turn4/`, the handoff sheet wins on tokens):
+- Theme in `ui/theme/`: Tidepool's tokens on Material 3 roles (map in `Color.kt`), filled by the
+  wallpaper's dynamic scheme on the phone; warnings and the viewer's stage are fixed
+  (`settleColors`). Use `SettleShape`, `SettleType`, `SettleMotion` and `cardColor` rather than
+  literals. Icons are Material Symbols Rounded drawables (`ic_*`), fetched per symbol with `curl`
+  from google/material-design-icons.
+- Shared pieces live in `ui/chrome/`: top and bottom bars, `StatusChip`, `NoticeCard`,
+  `BackupStatusHeader`, `SettingsList` (groups, rows, `ChoiceSheet`), `StepList`, `EmptyState`,
+  `ConfirmDialog`. Screens are stateless (state plus callbacks); wiring is in `SettleApp.kt`.
+- One status: `BackupStatusSource` (headline, counts, run, per-item decisions) feeds the chip,
+  notices, Backup tab and grid cells (`cellStatus`, `cellShowsStatus`).
+- Messages and actions belong to the app: `AppMessages` (`LocalAppMessages`: `show`, `note`,
+  `offer` with a 10 s Undo) is hosted above navigation, and `LocalItemActions`/`LocalTrashActions`
+  hold the delete and restore runners, so Undo and Android's dialogs outlive the screen.
+- Small UI state (grid density, explainer shown, onboarding done, dismissed notices) is in Room's
+  `ui_prefs` through `UiPreferences`. `OnboardingGate` shows onboarding once, and an access screen
+  whenever full photo access is missing.
+
 Build specifics that aren't obvious:
 - AGP 9 built-in Kotlin: no `kotlin-android` plugin. The Kotlin version comes from declaring the
   Kotlin plugins in the root `build.gradle.kts`, which lifts AGP's bundled KGP 2.2.10 to the

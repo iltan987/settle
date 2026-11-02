@@ -3,6 +3,131 @@
 Each phase ends with something that runs on the phone, a build, tests, and a check-in before the
 next phase. Newest first.
 
+## Phase 5 — Design pass: Tidepool (2026-11-01 to 2026-11-02)
+
+The owner chose Claude Design's Tidepool direction (`docs/design/turn4/`, ADR-016). Every screen
+was rebuilt to it in six milestones, with the behaviour the designs assume.
+
+Delivered:
+- **M1, foundations.**
+  - Tidepool's theme: tokens on Material 3 roles, filled by the wallpaper's dynamic scheme on the
+    phone, and fixed amber warnings in `SettleColors`. Also bundled Figtree, the handoff sheet's
+    type, corners and springs, and Material Symbols Rounded drawables.
+  - The designed launcher icon, with a monochrome layer.
+  - One backup status for the whole app. `backupPause` and `backupHeadline` live in `:domain`,
+    each case tested. `BackupStatusSource` combines the pause, the plan's per-item decisions, run
+    progress (n of m, speed, time left), restore progress and live permissions (`DeviceSetup`).
+    The chip, the notices, the Backup tab and the navigation dot all read it, and it never says
+    "All in Drive" before the first verified upload.
+  - App-level messages. One snackbar host sits above navigation, and the item and trash actions
+    are remembered at the root, so Undo outlives the viewer. This fixes the Phase 4 deviation.
+  - Room schema v6 adds `ui_prefs` (grid density, the delete explainer, onboarding) and dismissed
+    notices, which return after a day while their problem lasts.
+- **M2, timeline and selection (B, C).** Three tabs on a custom navigation bar, and overlay bars
+  of equal height, so selecting moves nothing. Also:
+  - notice cards as the grid's first item;
+  - cells with the plan's real statuses: Waiting and Queued only while selecting, Not backed up
+    only once Drive is connected;
+  - pinch for 3–6 columns, a fast scroller with a month bubble, and select-day headers;
+  - favouriting a selection in one MediaStore request.
+- **M3, viewer and delete (D, E).**
+  - The viewer: a black stage, a 56 dp toolbar pill and a one-action status chip. Swipe down
+    closes it into its cell (shared element), and swipe up opens Details.
+  - Place names from the platform geocoder, for the photo on screen only (ADR-017).
+  - Deleting: the one-time E1 explainer, a "Restored" message after Undo, and the viewer reopening
+    on the restored photo.
+- **M4, trash and mass disappearance (F, G).**
+  - The trash grouped by how items left. It has days-left chips, restore rings, the reasons
+    sheet, and destructive dialogs.
+  - Answered disappearances kept apart as "Disappeared from this phone", and stopped restores that
+    resume when Settle comes to the front.
+  - G1–G4 on their own screens, with "Check again".
+- **M5, Settings, Backup tab, Folders (I, J, H).**
+  - Settings as a summary of pages, built from the shared `SettingsList` and `ChoiceSheet`.
+  - The Backup tab: state and actions only, with a status header and Uploading, Waiting and Queued
+    sections from a pure `backupSections()`.
+  - Folders: tiles, folder pages with selection, and an options sheet. Stopping backup for a
+    folder with copies in Drive asks first.
+- **M6, onboarding (A).**
+  - A flow that runs once: welcome with the brand art; the access screens (partial, blocked,
+    revoked); Connect Drive with its three promises, saying when Drive access was refused; then
+    only the setup steps still needed, with the Samsung Never sleeping guide, which Settings
+    shares.
+  - "First backup starts tonight" on the timeline until the first verified upload.
+- English and Turkish for every new string. The Turkish follows the design's "siz".
+- 165 domain tests and 227 app tests.
+
+Verified on the emulator (test account, `Settle (emulator)/`, generated files in
+`Pictures/SettleTest/` only), at each milestone, in light and dark against the design frames:
+- **Timeline and selection.** Tried on 600 test images: the grid, selecting partial days, the
+  count on Back up, the fast scroller and its month bubble, and the chip.
+- **Viewer.** Checked the viewer and its chip, and Details in light and dark. Both swipes worked,
+  and the photo flew out of and back into its cell (frames captured with animations slowed). The
+  delete flow ran explainer → Android's dialog → message → Undo → "Restored". A second delete
+  skipped the explainer, and Deny changed nothing.
+- **Trash.** A restore from Drive showed its ring and "Restoring 1 of 1", then said it was restored
+  and checked. A restore from the phone's trash offered Undo, which worked. A stopped restore
+  listed only the reasons that apply.
+- **Mass disappearance.** 250 test files were moved out of MediaStore's view while Settle was
+  stopped. The breaker tripped, and G1–G4 behaved as designed. Moving the files back resolved the
+  question by itself, with every item keeping its ID.
+- **Backup tab.** With the test folder's backup on, it showed Waiting 1 and Queued 599. The H4
+  confirmation came up when turning that backup off.
+- **Onboarding.** The welcome screen appeared. A denial led to A4, with no second system dialog.
+  Turning access on and returning led to the setup steps. Allowing notifications left that step
+  checked in place, Done opened the timeline, and onboarding stayed finished after a restart.
+
+Found on the emulator, fixed:
+- **Dark bars.** In dark mode the text on the bars was black on black.
+- **Notice off-screen.** A notice arriving while the grid sat at the top was laid out above the
+  screen; the grid now scrolls to show it.
+- **Misleading counts.** "0 backed up" with no subtitle and "First backup tonight" with nothing to
+  send now read "Nothing to back up yet". "Storage unknown" while Drive was still being read now
+  reads "Checking…".
+- **Tap targets.** A clickable wrapper on grid cells merged their semantics; the cells now handle
+  taps themselves.
+
+Not done or deviations from the plan:
+- **Partial access.** It gets a full screen asking for all photos, not A3's partial timeline, because
+  the library follows MediaStore only with full access (ADR-012).
+- **Welcome art.** It is drawn in Compose, not bundled as a VectorDrawable: its fills are theme
+  tokens, and its tiles drift.
+- **Viewer, left for later:**
+  - the mini-map when zoomed in;
+  - frame previews while scrubbing a video;
+  - press-and-hold to play a motion photo;
+  - Move and Copy to album (they come with albums).
+- **Viewer, differs from the design:**
+  - While dragging down, the background stays black instead of showing the grid.
+  - On the emulator the status bar stays visible with the chrome hidden; to check on the phone.
+  - Deleting while an upload runs still finishes the upload and trashes its Drive copy, so "Upload
+    stopped" isn't used; cancelling an upload mid-way is planned for later.
+- **Brand mark.** The tonal brand mark (`ic_brand_mark`) is not used yet; lint reports it.
+- **Small gaps:**
+  - The RestoreCard has no 4 s "restored and checked" line.
+  - Backup paused shows no "since" time.
+  - There is no licences row.
+  - Some queued meta and folder messages are worded slightly differently from the design.
+  - "From November 3 at 7:26" is used where the design says "tomorrow".
+- **Not seen on a device; covered by tests:**
+  - pinch, since adb can't send two fingers;
+  - place names, since the test images have no GPS;
+  - the viewer closing after its last photo is deleted, and Undo reopening it;
+  - the problem cards and their popover, since nothing was wrong on the emulator during M2;
+  - Connect Drive (A5), since the emulator and the phone are already connected;
+  - the "First backup starts tonight" card (A9), since both already have verified uploads.
+- **Phone check still to do (end of phase, with the owner's OK):**
+  - two wallpapers for dynamic colour;
+  - Turkish at 130% font scale;
+  - grid scroll and pinch performance;
+  - a delete and Undo on test media only.
+  The M5 build was installed on the phone at the owner's request; the M6 build is not yet.
+
+Left on the emulator:
+- Backup resumed. The test folder doesn't back up (`back_up` is an explicit `false`) and is shown.
+- Photo access is granted again and notifications are off, as before the onboarding test.
+- The debug build has onboarding recorded as finished.
+
 ## Phase 4 — Deletion and the trash (2026-10-31)
 
 Delivered:
