@@ -1,93 +1,93 @@
 package com.iltan.settle.ui.settings
 
+import android.content.Context
 import android.content.Intent
 import android.provider.Settings
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.selection.selectableGroup
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.Icon
-import androidx.compose.material3.ListItem
-import androidx.compose.material3.RadioButton
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.core.net.toUri
-import androidx.lifecycle.compose.LifecycleResumeEffect
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.iltan.settle.R
-import com.iltan.settle.appGraph
 import com.iltan.settle.domain.deletion.ExternalDeletionPolicy
-import kotlinx.coroutines.launch
+import com.iltan.settle.ui.chrome.RowButtonStyle
+import com.iltan.settle.ui.chrome.SettingsGroup
+import com.iltan.settle.ui.chrome.SettingsRadioRow
+import com.iltan.settle.ui.chrome.SettingsRow
+import com.iltan.settle.ui.chrome.Trailing
 
-/** Settings → Deletion, wired to the app (R13, ADR-015). */
-@Composable
-fun DeletionSettings() {
-    val context = LocalContext.current
-    val deletion = context.appGraph.deletion
-    val scope = rememberCoroutineScope()
-    val policy by
-        deletion.policy.collectAsStateWithLifecycle(ExternalDeletionPolicy.MOVE_DRIVE_COPY_TO_TRASH)
-    var silent by remember { mutableStateOf(deletion.canDeleteWithoutAsking()) }
-    // The user comes back from Special app access with it changed.
-    LifecycleResumeEffect(Unit) {
-        silent = deletion.canDeleteWithoutAsking()
-        onPauseOrDispose {}
-    }
-    DeletionSection(
-        policy = policy,
-        canDeleteWithoutAsking = silent,
-        onPolicy = { scope.launch { deletion.setPolicy(it) } },
-        onAllowDeletingWithoutAsking = {
-            context.startActivity(
-                Intent(
-                    Settings.ACTION_REQUEST_MANAGE_MEDIA,
-                    "package:${context.packageName}".toUri(),
-                )
-            )
-        },
-    )
-}
+/** The policy's name, as the main page's Deletion row shows it. */
+val ExternalDeletionPolicy.label: Int
+    get() =
+        when (this) {
+            ExternalDeletionPolicy.MOVE_DRIVE_COPY_TO_TRASH -> R.string.deletion_policy_move
+            ExternalDeletionPolicy.ASK -> R.string.deletion_policy_ask
+        }
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+/**
+ * Settings → Deletion (I9, R13, ADR-015): what happens to the Drive copy when a file is deleted in
+ * another app, and Android's optional Media management access, whose row leaves once it's granted.
+ */
 @Composable
-fun DeletionSection(
+fun DeletionPage(
     policy: ExternalDeletionPolicy,
     canDeleteWithoutAsking: Boolean,
     onPolicy: (ExternalDeletionPolicy) -> Unit,
     onAllowDeletingWithoutAsking: () -> Unit,
 ) {
-    ListItem(
-        headlineContent = { Text(stringResource(R.string.deletion_policy_title)) },
-        supportingContent = { Text(stringResource(R.string.deletion_policy_text)) },
-    )
-    Column(Modifier.selectableGroup()) {
+    SettingsGroup(
+        title = stringResource(R.string.deletion_policy_title),
+        lead = stringResource(R.string.deletion_policy_text),
+        modifier = Modifier.selectableGroup(),
+    ) {
         listOf(
-                ExternalDeletionPolicy.MOVE_DRIVE_COPY_TO_TRASH to R.string.deletion_policy_move,
-                ExternalDeletionPolicy.ASK to R.string.deletion_policy_ask,
+                Triple(
+                    ExternalDeletionPolicy.MOVE_DRIVE_COPY_TO_TRASH,
+                    R.string.deletion_policy_move,
+                    R.string.deletion_policy_move_sub,
+                ),
+                Triple(
+                    ExternalDeletionPolicy.ASK,
+                    R.string.deletion_policy_ask,
+                    R.string.deletion_policy_ask_sub,
+                ),
             )
-            .forEach { (option, label) ->
-                ListItem(
-                    selected = option == policy,
-                    onClick = { onPolicy(option) },
-                    leadingContent = { RadioButton(selected = option == policy, onClick = null) },
-                    content = { Text(stringResource(label)) },
-                )
+            .forEach { (option, title, sub) ->
+                row {
+                    SettingsRadioRow(
+                        title = stringResource(title),
+                        sub = stringResource(sub),
+                        selected = option == policy,
+                        onClick = { onPolicy(option) },
+                    )
+                }
             }
     }
-    if (!canDeleteWithoutAsking) {
-        ListItem(
-            onClick = onAllowDeletingWithoutAsking,
-            leadingContent = { Icon(painterResource(R.drawable.ic_delete), null) },
-            content = { Text(stringResource(R.string.manage_media_title)) },
-            supportingContent = { Text(stringResource(R.string.manage_media_text)) },
-        )
+    SettingsGroup(
+        title = stringResource(R.string.deletion_permission),
+        note = stringResource(R.string.deletion_permission_note),
+    ) {
+        if (!canDeleteWithoutAsking) {
+            row { MediaManagementRow(onAllowDeletingWithoutAsking) }
+        }
     }
+}
+
+/** "Delete without asking each time", with Allow. */
+@Composable
+internal fun MediaManagementRow(onAllow: () -> Unit) {
+    SettingsRow(
+        title = stringResource(R.string.manage_media_title),
+        sub = stringResource(R.string.manage_media_text),
+        icon = R.drawable.ic_bolt,
+        trailing =
+            Trailing.Action(stringResource(R.string.backup_allow), RowButtonStyle.TONAL, onAllow),
+    )
+}
+
+/** Android's Media management page for Settle (Special app access). */
+internal fun openMediaManagement(context: Context) {
+    context.startActivity(
+        Intent(Settings.ACTION_REQUEST_MANAGE_MEDIA, "package:${context.packageName}".toUri())
+    )
 }

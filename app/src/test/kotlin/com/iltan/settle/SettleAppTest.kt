@@ -2,8 +2,10 @@ package com.iltan.settle
 
 import android.Manifest
 import android.app.Application
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.v2.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -68,29 +70,32 @@ class SettleAppTest {
     }
 
     @Test
-    fun theBackupTabHoldsDriveAndBackup() {
+    fun theBackupTabSaysBackupIsOffUntilDriveIsConnected() {
         grantFullAccess()
         compose.setContent { SettleTheme { SettleApp() } }
 
         compose.onNodeWithText("Backup").performClick()
 
-        compose.onNodeWithText("Connect Google Drive").assertIsDisplayed()
+        compose.onNodeWithText("Backup is off").assertIsDisplayed()
     }
 
     @Test
-    fun settingsListsLanguagesAndNavigatesBack() {
+    fun settingsOpensItsLanguagePageAndNavigatesBack() {
         grantFullAccess()
         compose.setContent { SettleTheme { SettleApp() } }
 
         compose.onNodeWithContentDescription("Settings").performClick()
         compose.onNodeWithText("Google Drive").assertIsDisplayed()
-        compose.onNodeWithText("Connect Google Drive").assertIsDisplayed()
-        // Below the library and Drive sections.
-        compose.onNodeWithText("Türkçe").performScrollTo().assertIsDisplayed()
-        compose.onNodeWithText("Language").assertIsDisplayed()
+        compose.onNodeWithText("Not connected").assertIsDisplayed()
+        // Below the library, Drive, backup and deletion groups.
+        compose.onNodeWithText("Language").performScrollTo().performClick()
+        compose.onNodeWithText("Türkçe").assertIsDisplayed()
+        // English is a row of its own, and the system's language under System default.
         compose.onNodeWithText("System default").assertIsDisplayed()
-        compose.onNodeWithText("English").assertIsDisplayed()
+        compose.onAllNodesWithText("English").assertCountEquals(2)
 
+        compose.onNodeWithContentDescription("Back").performClick()
+        compose.onNodeWithText("Settings").assertIsDisplayed()
         compose.onNodeWithContentDescription("Back").performClick()
         compose.onNodeWithContentDescription("Settings").assertIsDisplayed()
     }

@@ -160,6 +160,10 @@ interface BackupDao {
     )
     fun backedUpCount(): Flow<Int>
 
+    /** When the newest copy was checked in Drive, for "Last backup today at 03:12". */
+    @Query("SELECT MAX(verified_at_ms) FROM upload WHERE state = 'VERIFIED'")
+    fun lastVerifiedAt(): Flow<Long?>
+
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun addRequests(requests: List<BackupRequestEntity>)
 

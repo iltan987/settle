@@ -92,13 +92,15 @@ private fun noticeColors(tone: Tone): NoticeColors {
 
 /**
  * A card at the top of a tab's content that scrolls with it (NoticeCard): radius 24, 10 dp from the
- * sides. With [onDismiss] it has a close button; the problem then lives on in the status chip.
+ * sides, or [flush] inside a settings group. With [onDismiss] it has a close button; the problem
+ * then lives on in the status chip.
  */
 @Composable
 fun NoticeCard(
     content: NoticeContent,
     modifier: Modifier = Modifier,
     onDismiss: (() -> Unit)? = null,
+    flush: Boolean = false,
 ) {
     val colors = noticeColors(content.tone)
     Surface(
@@ -106,7 +108,12 @@ fun NoticeCard(
         color = colors.container,
         contentColor = colors.content,
         modifier =
-            modifier.fillMaxWidth().padding(start = 10.dp, end = 10.dp, top = 4.dp, bottom = 8.dp),
+            modifier
+                .fillMaxWidth()
+                .then(
+                    if (flush) Modifier
+                    else Modifier.padding(start = 10.dp, end = 10.dp, top = 4.dp, bottom = 8.dp)
+                ),
     ) {
         NoticeBody(
             content,

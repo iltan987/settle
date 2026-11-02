@@ -40,6 +40,10 @@ data class DriveSettingsState(
     val email: String? = null,
     val about: DriveAbout? = null,
     val folder: String = "",
+    /** Settle's folder in Drive, once the first backup created it. */
+    val folderId: String? = null,
+    /** Drive's storage is being read. */
+    val readingAbout: Boolean = false,
     val busy: Boolean = false,
     val sandbox: Boolean = false,
     val notice: DriveNotice? = null,
@@ -52,13 +56,20 @@ class DriveSettingsViewModel(
     private val auth: DriveAuth,
     private val drive: DriveRest,
     private val sandbox: DriveSandbox?,
-    folder: String,
+    private val folder: String,
     /** Called after connecting or disconnecting, so backup follows the account. */
     private val onAccountChanged: suspend (connected: Boolean) -> Unit = {},
     needsReconnect: Flow<Boolean> = flowOf(false),
 ) : ViewModel() {
 
-    private val about = MutableStateFlow<DriveAbout?>(null)
+    /** Drive's storage and Settle's folder, read for the connected account. */
+    private data class Remote(
+        val about: DriveAbout? = null,
+        val folderId: String? = null,
+        val reading: Boolean = false,
+    )
+
+    private val remote = MutableStateFlow(Remote())
     private val busy = MutableStateFlow(false)
     private val notice = MutableStateFlow<DriveNotice?>(null)
     private val aboutReads = MutableStateFlow(0)
@@ -68,9 +79,9 @@ class DriveSettingsViewModel(
     val consent: StateFlow<PendingIntent?> = _consent.asStateFlow()
 
     val state: StateFlow<DriveSettingsState> =
-        combine(dao.account(), about, busy, notice, needsReconnect) {
+        combine(dao.account(), remote, busy, notice, needsReconnect) {
                 account,
-                about,
+                remote,
                 busy,
                 notice,
                 needsReconnect ->
@@ -78,8 +89,10 @@ class DriveSettingsViewModel(
                     needsReconnect = needsReconnect && account != null,
                     loaded = true,
                     email = account?.email,
-                    about = about.takeIf { account != null },
+                    about = remote.about.takeIf { account != null },
                     folder = folder,
+                    folderId = remote.folderId.takeIf { account != null },
+                    readingAbout = remote.reading && account != null,
                     busy = busy,
                     sandbox = sandbox != null,
                     notice = notice,
@@ -95,15 +108,18 @@ class DriveSettingsViewModel(
                     email
                 }
                 .collectLatest { email ->
-                    about.value = null
+                    remote.value = Remote()
                     if (email != null) {
-                        about.value =
+                        val folderId = dao.folderId(folder)
+                        remote.value = Remote(folderId = folderId, reading = true)
+                        val about =
                             try {
                                 drive.about()
                             } catch (e: DriveException) {
                                 Log.w(TAG, "Reading Drive storage failed", e)
                                 null
                             }
+                        remote.value = Remote(about, folderId)
                     }
                 }
         }

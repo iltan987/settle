@@ -61,7 +61,14 @@ import com.iltan.settle.ui.folders.FoldersScreen
 import com.iltan.settle.ui.folders.FoldersViewModel
 import com.iltan.settle.ui.folders.folderNames
 import com.iltan.settle.ui.onboarding.MediaAccessGate
+import com.iltan.settle.ui.settings.AboutScreen
+import com.iltan.settle.ui.settings.BackupFoldersScreen
+import com.iltan.settle.ui.settings.BackupSettingsScreen
+import com.iltan.settle.ui.settings.DeletionScreen
+import com.iltan.settle.ui.settings.KeepRunningScreen
+import com.iltan.settle.ui.settings.LanguageScreen
 import com.iltan.settle.ui.settings.SettingsScreen
+import com.iltan.settle.ui.settings.SettingsSection
 import com.iltan.settle.ui.theme.SettleMotion
 import com.iltan.settle.ui.timeline.NoticeHandlers
 import com.iltan.settle.ui.timeline.TimelineScreen
@@ -96,6 +103,9 @@ import kotlinx.serialization.Serializable
 @Serializable data class Viewer(val source: GridSource, val itemId: String) : NavKey
 
 @Serializable data object Settings : NavKey
+
+/** A page under Settings (I6–I12). */
+@Serializable data class SettingsSubpage(val section: SettingsSection) : NavKey
 
 @Serializable data object Trash : NavKey
 
@@ -298,7 +308,14 @@ private fun Destinations(
                     entry<Backup> {
                         val email by
                             graph.backupStatus.accountEmail.collectAsStateWithLifecycle(null)
-                        BackupTab(email, onOpenSettings = { backStack.add(Settings) })
+                        BackupTab(
+                            email,
+                            onOpenSettings = { backStack.add(Settings) },
+                            onOpenFolders = {
+                                backStack.add(SettingsSubpage(SettingsSection.BACKUP_FOLDERS))
+                            },
+                            onSignIn = onSignIn,
+                        )
                     }
                     entry<Folders> {
                         val viewModel = viewModel {
@@ -461,9 +478,32 @@ private fun Destinations(
                     entry<Settings> {
                         SettingsScreen(
                             onBack = { backStack.removeLastOrNull() },
+                            onOpen = { backStack.add(SettingsSubpage(it)) },
                             reconnect = reconnectPending,
                             onReconnectStarted = onReconnectStarted,
                         )
+                    }
+                    entry<SettingsSubpage> { key ->
+                        val back = { backStack.removeLastOrNull() }
+                        when (key.section) {
+                            SettingsSection.BACKUP ->
+                                BackupSettingsScreen(
+                                    onBack = { back() },
+                                    onOpenFolders = {
+                                        backStack.add(
+                                            SettingsSubpage(SettingsSection.BACKUP_FOLDERS)
+                                        )
+                                    },
+                                    onOpenAttention = { selectTab(Tab.BACKUP) },
+                                    onConnect = { back() },
+                                    onSignIn = onSignIn,
+                                )
+                            SettingsSection.BACKUP_FOLDERS -> BackupFoldersScreen { back() }
+                            SettingsSection.DELETION -> DeletionScreen { back() }
+                            SettingsSection.KEEP_RUNNING -> KeepRunningScreen { back() }
+                            SettingsSection.LANGUAGE -> LanguageScreen { back() }
+                            SettingsSection.ABOUT -> AboutScreen { back() }
+                        }
                     }
                 },
         )

@@ -2,9 +2,10 @@ package com.iltan.settle.ui.settings
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.hasAnyAncestor
+import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.isDialog
 import androidx.compose.ui.test.junit4.v2.createComposeRule
-import androidx.compose.ui.test.onAllNodesWithText
-import androidx.compose.ui.test.onLast
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import com.iltan.settle.data.drive.DriveAbout
@@ -18,7 +19,7 @@ import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
 @Config(qualifiers = "w411dp-h891dp")
-class DriveSectionTest {
+class DriveGroupTest {
 
     @get:Rule val compose = createComposeRule()
 
@@ -27,11 +28,14 @@ class DriveSectionTest {
     private fun show(state: DriveSettingsState) = compose.setContent {
         SettleTheme {
             Column {
-                DriveSection(
-                    state = state,
-                    onConnect = { calls += "connect" },
-                    onDisconnect = { calls += "disconnect" },
-                    onResetSandbox = { calls += "reset" },
+                DriveGroup(
+                    state,
+                    DriveActions(
+                        connect = { calls += "connect" },
+                        disconnect = { calls += "disconnect" },
+                        openFolder = { calls += "folder $it" },
+                        resetSandbox = { calls += "reset" },
+                    ),
                 )
             }
         }
@@ -46,22 +50,35 @@ class DriveSectionTest {
         )
 
     @Test
-    fun notConnectedOffersToConnect() {
+    fun notConnectedOffersToConnectOnACard() {
         show(DriveSettingsState(loaded = true, folder = "Settle"))
 
         compose.onNodeWithText("Not connected").assertIsDisplayed()
-        compose.onNodeWithText("Connect Google Drive").performClick()
+        compose.onNodeWithText("Disconnect").assertDoesNotExist()
+        compose.onNodeWithText("Connect").performClick()
 
         assertEquals(listOf("connect"), calls)
     }
 
     @Test
     fun connectedShowsTheAccountStorageAndFolder() {
-        show(connected)
+        show(connected.copy(folderId = "f1"))
 
         compose.onNodeWithText("me@example.com").assertIsDisplayed()
+        compose.onNodeWithText("Connected").assertIsDisplayed()
         compose.onNodeWithText("of 100 GB used", substring = true).assertIsDisplayed()
-        compose.onNodeWithText("Folder: Settle (debug)", substring = true).assertIsDisplayed()
+        compose.onNodeWithText("Settle (debug) · in My Drive").performClick()
+
+        assertEquals(listOf("folder f1"), calls)
+    }
+
+    @Test
+    fun beforeTheFirstBackupTheFolderIsNotThereToOpen() {
+        show(connected)
+
+        compose.onNodeWithText("first backup", substring = true).performClick()
+
+        assertEquals(emptyList<String>(), calls)
     }
 
     @Test
@@ -74,8 +91,7 @@ class DriveSectionTest {
 
         compose.onNodeWithText("Cancel").performClick()
         compose.onNodeWithText("Disconnect").performClick()
-        // The dialog's button, below the list item with the same label.
-        compose.onAllNodesWithText("Disconnect").onLast().performClick()
+        compose.onNode(hasText("Disconnect") and hasAnyAncestor(isDialog())).performClick()
 
         assertEquals(listOf("disconnect"), calls)
     }
@@ -85,8 +101,7 @@ class DriveSectionTest {
         show(connected.copy(sandbox = true))
 
         compose.onNodeWithText("Reset debug Drive folder").performClick()
-        compose.onNodeWithText("restored for 30 days", substring = true).assertExists()
-        compose.onNodeWithText("Reset").performClick()
+        compose.onNode(hasText("Reset") and hasAnyAncestor(isDialog())).performClick()
 
         assertEquals(listOf("reset"), calls)
     }
@@ -99,10 +114,11 @@ class DriveSectionTest {
     }
 
     @Test
-    fun whenGoogleNeedsANewSignInItOffersToReconnect() {
+    fun whenGoogleNeedsANewSignInItWarnsAndOffersToSignIn() {
         show(connected.copy(needsReconnect = true))
 
-        compose.onNodeWithText("Reconnect").performClick()
+        compose.onNodeWithText("Needs you to sign in again").assertIsDisplayed()
+        compose.onNodeWithText("Sign in").performClick()
 
         assertEquals(listOf("connect"), calls)
     }

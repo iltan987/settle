@@ -1,221 +1,183 @@
 package com.iltan.settle.ui.settings
 
 import android.text.format.Formatter
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.IntentSenderRequest
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.Icon
-import androidx.compose.material3.ListItem
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalResources
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.iltan.settle.R
-import com.iltan.settle.appGraph
-import com.iltan.settle.domain.backup.BackupPause
-import kotlinx.coroutines.flow.map
+import com.iltan.settle.ui.chrome.AccountInitial
+import com.iltan.settle.ui.chrome.ConfirmDialog
+import com.iltan.settle.ui.chrome.NoticeAction
+import com.iltan.settle.ui.chrome.NoticeCard
+import com.iltan.settle.ui.chrome.NoticeContent
+import com.iltan.settle.ui.chrome.RowTone
+import com.iltan.settle.ui.chrome.SettingsGroup
+import com.iltan.settle.ui.chrome.SettingsRow
+import com.iltan.settle.ui.chrome.Tone
+import com.iltan.settle.ui.chrome.Trailing
 
-/** The Google Drive part of Settings, wired to the app. */
-@Composable
-fun DriveSettings(
-    snackbar: SnackbarHostState,
-    /** Opened from the "reconnect" notification: start Google's account picker at once. */
-    reconnect: Boolean = false,
-    onReconnectStarted: () -> Unit = {},
-) {
-    val graph = LocalContext.current.appGraph
-    val resources = LocalResources.current
-    val viewModel = viewModel {
-        DriveSettingsViewModel(
-            dao = graph.database.backupDao(),
-            auth = graph.driveAuth,
-            drive = graph.drive,
-            sandbox = graph.driveSandbox,
-            folder = graph.driveRootFolder,
-            onAccountChanged = { connected ->
-                if (connected && graph.backupPreferences.unblock(BackupPause.AUTH_NEEDED)) {
-                    graph.backupNotifications.clearPause()
-                    // Backups the user asked for continue now, while Settle is in front.
-                    graph.cloudBackup.backUpNow(emptyList())
-                }
-                graph.backupScheduler.reschedule()
-            },
-            needsReconnect =
-                graph.backupPreferences.choices.map { it.blocked == BackupPause.AUTH_NEEDED },
-        )
-    }
-    val state by viewModel.state.collectAsStateWithLifecycle()
-    val consent by viewModel.consent.collectAsStateWithLifecycle()
-    val launcher =
-        rememberLauncherForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) {
-            viewModel.onConsentResult(it.resultCode, it.data)
-        }
-    LaunchedEffect(reconnect, state.needsReconnect) {
-        if (reconnect && state.needsReconnect) {
-            onReconnectStarted()
-            viewModel.connect()
-        }
-    }
-    LaunchedEffect(consent) {
-        consent?.let {
-            viewModel.consentLaunched()
-            launcher.launch(IntentSenderRequest.Builder(it).build())
-        }
-    }
-    LaunchedEffect(state.notice) {
-        state.notice?.let {
-            viewModel.noticeShown()
-            snackbar.showSnackbar(resources.getString(it.message))
-        }
-    }
-    DriveSection(
-        state = state,
-        onConnect = viewModel::connect,
-        onDisconnect = viewModel::disconnect,
-        onResetSandbox = viewModel::resetSandbox,
-    )
-}
+/** What the Google Drive group's rows do. */
+class DriveActions(
+    val connect: () -> Unit = {},
+    val disconnect: () -> Unit = {},
+    val openFolder: (folderId: String) -> Unit = {},
+    val resetSandbox: () -> Unit = {},
+)
 
+/**
+ * Settings → Google Drive (I1, I3, I4): the account, Drive's storage with a meter, Settle's folder
+ * and Disconnect; before connecting, a card that offers to connect; when Google wants the user to
+ * sign in again, the same warning card as the timeline above the rows.
+ */
 @Composable
-fun DriveSection(
-    state: DriveSettingsState,
-    onConnect: () -> Unit,
-    onDisconnect: () -> Unit,
-    onResetSandbox: () -> Unit,
-) {
+fun DriveGroup(state: DriveSettingsState, actions: DriveActions) {
     if (!state.loaded) return
     var confirmDisconnect by rememberSaveable { mutableStateOf(false) }
     var confirmReset by rememberSaveable { mutableStateOf(false) }
-
-    if (state.email == null) {
-        ListItem(
-            leadingContent = { Icon(painterResource(R.drawable.ic_cloud_off), null) },
-            content = { Text(stringResource(R.string.drive_not_connected)) },
-            supportingContent = { Text(stringResource(R.string.drive_explainer)) },
-        )
-        Button(
-            onClick = onConnect,
-            enabled = !state.busy,
-            modifier = Modifier.padding(start = 16.dp, bottom = 8.dp),
-        ) {
-            Text(stringResource(R.string.drive_connect))
+    val email = state.email
+    val notice: (@Composable () -> Unit)? =
+        when {
+            email == null -> {
+                {
+                    NoticeCard(
+                        NoticeContent(
+                            Tone.INFO,
+                            R.drawable.ic_add_to_drive,
+                            stringResource(R.string.drive_not_connected),
+                            stringResource(R.string.drive_explainer),
+                            NoticeAction(stringResource(R.string.action_connect), actions.connect),
+                        ),
+                        flush = true,
+                    )
+                }
+            }
+            state.needsReconnect -> {
+                {
+                    NoticeCard(
+                        NoticeContent(
+                            Tone.WARN,
+                            R.drawable.ic_account_circle,
+                            stringResource(R.string.notice_signin_title),
+                            stringResource(R.string.notice_signin_body),
+                            NoticeAction(stringResource(R.string.action_sign_in), actions.connect),
+                        ),
+                        flush = true,
+                    )
+                }
+            }
+            else -> null
         }
-    } else {
-        ListItem(
-            leadingContent = { Icon(painterResource(R.drawable.ic_cloud_done), null) },
-            content = { Text(state.email) },
-            supportingContent = {
-                Text(
-                    storageText(state) + "\n" + stringResource(R.string.drive_folder, state.folder)
+    SettingsGroup(title = stringResource(R.string.settings_drive), notice = notice) {
+        if (email != null) {
+            row {
+                SettingsRow(
+                    title = email,
+                    sub =
+                        stringResource(
+                            if (state.needsReconnect) R.string.drive_needs_sign_in
+                            else R.string.drive_connected
+                        ),
+                    subTone = if (state.needsReconnect) RowTone.WARN else RowTone.PLAIN,
+                    leading = { AccountInitial(email) },
                 )
-            },
-        )
-        if (state.needsReconnect) {
-            ListItem(content = { Text(stringResource(R.string.drive_reconnect_text)) })
-            Button(
-                onClick = onConnect,
-                enabled = !state.busy,
-                modifier = Modifier.padding(start = 16.dp, bottom = 8.dp),
-            ) {
-                Text(stringResource(R.string.drive_reconnect))
+            }
+            row { StorageRow(state) }
+            row {
+                val folderId = state.folderId
+                SettingsRow(
+                    title = stringResource(R.string.drive_folder_title),
+                    sub =
+                        stringResource(
+                            if (folderId != null) R.string.drive_folder_in_my_drive
+                            else R.string.drive_folder_not_yet,
+                            state.folder,
+                        ),
+                    icon = R.drawable.ic_folder,
+                    trailing = folderId?.let { Trailing.External },
+                    onClick = folderId?.let { { actions.openFolder(it) } },
+                )
+            }
+            row {
+                SettingsRow(
+                    title = stringResource(R.string.drive_disconnect),
+                    icon = R.drawable.ic_link_off,
+                    tone = RowTone.ERR,
+                    danger = true,
+                    onClick = { if (!state.busy) confirmDisconnect = true },
+                )
+            }
+            if (state.sandbox) {
+                row {
+                    SettingsRow(
+                        title = stringResource(R.string.drive_sandbox_reset),
+                        sub = stringResource(R.string.drive_sandbox_reset_text, state.folder),
+                        icon = R.drawable.ic_delete,
+                        onClick = { if (!state.busy) confirmReset = true },
+                    )
+                }
             }
         }
-        ListItem(
-            onClick = { confirmDisconnect = true },
-            enabled = !state.busy,
-            content = { Text(stringResource(R.string.drive_disconnect)) },
-        )
-    }
-    if (state.sandbox) {
-        ListItem(
-            onClick = { confirmReset = true },
-            enabled = !state.busy && state.email != null,
-            content = { Text(stringResource(R.string.drive_sandbox_reset)) },
-        )
     }
 
     if (confirmDisconnect) {
-        Confirm(
-            title = R.string.drive_disconnect_title,
-            text = stringResource(R.string.drive_disconnect_text),
-            action = R.string.drive_disconnect,
-            onConfirm = onDisconnect,
+        // Connecting again resumes from the same folder, so this is primary, not red (I5).
+        ConfirmDialog(
+            title = stringResource(R.string.drive_disconnect_title),
+            text = listOf(stringResource(R.string.drive_disconnect_text)),
+            confirm = stringResource(R.string.drive_disconnect),
+            icon = R.drawable.ic_link_off,
+            onConfirm = {
+                confirmDisconnect = false
+                actions.disconnect()
+            },
             onDismiss = { confirmDisconnect = false },
         )
     }
     if (confirmReset) {
-        Confirm(
-            title = R.string.drive_sandbox_reset,
-            text = stringResource(R.string.drive_sandbox_reset_text, state.folder),
-            action = R.string.drive_sandbox_reset_action,
-            onConfirm = onResetSandbox,
+        ConfirmDialog(
+            title = stringResource(R.string.drive_sandbox_reset),
+            text = listOf(stringResource(R.string.drive_sandbox_reset_text, state.folder)),
+            confirm = stringResource(R.string.drive_sandbox_reset_action),
+            destructive = true,
+            onConfirm = {
+                confirmReset = false
+                actions.resetSandbox()
+            },
             onDismiss = { confirmReset = false },
         )
     }
 }
 
+/** "50 GB of 5.5 TB used" with its meter; the last known value stays while signed out (I4). */
 @Composable
-private fun storageText(state: DriveSettingsState): String {
+private fun StorageRow(state: DriveSettingsState) {
     val context = LocalContext.current
     val about = state.about
-    val usage = about?.usageBytes ?: return stringResource(R.string.drive_storage_unknown)
-    val used = Formatter.formatShortFileSize(context, usage)
-    val limit = about.limitBytes ?: return stringResource(R.string.drive_storage_unlimited, used)
-    return stringResource(
-        R.string.drive_storage,
-        used,
-        Formatter.formatShortFileSize(context, limit),
+    val usage = about?.usageBytes
+    val limit = about?.limitBytes
+    SettingsRow(
+        title =
+            when {
+                usage == null && state.readingAbout -> stringResource(R.string.settings_checking)
+                usage == null -> stringResource(R.string.drive_storage_unknown)
+                limit == null ->
+                    stringResource(
+                        R.string.drive_storage_unlimited,
+                        Formatter.formatShortFileSize(context, usage),
+                    )
+                else ->
+                    stringResource(
+                        R.string.drive_storage,
+                        Formatter.formatShortFileSize(context, usage),
+                        Formatter.formatShortFileSize(context, limit),
+                    )
+            },
+        sub = stringResource(R.string.drive_storage_sub),
+        icon = R.drawable.ic_cloud,
+        meter = if (usage != null && limit != null && limit > 0) usage.toFloat() / limit else null,
     )
 }
-
-@Composable
-private fun Confirm(
-    title: Int,
-    text: String,
-    action: Int,
-    onConfirm: () -> Unit,
-    onDismiss: () -> Unit,
-) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(stringResource(title)) },
-        text = { Text(text) },
-        confirmButton = {
-            TextButton(
-                onClick = {
-                    onDismiss()
-                    onConfirm()
-                }
-            ) {
-                Text(stringResource(action))
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) }
-        },
-    )
-}
-
-private val DriveNotice.message: Int
-    get() =
-        when (this) {
-            DriveNotice.CONNECT_FAILED -> R.string.drive_connect_failed
-            DriveNotice.SANDBOX_RESET -> R.string.drive_sandbox_reset_done
-            DriveNotice.SANDBOX_RESET_FAILED -> R.string.drive_sandbox_reset_failed
-        }

@@ -42,7 +42,7 @@
     </plurals>
     <string name="settings_last_scan">Last checked %s</string>
     <string name="settings_never_scanned">Not checked yet</string>
-    <string name="settings_rescan">Rescan library</string>
+    <string name="settings_rescan">Rescan</string>
 
     <string name="viewer_favorite">Add to favorites</string>
     <string name="viewer_unfavorite">Remove from favorites</string>
@@ -69,7 +69,6 @@
     <string name="drive_storage">%1$s of %2$s used</string>
     <string name="drive_storage_unlimited">%1$s used</string>
     <string name="drive_storage_unknown">Storage unknown</string>
-    <string name="drive_folder">Folder: %1$s</string>
     <string name="drive_disconnect">Disconnect</string>
     <string name="drive_disconnect_title">Disconnect Google Drive?</string>
     <string name="drive_disconnect_text">Files already in Drive stay there. Backups stop until you connect again.</string>
@@ -118,32 +117,17 @@
     <string name="backup_queued">Backs up with the next automatic backup</string>
     <string name="folder_back_up">Back up</string>
     <string name="settings_backup">Backup</string>
-    <string name="backup_status_not_connected">Connect Google Drive above to back up</string>
-    <string name="backup_status_paused">Backup is paused</string>
     <plurals name="backup_count_backed_up">
         <item quantity="one">%d backed up</item>
         <item quantity="other">%d backed up</item>
-    </plurals>
-    <plurals name="backup_count_uploading">
-        <item quantity="one">%d uploading</item>
-        <item quantity="other">%d uploading</item>
-    </plurals>
-    <plurals name="backup_count_queued">
-        <item quantity="one">%d ready</item>
-        <item quantity="other">%d ready</item>
     </plurals>
     <plurals name="backup_count_waiting">
         <item quantity="one">%d waiting</item>
         <item quantity="other">%d waiting</item>
     </plurals>
-    <plurals name="backup_needs_attention">
-        <item quantity="one">%d item needs attention</item>
-        <item quantity="other">%d items need attention</item>
-    </plurals>
     <string name="backup_everything_now">Back up everything now</string>
-    <string name="backup_everything_now_text">Skips the waiting time and the charger; continues in the background</string>
+    <string name="backup_everything_now_text">Skips the waiting time and the charger</string>
     <string name="backup_automatic">Back up automatically</string>
-    <string name="backup_automatic_text">New photos and videos in the chosen folders</string>
     <string name="backup_grace">Wait before backing up</string>
     <string name="backup_grace_none">No wait</string>
     <string name="backup_grace_minute">1 minute (debug)</string>
@@ -156,31 +140,19 @@
         <item quantity="other">%d days</item>
     </plurals>
     <string name="backup_only_charging">Only while charging</string>
-    <string name="backup_only_charging_text">Usually overnight, so you never notice it</string>
     <string name="backup_mobile_data">Use mobile data</string>
-    <string name="backup_mobile_data_text">Otherwise backup waits for Wi-Fi</string>
     <string name="backup_network">Network use</string>
     <string name="backup_network_polite">Polite: leaves room for others on your network</string>
     <string name="backup_network_limit">Up to %d Mbps</string>
     <string name="backup_network_unlimited">As fast as possible</string>
     <string name="backup_folders">Folders to back up</string>
-    <plurals name="backup_folders_chosen">
-        <item quantity="one">%d folder chosen</item>
-        <item quantity="other">%d folders chosen</item>
-    </plurals>
     <string name="backup_pause">Pause backup</string>
     <string name="backup_resume">Resume</string>
     <string name="backup_allow_notifications">Allow notifications</string>
     <string name="backup_allow_notifications_text">Only to tell you when backup needs you, and for backups you start</string>
-    <string name="backup_battery">Allow unrestricted battery use</string>
     <string name="backup_battery_text">Otherwise Android may hold backups back. In App info, open Battery and choose Unrestricted.</string>
     <string name="backup_battery_restricted">Battery use is Restricted, so backup can\'t run in the background. In App info, open Battery and choose Unrestricted.</string>
-    <string name="backup_never_sleeping">Add Settle to Never sleeping apps</string>
-    <string name="backup_never_sleeping_text">Samsung puts apps you don\'t open for a while to sleep, which stops backup</string>
     <string name="media_needs_attention">Backup needs attention</string>
-    <string name="drive_reconnect">Reconnect</string>
-    <string name="drive_reconnect_text">Google needs you to sign in again. Backup is paused until then; nothing was lost.</string>
-    <string name="backup_status_reconnect">Backup is paused: reconnect Google Drive above</string>
 
     <!-- Selecting, deleting and the trash (R3, R12–R14) -->
     <plurals name="selected_count">
@@ -268,7 +240,7 @@
     <string name="mass_volume_phone">Phone</string>
     <string name="settings_deletion">Deletion</string>
     <string name="deletion_policy_title">When you delete in another app</string>
-    <string name="deletion_policy_text">For photos and videos that are backed up</string>
+    <string name="deletion_policy_text">For photos and videos that are already backed up.</string>
     <string name="deletion_policy_move">Move the Drive copy to the trash</string>
     <string name="deletion_policy_ask">Ask me first</string>
     <string name="manage_media_title">Delete without asking each time</string>
@@ -502,4 +474,77 @@
     <string name="media_access_text">Android asks you to confirm each time Settle moves something to the trash. Allow Settle to manage media to skip that step. It\'s optional, and deleted items can still be restored for 30 days.</string>
     <string name="media_access_allow">Allow in Android settings</string>
     <string name="media_access_keep">Keep confirming each time</string>
+    <!-- Phase 5 · M5: Settings (docs/design/turn4, I) -->
+    <string name="backup_nothing_yet">Nothing to back up yet</string>
+    <string name="backup_nothing_yet_sub">Only Camera backs up until you choose more folders</string>
+    <string name="settings_general">General</string>
+    <string name="settings_checking">Checking…</string>
+    <string name="when_today">today at %1$s</string>
+    <string name="when_yesterday">yesterday at %1$s</string>
+    <string name="when_date">%1$s at %2$s</string>
+    <string name="settings_last_backup">Last backup %1$s</string>
+    <string name="drive_connected">Connected</string>
+    <string name="drive_needs_sign_in">Needs you to sign in again</string>
+    <string name="drive_storage_sub">Your Google storage, shared with Gmail and Photos</string>
+    <string name="drive_folder_title">Folder</string>
+    <string name="drive_folder_in_my_drive">%1$s · in My Drive</string>
+    <string name="drive_folder_not_yet">%1$s · made in My Drive at the first backup</string>
+    <string name="backup_off">Backup is off</string>
+    <string name="backup_off_sub">Connect Google Drive to start</string>
+    <string name="pause_reason_sign_in">Waiting for you to sign in</string>
+    <string name="pause_reason_location">Waiting for location access</string>
+    <string name="pause_reason_by_you">Paused by you</string>
+    <string name="backup_next_tonight">Next backup tonight, on Wi-Fi and the charger</string>
+    <string name="backup_next_charger">Next backup on the charger</string>
+    <string name="backup_next_wifi">Next backup on Wi-Fi</string>
+    <string name="backup_next_soon">Next backup at the next chance</string>
+    <string name="backup_next_manual">Automatic backup is off</string>
+    <string name="header_paused_sign_in">Paused: sign in to Google again</string>
+    <string name="header_paused_drive_full">Paused: Google Drive is full</string>
+    <string name="header_paused_location">Paused: location access needed</string>
+    <plurals name="header_backing_up">
+        <item quantity="one">Backing up %1$d of %2$d</item>
+        <item quantity="other">Backing up %1$d of %2$d</item>
+    </plurals>
+    <string name="settings_attention_sub">Everything else is safe. See them on the Backup tab.</string>
+    <string name="action_start">Start</string>
+    <string name="action_pause">Pause</string>
+    <string name="action_try_again">Try again</string>
+    <string name="action_open_settings">Open settings</string>
+    <string name="backup_resume_first">Resume backup first</string>
+    <string name="settings_automatic_backup">Automatic backup</string>
+    <string name="settings_what_backs_up">What backs up</string>
+    <string name="backup_mobile_data_off">Off: waits for Wi-Fi</string>
+    <string name="backup_mobile_data_on">On: uses mobile data when there\'s no Wi-Fi</string>
+    <string name="backup_pause_text">Nothing uploads until you resume</string>
+    <string name="backup_grace_lead">New photos wait this long, so the shots you delete soon never reach Drive.</string>
+    <string name="backup_grace_none_sub">Backs up at the next chance</string>
+    <string name="backup_recommended">Recommended</string>
+    <string name="backup_network_lead">How much of your connection backup may use.</string>
+    <string name="backup_network_polite_short">Polite</string>
+    <string name="backup_network_polite_sub">Leaves room for others on your network</string>
+    <string name="backup_folders_none">None yet</string>
+    <string name="backup_folders_lead">Only Camera backs up unless you turn others on. Copies already in Drive stay there when you turn a folder off.</string>
+    <string name="folder_stop_title">Stop backing up %1$s?</string>
+    <string name="folder_stop_text">Copies already in Drive stay there. New photos from %1$s won’t be backed up until you turn this on again.</string>
+    <string name="folder_stop_confirm">Stop backing up</string>
+    <string name="deletion_policy_move_sub">Same as deleting in Settle. Restorable for 30 days.</string>
+    <string name="deletion_policy_ask_sub">Items wait in Trash until you choose.</string>
+    <string name="deletion_permission">Android permission</string>
+    <string name="deletion_permission_note">Optional. This row disappears once it’s allowed.</string>
+    <string name="keep_running_title">Keep backup running</string>
+    <plurals name="keep_running_left">
+        <item quantity="one">%d step left</item>
+        <item quantity="other">%d steps left</item>
+    </plurals>
+    <string name="keep_running_lead">Android sometimes stops apps in the background. These steps prevent that. Each one disappears once it’s done.</string>
+    <string name="keep_running_notifications_sub">Notifications, so Settle can tell you when backup needs you</string>
+    <string name="keep_running_battery">Unrestricted battery use</string>
+    <string name="keep_running_battery_sub">Unrestricted battery use, so Android doesn’t stop backup at night</string>
+    <string name="keep_running_never_sleeping">Never sleeping apps</string>
+    <string name="keep_running_never_sleeping_sub">A Samsung setting. Keeps Settle awake for its night backup.</string>
+    <string name="about_title">About Settle</string>
+    <string name="about_safety">How Settle keeps your photos safe</string>
+    <string name="about_privacy">Privacy policy</string>
+    <string name="about_feedback">Send feedback</string>
 </resources>

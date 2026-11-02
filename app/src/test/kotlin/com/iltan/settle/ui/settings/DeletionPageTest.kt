@@ -16,7 +16,7 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
-class DeletionSectionTest {
+class DeletionPageTest {
 
     @get:Rule val compose = createComposeRule()
 
@@ -27,7 +27,7 @@ class DeletionSectionTest {
     ) = compose.setContent {
         SettleTheme {
             Column {
-                DeletionSection(
+                DeletionPage(
                     policy = ExternalDeletionPolicy.MOVE_DRIVE_COPY_TO_TRASH,
                     canDeleteWithoutAsking = canDeleteWithoutAsking,
                     onPolicy = onPolicy,
@@ -54,7 +54,7 @@ class DeletionSectionTest {
         show(canDeleteWithoutAsking = false, onAllow = { asked = true })
 
         compose.onNodeWithText("Delete without asking each time").assertIsDisplayed()
-        compose.onNodeWithText("Delete without asking each time").performClick()
+        compose.onNodeWithText("Allow").performClick()
 
         assertTrue(asked)
     }

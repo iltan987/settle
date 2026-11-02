@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.iltan.settle.data.Library
 import com.iltan.settle.data.backup.BackupChoices
+import com.iltan.settle.data.backup.BackupCounts
 import com.iltan.settle.data.backup.BackupNotifications
 import com.iltan.settle.data.backup.BackupPreferences
 import com.iltan.settle.data.backup.BackupScheduler
@@ -14,16 +15,14 @@ import com.iltan.settle.data.db.FolderSummary
 import com.iltan.settle.domain.backup.BackupDecision
 import com.iltan.settle.domain.backup.BackupPause
 import com.iltan.settle.domain.backup.BackupSettings
+import com.iltan.settle.domain.backup.RunProgress
 import com.iltan.settle.domain.backup.backupDecision
-import com.iltan.settle.domain.backup.backupPause
-import com.iltan.settle.domain.backup.planBackup
 import com.iltan.settle.domain.transfer.NetworkUse
-import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 data class BackupSettingsState(
@@ -34,11 +33,22 @@ data class BackupSettingsState(
     val backedUp: Int = 0,
     val waiting: Int = 0,
     val queued: Int = 0,
-    val uploading: Int = 0,
     val needsAttention: Int = 0,
+    /** The run of uploads under way, if any. */
+    val run: RunProgress? = null,
+    /** When the newest copy was checked in Drive. */
+    val lastBackupAtMs: Long? = null,
     val folders: List<FolderSummary> = emptyList(),
-)
+) {
+    /** Items still to back up, waiting out their time or queued for the next run. */
+    val upcoming: Int
+        get() = waiting + queued
+}
 
+/**
+ * Settings → Backup (I6). Its counts are the app's one backup status (ADR-016), so the page, the
+ * Backup tab and the chip never disagree.
+ */
 class BackupSettingsViewModel(
     private val dao: BackupDao,
     private val library: Library,
@@ -46,54 +56,35 @@ class BackupSettingsViewModel(
     private val scheduler: BackupScheduler,
     private val cloudBackup: CloudBackup,
     private val notifications: BackupNotifications,
-    private val canReadOriginals: () -> Boolean,
+    counts: Flow<BackupCounts?>,
+    run: Flow<RunProgress?>,
     private val clock: () -> Long = System::currentTimeMillis,
 ) : ViewModel() {
 
-    /** Bumped when permissions may have changed outside the database's view. */
-    private val refreshes = MutableStateFlow(0)
-
-    private val plan =
-        combine(
-            dao.account(),
-            preferences.choices,
-            dao.observeBackupCandidates(),
-            refreshes,
-        ) { account, choices, rows, _ ->
-            val pause =
-                backupPause(
-                    connected = account != null,
-                    blocked = choices.blocked,
-                    canReadOriginals = canReadOriginals,
-                    pausedByUser = false,
-                )
-            choices to
-                planBackup(rows.mapNotNull { it.toCandidate() }, choices.settings, pause, clock())
-        }
-
     val state: StateFlow<BackupSettingsState> =
-        combine(plan, dao.backedUpCount(), cloudBackup.progress, library.folders()) {
-                (choices, plan),
-                backedUp,
-                progress,
+        combine(preferences.choices, counts, run, dao.lastVerifiedAt(), library.folders()) {
+                choices,
+                counts,
+                run,
+                lastBackup,
                 folders ->
                 BackupSettingsState(
-                    loaded = true,
+                    loaded = counts != null,
                     choices = choices,
-                    pause = plan.pause,
-                    backedUp = backedUp,
-                    waiting = plan.waiting,
-                    queued = plan.queue.size,
-                    uploading = progress.size,
-                    needsAttention = plan.needsAttention,
+                    pause = counts?.pause,
+                    backedUp = counts?.backedUp ?: 0,
+                    waiting = counts?.waiting ?: 0,
+                    queued = counts?.queued ?: 0,
+                    needsAttention = counts?.needsAttention ?: 0,
+                    run = run,
+                    lastBackupAtMs = lastBackup,
                     folders = folders,
                 )
             }
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), BackupSettingsState())
 
-    /** Looks at permissions again and plans again, e.g. after the user granted one. */
+    /** Plans again, e.g. after the user granted a permission. */
     fun refresh() {
-        refreshes.update { it + 1 }
         viewModelScope.launch { scheduler.reschedule() }
     }
 
@@ -120,21 +111,7 @@ class BackupSettingsViewModel(
 
     /** Everything chosen for backup, now: grace periods and the charger are skipped (R3). */
     fun backUpEverythingNow() {
-        viewModelScope.launch {
-            val choices = preferences.current()
-            // Chosen items, as if automatic backup were on and the grace period over.
-            val settings = choices.settings.copy(automatic = true, graceMillis = 0)
-            val ids =
-                dao.backupCandidates()
-                    .mapNotNull { it.toCandidate() }
-                    .filter {
-                        val decision =
-                            backupDecision(it.copy(retryAtMillis = null), settings, clock())
-                        decision == BackupDecision.Ready
-                    }
-                    .map { it.itemId.value }
-            cloudBackup.backUpNow(ids)
-        }
+        viewModelScope.launch { cloudBackup.backUpNow(everythingChosen(dao, preferences, clock)) }
     }
 
     /** After the user freed space in Drive. */
@@ -155,4 +132,22 @@ class BackupSettingsViewModel(
             scheduler.reschedule()
         }
     }
+}
+
+/**
+ * The items "Back up everything now" sends: everything chosen for backup, as if automatic backup
+ * were on and every wait were over (R3).
+ */
+suspend fun everythingChosen(
+    dao: BackupDao,
+    preferences: BackupPreferences,
+    clock: () -> Long,
+): List<String> {
+    val settings = preferences.current().settings.copy(automatic = true, graceMillis = 0)
+    return dao.backupCandidates()
+        .mapNotNull { it.toCandidate() }
+        .filter {
+            backupDecision(it.copy(retryAtMillis = null), settings, clock()) == BackupDecision.Ready
+        }
+        .map { it.itemId.value }
 }

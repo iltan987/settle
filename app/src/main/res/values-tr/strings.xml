@@ -35,9 +35,9 @@
         <item quantity="one">Bu telefonda %d fotoğraf veya video</item>
         <item quantity="other">Bu telefonda %d fotoğraf ve video</item>
     </plurals>
-    <string name="settings_last_scan">Son kontrol: %s</string>
+    <string name="settings_last_scan">Son kontrol %s</string>
     <string name="settings_never_scanned">Henüz kontrol edilmedi</string>
-    <string name="settings_rescan">Kitaplığı yeniden tara</string>
+    <string name="settings_rescan">Yeniden tara</string>
 
     <string name="viewer_favorite">Favorilere ekle</string>
     <string name="viewer_unfavorite">Favorilerden çıkar</string>
@@ -64,7 +64,6 @@
     <string name="drive_storage">%2$s alanın %1$s kadarı kullanılıyor</string>
     <string name="drive_storage_unlimited">%1$s kullanılıyor</string>
     <string name="drive_storage_unknown">Depolama alanı bilinmiyor</string>
-    <string name="drive_folder">Klasör: %1$s</string>
     <string name="drive_disconnect">Bağlantıyı kes</string>
     <string name="drive_disconnect_title">Google Drive bağlantısı kesilsin mi?</string>
     <string name="drive_disconnect_text">Drive\'daki dosyalar orada kalır. Yeniden bağlanana kadar yedekleme durur.</string>
@@ -113,32 +112,17 @@
     <string name="backup_queued">Bir sonraki otomatik yedeklemede yedeklenecek</string>
     <string name="folder_back_up">Yedekle</string>
     <string name="settings_backup">Yedekleme</string>
-    <string name="backup_status_not_connected">Yedeklemek için yukarıdan Google Drive\'ı bağla</string>
-    <string name="backup_status_paused">Yedekleme duraklatıldı</string>
     <plurals name="backup_count_backed_up">
         <item quantity="one">%d yedeklendi</item>
         <item quantity="other">%d yedeklendi</item>
-    </plurals>
-    <plurals name="backup_count_uploading">
-        <item quantity="one">%d yükleniyor</item>
-        <item quantity="other">%d yükleniyor</item>
-    </plurals>
-    <plurals name="backup_count_queued">
-        <item quantity="one">%d hazır</item>
-        <item quantity="other">%d hazır</item>
     </plurals>
     <plurals name="backup_count_waiting">
         <item quantity="one">%d bekliyor</item>
         <item quantity="other">%d bekliyor</item>
     </plurals>
-    <plurals name="backup_needs_attention">
-        <item quantity="one">%d öge ilgilenmeni bekliyor</item>
-        <item quantity="other">%d öge ilgilenmeni bekliyor</item>
-    </plurals>
     <string name="backup_everything_now">Şimdi her şeyi yedekle</string>
-    <string name="backup_everything_now_text">Bekleme süresini ve şarjı beklemez; arka planda devam eder</string>
+    <string name="backup_everything_now_text">Bekleme süresini ve şarj koşulunu atlar</string>
     <string name="backup_automatic">Otomatik yedekle</string>
-    <string name="backup_automatic_text">Seçilen klasörlerdeki yeni fotoğraf ve videolar</string>
     <string name="backup_grace">Yedeklemeden önce bekle</string>
     <string name="backup_grace_none">Bekleme yok</string>
     <string name="backup_grace_minute">1 dakika (hata ayıklama)</string>
@@ -151,31 +135,19 @@
         <item quantity="other">%d gün</item>
     </plurals>
     <string name="backup_only_charging">Yalnızca şarj olurken</string>
-    <string name="backup_only_charging_text">Genellikle gece, hiç fark etmezsin</string>
     <string name="backup_mobile_data">Mobil veri kullan</string>
-    <string name="backup_mobile_data_text">Aksi halde yedekleme Wi-Fi\'ı bekler</string>
     <string name="backup_network">Ağ kullanımı</string>
     <string name="backup_network_polite">Nazik: ağındaki diğer cihazlara yer bırakır</string>
     <string name="backup_network_limit">En fazla %d Mbps</string>
     <string name="backup_network_unlimited">Olabildiğince hızlı</string>
     <string name="backup_folders">Yedeklenecek klasörler</string>
-    <plurals name="backup_folders_chosen">
-        <item quantity="one">%d klasör seçili</item>
-        <item quantity="other">%d klasör seçili</item>
-    </plurals>
     <string name="backup_pause">Yedeklemeyi duraklat</string>
     <string name="backup_resume">Devam et</string>
     <string name="backup_allow_notifications">Bildirimlere izin ver</string>
     <string name="backup_allow_notifications_text">Yalnızca yedekleme sana ihtiyaç duyduğunda ve başlattığın yedeklemeler için</string>
-    <string name="backup_battery">Sınırsız pil kullanımına izin ver</string>
     <string name="backup_battery_text">Aksi halde Android yedeklemeleri geciktirebilir. Uygulama bilgileri\'nde Pil\'i açıp Sınırsız\'ı seç.</string>
     <string name="backup_battery_restricted">Pil kullanımı Kısıtlı, bu yüzden yedekleme arka planda çalışamaz. Uygulama bilgileri\'nde Pil\'i açıp Sınırsız\'ı seç.</string>
-    <string name="backup_never_sleeping">Settle\'ı Hiç uyumayan uygulamalar\'a ekle</string>
-    <string name="backup_never_sleeping_text">Samsung, bir süre açmadığın uygulamaları uyutur; bu da yedeklemeyi durdurur</string>
     <string name="media_needs_attention">Yedekleme ilgilenmeni bekliyor</string>
-    <string name="drive_reconnect">Yeniden bağlan</string>
-    <string name="drive_reconnect_text">Google\'da yeniden oturum açman gerekiyor. O zamana kadar yedekleme duraklatıldı; hiçbir şey kaybolmadı.</string>
-    <string name="backup_status_reconnect">Yedekleme duraklatıldı: Google Drive\'ı yukarıdan yeniden bağla</string>
 
     <!-- Seçme, silme ve çöp kutusu (R3, R12–R14) -->
     <plurals name="selected_count">
@@ -263,7 +235,7 @@
     <string name="mass_volume_phone">Telefon</string>
     <string name="settings_deletion">Silme</string>
     <string name="deletion_policy_title">Başka bir uygulamada sildiğinizde</string>
-    <string name="deletion_policy_text">Yedeklenmiş fotoğraf ve videolar için</string>
+    <string name="deletion_policy_text">Zaten yedeklenmiş fotoğraf ve videolar için.</string>
     <string name="deletion_policy_move">Drive kopyasını çöp kutusuna taşı</string>
     <string name="deletion_policy_ask">Önce bana sor</string>
     <string name="manage_media_title">Her seferinde sormadan sil</string>
@@ -497,4 +469,77 @@
     <string name="media_access_text">Settle bir şeyi çöp kutusuna her taşıdığında Android onay ister. Bu adımı atlamak için Settle\'ın medyayı yönetmesine izin verin. İsteğe bağlıdır; silinen öğeler yine 30 gün boyunca geri yüklenebilir.</string>
     <string name="media_access_allow">Android ayarlarında izin ver</string>
     <string name="media_access_keep">Her seferinde onaylamaya devam et</string>
+    <!-- Phase 5 · M5: Settings (docs/design/turn4, I) -->
+    <string name="backup_nothing_yet">Henüz yedeklenecek bir şey yok</string>
+    <string name="backup_nothing_yet_sub">Siz başka klasörler seçene kadar yalnızca Kamera yedeklenir</string>
+    <string name="settings_general">Genel</string>
+    <string name="settings_checking">Kontrol ediliyor…</string>
+    <string name="when_today">bugün %1$s</string>
+    <string name="when_yesterday">dün %1$s</string>
+    <string name="when_date">%1$s %2$s</string>
+    <string name="settings_last_backup">Son yedekleme %1$s</string>
+    <string name="drive_connected">Bağlı</string>
+    <string name="drive_needs_sign_in">Tekrar oturum açmanız gerekiyor</string>
+    <string name="drive_storage_sub">Gmail ve Fotoğraflar ile paylaşılan Google depolama alanınız</string>
+    <string name="drive_folder_title">Klasör</string>
+    <string name="drive_folder_in_my_drive">%1$s · Drive\'ım içinde</string>
+    <string name="drive_folder_not_yet">%1$s · ilk yedeklemede Drive\'ım içinde oluşturulur</string>
+    <string name="backup_off">Yedekleme kapalı</string>
+    <string name="backup_off_sub">Başlamak için Google Drive\'ı bağlayın</string>
+    <string name="pause_reason_sign_in">Oturum açmanız bekleniyor</string>
+    <string name="pause_reason_location">Konum erişimi bekleniyor</string>
+    <string name="pause_reason_by_you">Sizin tarafınızdan duraklatıldı</string>
+    <string name="backup_next_tonight">Sonraki yedekleme bu gece, Wi-Fi ve şarjdayken</string>
+    <string name="backup_next_charger">Sonraki yedekleme şarjdayken</string>
+    <string name="backup_next_wifi">Sonraki yedekleme Wi-Fi\'dayken</string>
+    <string name="backup_next_soon">Sonraki yedekleme ilk fırsatta</string>
+    <string name="backup_next_manual">Otomatik yedekleme kapalı</string>
+    <string name="header_paused_sign_in">Duraklatıldı: Google\'da tekrar oturum açın</string>
+    <string name="header_paused_drive_full">Duraklatıldı: Google Drive dolu</string>
+    <string name="header_paused_location">Duraklatıldı: konum erişimi gerekiyor</string>
+    <plurals name="header_backing_up">
+        <item quantity="one">Yedekleniyor: %2$d öğeden %1$d tanesi</item>
+        <item quantity="other">Yedekleniyor: %2$d öğeden %1$d tanesi</item>
+    </plurals>
+    <string name="settings_attention_sub">Geri kalan her şey güvende. Yedekleme sekmesinde görün.</string>
+    <string name="action_start">Başlat</string>
+    <string name="action_pause">Duraklat</string>
+    <string name="action_try_again">Tekrar dene</string>
+    <string name="action_open_settings">Ayarları aç</string>
+    <string name="backup_resume_first">Önce yedeklemeyi devam ettirin</string>
+    <string name="settings_automatic_backup">Otomatik yedekleme</string>
+    <string name="settings_what_backs_up">Neler yedeklenir</string>
+    <string name="backup_mobile_data_off">Kapalı: Wi-Fi\'ı bekler</string>
+    <string name="backup_mobile_data_on">Açık: Wi-Fi yokken mobil veri kullanır</string>
+    <string name="backup_pause_text">Siz devam ettirene kadar hiçbir şey yüklenmez</string>
+    <string name="backup_grace_lead">Yeni fotoğraflar bu kadar bekler; böylece kısa süre içinde sildikleriniz Drive\'a hiç ulaşmaz.</string>
+    <string name="backup_grace_none_sub">İlk fırsatta yedeklenir</string>
+    <string name="backup_recommended">Önerilen</string>
+    <string name="backup_network_lead">Yedeklemenin bağlantınızın ne kadarını kullanabileceği.</string>
+    <string name="backup_network_polite_short">Nazik</string>
+    <string name="backup_network_polite_sub">Ağınızdaki diğerlerine yer bırakır</string>
+    <string name="backup_folders_none">Henüz yok</string>
+    <string name="backup_folders_lead">Siz başka klasörleri açmadıkça yalnızca Kamera yedeklenir. Bir klasörü kapattığınızda Drive\'daki kopyalar orada kalır.</string>
+    <string name="folder_stop_title">%1$s yedeklemesi durdurulsun mu?</string>
+    <string name="folder_stop_text">Drive\'daki kopyalar orada kalır. Bunu tekrar açana kadar %1$s klasöründeki yeni fotoğraflar yedeklenmez.</string>
+    <string name="folder_stop_confirm">Yedeklemeyi durdur</string>
+    <string name="deletion_policy_move_sub">Settle\'da silmekle aynı. 30 gün boyunca geri yüklenebilir.</string>
+    <string name="deletion_policy_ask_sub">Öğeler siz seçene kadar Çöp kutusunda bekler.</string>
+    <string name="deletion_permission">Android izni</string>
+    <string name="deletion_permission_note">İsteğe bağlı. İzin verildiğinde bu satır kaybolur.</string>
+    <string name="keep_running_title">Yedeklemeyi çalışır tut</string>
+    <plurals name="keep_running_left">
+        <item quantity="one">%d adım kaldı</item>
+        <item quantity="other">%d adım kaldı</item>
+    </plurals>
+    <string name="keep_running_lead">Android bazen arka plandaki uygulamaları durdurur. Bu adımlar bunu önler. Tamamlanan adım kaybolur.</string>
+    <string name="keep_running_notifications_sub">Bildirimler; böylece Settle yedekleme sizi beklediğinde haber verebilir</string>
+    <string name="keep_running_battery">Kısıtlamasız pil kullanımı</string>
+    <string name="keep_running_battery_sub">Kısıtlamasız pil kullanımı; böylece Android yedeklemeyi gece durdurmaz</string>
+    <string name="keep_running_never_sleeping">Hiç uyumayan uygulamalar</string>
+    <string name="keep_running_never_sleeping_sub">Bir Samsung ayarı. Settle\'ı gece yedeklemesi için uyanık tutar.</string>
+    <string name="about_title">Settle hakkında</string>
+    <string name="about_safety">Settle fotoğraflarınızı nasıl güvende tutar</string>
+    <string name="about_privacy">Gizlilik politikası</string>
+    <string name="about_feedback">Geri bildirim gönder</string>
 </resources>
