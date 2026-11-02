@@ -386,6 +386,22 @@ class TimelineScreenTest {
     }
 
     @Test
+    fun aNoticeThatArrivesWhileAtTheTopIsShownNotScrolledAway() {
+        var status by mutableStateOf(TimelineStatus())
+        // More than a screen of days, so the grid could keep the first day in place.
+        val now = System.currentTimeMillis()
+        val many = stateOf(*Array(60) { entry("i$it", now - it * day) })
+        setScreen {
+            TimelineScreen(state = many, onOpen = {}, onOpenSettings = {}, status = status)
+        }
+        compose.onNodeWithText("Today").assertIsDisplayed()
+
+        status = TimelineStatus(breakerCount = 312)
+
+        compose.onNodeWithText("312 items disappeared from this phone").assertIsDisplayed()
+    }
+
+    @Test
     fun spreadingTwoFingersShowsFewerColumns() {
         val changes = mutableListOf<Int>()
         show(twoDays(), onColumnsChange = { changes += it })

@@ -202,6 +202,16 @@ fun MediaGrid(
             state.scrollBy(-offset.toFloat())
         }
     }
+    // A notice arriving above the first day would be laid out off screen: the grid keeps the day it
+    // showed in place. Someone at the top should see it, so the grid follows it up.
+    val hasHeader = header != null
+    LaunchedEffect(hasHeader) {
+        if (
+            hasHeader && state.firstVisibleItemIndex == 1 && state.firstVisibleItemScrollOffset == 0
+        ) {
+            state.scrollToItem(0)
+        }
+    }
     LaunchedEffect(toast) {
         if (toast != null) {
             delay(DENSITY_TOAST_MILLIS)
