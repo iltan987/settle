@@ -188,7 +188,6 @@
         <item quantity="other">%d selected</item>
     </plurals>
     <string name="selection_clear">Clear selection</string>
-    <string name="selection_item">Select</string>
     <string name="action_delete">Delete</string>
     <plurals name="trash_moved">
         <item quantity="one">Moved to the trash</item>
@@ -205,7 +204,6 @@
     </plurals>
     <string name="trash_title">Trash</string>
     <string name="trash_explainer">Items stay here and in your Drive\'s trash for 30 days, then they\'re deleted for good.</string>
-    <string name="trash_empty">The trash is empty</string>
     <string name="trash_empty_action">Empty trash</string>
     <string name="trash_restore">Restore</string>
     <string name="trash_delete_forever">Delete forever</string>
@@ -220,17 +218,12 @@
     </plurals>
     <string name="trash_deleted_elsewhere">Deleted in another app</string>
     <string name="trash_restoring">Restoring</string>
-    <string name="restore_problem_auth">Reconnect Drive</string>
-    <string name="restore_problem_offline">Offline</string>
-    <string name="restore_problem_not_in_drive">Not in Drive</string>
-    <string name="restore_problem_mismatch">Copy differs</string>
-    <string name="restore_problem_no_space">Phone full</string>
-    <string name="restore_problem_failed">Failed</string>
-    <plurals name="undecided_title">
-        <item quantity="one">%d item deleted in another app</item>
-        <item quantity="other">%d items deleted in another app</item>
-    </plurals>
-    <string name="undecided_text">Their Drive copies stay as they are until you choose.</string>
+    <string name="restore_problem_auth">Reconnect to Google</string>
+    <string name="restore_problem_offline">You\'re offline</string>
+    <string name="restore_problem_not_in_drive">Not in Drive anymore</string>
+    <string name="restore_problem_mismatch">Drive copy doesn\'t match</string>
+    <string name="restore_problem_no_space">Phone is full</string>
+    <string name="restore_problem_failed">Something went wrong</string>
     <string name="move_drive_copies_to_trash">Move Drive copies to trash</string>
     <string name="keep_in_drive">Keep in Drive</string>
     <plurals name="breaker_title">
@@ -362,6 +355,116 @@
         <item quantity="other">Moved to the trash. These weren\'t backed up; they\'re deleted for good after 30 days.</item>
     </plurals>
     <string name="trash_restored">Restored</string>
+    <!-- The trash (F) -->
+    <string name="trash_empty_title">Trash is empty</string>
+    <string name="trash_empty_body">When you delete something, it waits here for 30 days in case you change your mind.</string>
+    <string name="trash_group_deleted">Deleted</string>
+    <string name="trash_group_today">Deleted today</string>
+    <string name="trash_group_yesterday">Deleted yesterday</string>
+    <string name="trash_group_day">Deleted %s</string>
+    <string name="trash_group_disappeared">Disappeared from this phone</string>
+    <string name="trash_waiting">Waiting for you</string>
+    <string name="trash_banner_elsewhere">Deleted in another app. Their Drive copies go to Drive\'s trash too. Restore brings them back to this phone.</string>
+    <string name="trash_banner_disappeared">These disappeared from this phone, and you moved their Drive copies to Drive\'s trash. Restore downloads each one and checks it.</string>
+    <string name="trash_banner_restoring">Downloading from Drive and checking each file.</string>
+    <string name="trash_restoring_meta">Restoring %1$d of %2$d · %3$s</string>
+    <plurals name="trash_not_restored">
+        <item quantity="one">%d not restored</item>
+        <item quantity="other">%d not restored</item>
+    </plurals>
+    <plurals name="trash_cell_days">
+        <item quantity="one">%d day left</item>
+        <item quantity="other">%d days left</item>
+    </plurals>
+    <string name="trash_cell_failed">Couldn\'t be restored: %s</string>
+    <plurals name="trash_restored_to">
+        <item quantity="one">%1$d item restored to %2$s</item>
+        <item quantity="other">%1$d items restored to %2$s</item>
+    </plurals>
+    <plurals name="trash_restored_count">
+        <item quantity="one">%d item restored</item>
+        <item quantity="other">%d items restored</item>
+    </plurals>
+    <plurals name="trash_restored_checked_to">
+        <item quantity="one">%1$d item restored to %2$s and checked. Nothing was lost.</item>
+        <item quantity="other">%1$d items restored to %2$s and checked. Nothing was lost.</item>
+    </plurals>
+    <plurals name="trash_restored_checked">
+        <item quantity="one">%d item restored to this phone and checked. Nothing was lost.</item>
+        <item quantity="other">%d items restored to this phone and checked. Nothing was lost.</item>
+    </plurals>
+    <string name="trash_show">Show</string>
+    <string name="trash_moved_back">Moved back to the trash</string>
+    <string name="trash_emptied">Trash emptied</string>
+    <plurals name="trash_deleted_forever">
+        <item quantity="one">%d item deleted forever</item>
+        <item quantity="other">%d items deleted forever</item>
+    </plurals>
+    <string name="trash_empty_confirm_title">Empty the trash?</string>
+    <plurals name="trash_empty_confirm_text">
+        <item quantity="one">%d item will be removed from this phone and from Google Drive. This can\'t be undone.</item>
+        <item quantity="other">%d items will be removed from this phone and from Google Drive. This can\'t be undone.</item>
+    </plurals>
+    <plurals name="trash_confirm_nowhere_else">
+        <item quantity="one">%d of them was never backed up and exists nowhere else.</item>
+        <item quantity="other">%d of them were never backed up and exist nowhere else.</item>
+    </plurals>
+    <plurals name="trash_confirm_none_backed_up">
+        <item quantity="one">It was never backed up and exists nowhere else.</item>
+        <item quantity="other">They were never backed up and exist nowhere else.</item>
+    </plurals>
+    <plurals name="waiting_title">
+        <item quantity="one">%d item was deleted in another app</item>
+        <item quantity="other">%d items were deleted in another app</item>
+    </plurals>
+    <plurals name="waiting_body">
+        <item quantity="one">Its Drive copy is still in Drive. Choose what happens to it.</item>
+        <item quantity="other">Their Drive copies are still in Drive. Choose what happens to all %d.</item>
+    </plurals>
+    <string name="move_drive_copies_short">Move to trash</string>
+    <plurals name="mass_kept">
+        <item quantity="one">Drive copy kept. %d item stays in Drive.</item>
+        <item quantity="other">Drive copies kept. All %d stay in Drive.</item>
+    </plurals>
+    <plurals name="waiting_kept">
+        <item quantity="one">%d item kept in Drive</item>
+        <item quantity="other">%d items kept in Drive</item>
+    </plurals>
+    <plurals name="drive_copies_moved">
+        <item quantity="one">%d Drive copy moved to the trash</item>
+        <item quantity="other">%d Drive copies moved to the trash</item>
+    </plurals>
+    <string name="trash_view">View trash</string>
+    <plurals name="restore_failed_title">
+        <item quantity="one">%d item couldn\'t be restored</item>
+        <item quantity="other">%d items couldn\'t be restored</item>
+    </plurals>
+    <plurals name="restore_failed_others_to">
+        <item quantity="one">%1$d other is back in %2$s.</item>
+        <item quantity="other">%1$d others are back in %2$s.</item>
+    </plurals>
+    <plurals name="restore_failed_others">
+        <item quantity="one">%d other is back on this phone.</item>
+        <item quantity="other">%d others are back on this phone.</item>
+    </plurals>
+    <plurals name="restore_failed_left">
+        <item quantity="one">The %d left here is unchanged.</item>
+        <item quantity="other">The %d left here are unchanged.</item>
+    </plurals>
+    <plurals name="restore_failed_left_in_drive">
+        <item quantity="one">The %d left here is unchanged and still in Drive.</item>
+        <item quantity="other">The %d left here are unchanged and still in Drive.</item>
+    </plurals>
+    <string name="restore_see_why">See why</string>
+    <string name="restore_issues_title">Why these weren\'t restored</string>
+    <string name="restore_problem_auth_body">Google needs you to sign in again before Settle can download from Drive. Restore continues by itself afterwards.</string>
+    <string name="restore_problem_offline_body">Restore continues by itself when this phone is back online and you open Settle.</string>
+    <string name="restore_problem_not_in_drive_body">Drive\'s trash no longer has this copy. It may have been emptied in Drive. Nothing else was changed.</string>
+    <string name="restore_problem_mismatch_body">The copy in Drive differs from what Settle backed up, so it wasn\'t restored. The Drive copy is untouched.</string>
+    <string name="restore_problem_no_space_body">Free up %s on this phone, then restore them again.</string>
+    <string name="restore_problem_failed_body">Settle couldn\'t restore these. Nothing was changed; Restore tries again.</string>
+    <string name="restore_open_in_drive">Open in Drive</string>
+    <string name="restore_free_up_space">Free up space</string>
     <string name="media_access_title">Delete with one tap</string>
     <string name="media_access_text">Android asks you to confirm each time Settle moves something to the trash. Allow Settle to manage media to skip that step. It\'s optional, and deleted items can still be restored for 30 days.</string>
     <string name="media_access_allow">Allow in Android settings</string>

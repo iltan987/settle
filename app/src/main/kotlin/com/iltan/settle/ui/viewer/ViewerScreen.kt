@@ -730,7 +730,8 @@ private fun openMap(context: Context, latitude: Double, longitude: Double, label
     runCatching { context.startActivity(Intent(Intent.ACTION_VIEW, "geo:0,0?q=$query".toUri())) }
 }
 
-private fun openInDrive(context: Context, driveFileId: String) {
+/** Opens a Drive file in the Drive app, or the browser without it. */
+internal fun openInDrive(context: Context, driveFileId: String) {
     runCatching {
         context.startActivity(
             Intent(Intent.ACTION_VIEW, "https://drive.google.com/file/d/$driveFileId/view".toUri())

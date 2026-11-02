@@ -241,7 +241,7 @@ private fun BoxScope.UploadRing(progress: Float) {
 
 /** The empty ring every cell gets while selecting, and the check once chosen (C1). */
 @Composable
-private fun BoxScope.SelectionMarker(selected: Boolean?) {
+internal fun BoxScope.SelectionMarker(selected: Boolean?) {
     AnimatedVisibility(
         visible = selected == false,
         enter = fadeIn(SettleMotion.fade()),

@@ -68,11 +68,16 @@ Play Store release later must stay possible, so Play-policy-forbidden permission
   in Drive, with Undo. It can be restored until retention ends. Delete forever and Empty trash
   remove items from the phone and Drive at once, only after a confirmation that names the count.
   The first delete explains Android's own confirmation once, while Settle can't manage media; the
-  message after deleting says plainly when items weren't backed up.
+  message after deleting says plainly when items weren't backed up. The trash groups items by
+  when and how they were deleted and shows the days left; restoring says where items went, and
+  Delete forever's confirmation says when an item exists nowhere else.
 - R13. A backed-up item deleted in another app is handled by the external-deletion policy (ADR-006,
   ADR-015). Default: it enters Settle's trash and its Drive copy moves to Drive trash an hour after
   it vanished, unless it comes back first; "Ask me first" waits for the user. Restoring it
-  downloads the Drive copy into its folder and publishes it only if its SHA-256 matches.
+  downloads the Drive copy into its folder and publishes it only if its SHA-256 matches; the trash
+  shows its progress and, if it stops, why. A restore stopped by being offline or signed out
+  continues the next time Settle is open. With "Ask me first", such items wait in the trash without
+  a countdown until the user keeps their Drive copies or moves them to the trash.
 - R14. A mass disappearance of files (circuit breaker, ADR-006) never moves or deletes anything in
   Drive without confirmation, also when it reaches Settle spread over several scans. The question
   stays until it is answered.

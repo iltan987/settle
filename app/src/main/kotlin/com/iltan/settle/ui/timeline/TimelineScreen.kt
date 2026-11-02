@@ -19,20 +19,17 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.FilledTonalButton
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -46,11 +43,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntRect
 import androidx.compose.ui.unit.IntSize
@@ -66,6 +61,7 @@ import com.iltan.settle.domain.backup.BackupHeadline
 import com.iltan.settle.ui.LocalAppMessages
 import com.iltan.settle.ui.chrome.AccountButton
 import com.iltan.settle.ui.chrome.BottomBarHeight
+import com.iltan.settle.ui.chrome.EmptyState
 import com.iltan.settle.ui.chrome.HideTabBar
 import com.iltan.settle.ui.chrome.NoticeCard
 import com.iltan.settle.ui.chrome.SettleTopBar
@@ -354,39 +350,16 @@ private fun Skeleton(padding: PaddingValues) {
     }
 }
 
-/** Nothing to show yet (B11): a 96 dp tile, a title, why, and where to choose folders. */
+/** Nothing to show yet (B11), and where to choose folders. */
 @Composable
 private fun EmptyLibrary(onChooseFolders: () -> Unit, modifier: Modifier = Modifier) {
-    Column(
-        modifier.fillMaxWidth().padding(horizontal = 32.dp, vertical = 48.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
+    EmptyState(
+        R.drawable.ic_photo_library,
+        stringResource(R.string.timeline_empty_title),
+        stringResource(R.string.timeline_empty_body),
+        modifier,
     ) {
-        Box(
-            Modifier.size(96.dp)
-                .background(MaterialTheme.colorScheme.surfaceContainer, SettleShape.EmptyTile),
-            contentAlignment = Alignment.Center,
-        ) {
-            Icon(
-                painterResource(R.drawable.ic_photo_library),
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(44.dp),
-            )
-        }
-        Text(
-            stringResource(R.string.timeline_empty_title),
-            style = MaterialTheme.typography.titleLarge,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.padding(top = 20.dp),
-        )
-        Text(
-            stringResource(R.string.timeline_empty_body),
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.widthIn(max = 300.dp).padding(top = 8.dp),
-        )
-        FilledTonalButton(onClick = onChooseFolders, modifier = Modifier.padding(top = 24.dp)) {
+        FilledTonalButton(onClick = onChooseFolders) {
             Text(stringResource(R.string.timeline_choose_folders))
         }
     }

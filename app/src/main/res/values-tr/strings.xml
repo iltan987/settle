@@ -183,7 +183,6 @@
         <item quantity="other">%d seçildi</item>
     </plurals>
     <string name="selection_clear">Seçimi temizle</string>
-    <string name="selection_item">Seç</string>
     <string name="action_delete">Sil</string>
     <plurals name="trash_moved">
         <item quantity="one">Çöp kutusuna taşındı</item>
@@ -200,7 +199,6 @@
     </plurals>
     <string name="trash_title">Çöp kutusu</string>
     <string name="trash_explainer">Ögeler burada ve Drive\'ınızın çöp kutusunda 30 gün kalır, sonra kalıcı olarak silinir.</string>
-    <string name="trash_empty">Çöp kutusu boş</string>
     <string name="trash_empty_action">Çöp kutusunu boşalt</string>
     <string name="trash_restore">Geri yükle</string>
     <string name="trash_delete_forever">Kalıcı olarak sil</string>
@@ -215,17 +213,12 @@
     </plurals>
     <string name="trash_deleted_elsewhere">Başka bir uygulamada silindi</string>
     <string name="trash_restoring">Geri yükleniyor</string>
-    <string name="restore_problem_auth">Drive\'ı bağla</string>
-    <string name="restore_problem_offline">Çevrimdışı</string>
-    <string name="restore_problem_not_in_drive">Drive\'da yok</string>
-    <string name="restore_problem_mismatch">Kopya farklı</string>
+    <string name="restore_problem_auth">Google\'a yeniden bağlanın</string>
+    <string name="restore_problem_offline">Çevrimdışısınız</string>
+    <string name="restore_problem_not_in_drive">Artık Drive\'da değil</string>
+    <string name="restore_problem_mismatch">Drive kopyası eşleşmiyor</string>
     <string name="restore_problem_no_space">Telefon dolu</string>
-    <string name="restore_problem_failed">Başarısız</string>
-    <plurals name="undecided_title">
-        <item quantity="one">%d öge başka bir uygulamada silindi</item>
-        <item quantity="other">%d öge başka bir uygulamada silindi</item>
-    </plurals>
-    <string name="undecided_text">Siz seçene kadar Drive kopyaları olduğu gibi kalır.</string>
+    <string name="restore_problem_failed">Bir sorun oluştu</string>
     <string name="move_drive_copies_to_trash">Drive kopyalarını çöpe taşı</string>
     <string name="keep_in_drive">Drive\'da tut</string>
     <plurals name="breaker_title">
@@ -357,6 +350,116 @@
         <item quantity="other">Çöp kutusuna taşındı. Bunlar yedeklenmemişti; 30 gün sonra kalıcı olarak silinecekler.</item>
     </plurals>
     <string name="trash_restored">Geri yüklendi</string>
+    <!-- The trash (F) -->
+    <string name="trash_empty_title">Çöp kutusu boş</string>
+    <string name="trash_empty_body">Bir şeyi sildiğinizde, fikrinizi değiştirirseniz diye 30 gün burada bekler.</string>
+    <string name="trash_group_deleted">Silindi</string>
+    <string name="trash_group_today">Bugün silindi</string>
+    <string name="trash_group_yesterday">Dün silindi</string>
+    <string name="trash_group_day">%s tarihinde silindi</string>
+    <string name="trash_group_disappeared">Bu telefondan kayboldu</string>
+    <string name="trash_waiting">Kararınızı bekliyor</string>
+    <string name="trash_banner_elsewhere">Başka bir uygulamada silindi. Drive kopyaları da Drive\'ın çöp kutusuna gider. Geri yükle, onları bu telefona geri getirir.</string>
+    <string name="trash_banner_disappeared">Bunlar bu telefondan kayboldu ve Drive kopyalarını Drive\'ın çöp kutusuna taşıdınız. Geri yükle, her birini indirir ve kontrol eder.</string>
+    <string name="trash_banner_restoring">Drive\'dan indiriliyor ve her dosya kontrol ediliyor.</string>
+    <string name="trash_restoring_meta">Geri yükleniyor: %1$d / %2$d · %3$s</string>
+    <plurals name="trash_not_restored">
+        <item quantity="one">%d öğe geri yüklenmedi</item>
+        <item quantity="other">%d öğe geri yüklenmedi</item>
+    </plurals>
+    <plurals name="trash_cell_days">
+        <item quantity="one">%d gün kaldı</item>
+        <item quantity="other">%d gün kaldı</item>
+    </plurals>
+    <string name="trash_cell_failed">Geri yüklenemedi: %s</string>
+    <plurals name="trash_restored_to">
+        <item quantity="one">%1$d öğe %2$s klasörüne geri yüklendi</item>
+        <item quantity="other">%1$d öğe %2$s klasörüne geri yüklendi</item>
+    </plurals>
+    <plurals name="trash_restored_count">
+        <item quantity="one">%d öğe geri yüklendi</item>
+        <item quantity="other">%d öğe geri yüklendi</item>
+    </plurals>
+    <plurals name="trash_restored_checked_to">
+        <item quantity="one">%1$d öğe %2$s klasörüne geri yüklendi ve kontrol edildi. Hiçbir şey kaybolmadı.</item>
+        <item quantity="other">%1$d öğe %2$s klasörüne geri yüklendi ve kontrol edildi. Hiçbir şey kaybolmadı.</item>
+    </plurals>
+    <plurals name="trash_restored_checked">
+        <item quantity="one">%d öğe bu telefona geri yüklendi ve kontrol edildi. Hiçbir şey kaybolmadı.</item>
+        <item quantity="other">%d öğe bu telefona geri yüklendi ve kontrol edildi. Hiçbir şey kaybolmadı.</item>
+    </plurals>
+    <string name="trash_show">Göster</string>
+    <string name="trash_moved_back">Yeniden çöp kutusuna taşındı</string>
+    <string name="trash_emptied">Çöp kutusu boşaltıldı</string>
+    <plurals name="trash_deleted_forever">
+        <item quantity="one">%d öğe kalıcı olarak silindi</item>
+        <item quantity="other">%d öğe kalıcı olarak silindi</item>
+    </plurals>
+    <string name="trash_empty_confirm_title">Çöp kutusu boşaltılsın mı?</string>
+    <plurals name="trash_empty_confirm_text">
+        <item quantity="one">%d öğe bu telefondan ve Google Drive\'dan kaldırılacak. Bu işlem geri alınamaz.</item>
+        <item quantity="other">%d öğe bu telefondan ve Google Drive\'dan kaldırılacak. Bu işlem geri alınamaz.</item>
+    </plurals>
+    <plurals name="trash_confirm_nowhere_else">
+        <item quantity="one">Bunlardan %d tanesi hiç yedeklenmedi ve başka hiçbir yerde yok.</item>
+        <item quantity="other">Bunlardan %d tanesi hiç yedeklenmedi ve başka hiçbir yerde yok.</item>
+    </plurals>
+    <plurals name="trash_confirm_none_backed_up">
+        <item quantity="one">Hiç yedeklenmedi ve başka hiçbir yerde yok.</item>
+        <item quantity="other">Bunlar hiç yedeklenmedi ve başka hiçbir yerde yok.</item>
+    </plurals>
+    <plurals name="waiting_title">
+        <item quantity="one">%d öğe başka bir uygulamada silindi</item>
+        <item quantity="other">%d öğe başka bir uygulamada silindi</item>
+    </plurals>
+    <plurals name="waiting_body">
+        <item quantity="one">Drive kopyası hâlâ Drive\'da. Ona ne olacağını seçin.</item>
+        <item quantity="other">Drive kopyaları hâlâ Drive\'da. %d öğenin hepsine ne olacağını seçin.</item>
+    </plurals>
+    <string name="move_drive_copies_short">Çöpe taşı</string>
+    <plurals name="mass_kept">
+        <item quantity="one">Drive kopyası tutuldu. %d öğe Drive\'da kalıyor.</item>
+        <item quantity="other">Drive kopyaları tutuldu. %d öğenin hepsi Drive\'da kalıyor.</item>
+    </plurals>
+    <plurals name="waiting_kept">
+        <item quantity="one">%d öğe Drive\'da tutuldu</item>
+        <item quantity="other">%d öğe Drive\'da tutuldu</item>
+    </plurals>
+    <plurals name="drive_copies_moved">
+        <item quantity="one">%d Drive kopyası çöp kutusuna taşındı</item>
+        <item quantity="other">%d Drive kopyası çöp kutusuna taşındı</item>
+    </plurals>
+    <string name="trash_view">Çöp kutusunu gör</string>
+    <plurals name="restore_failed_title">
+        <item quantity="one">%d öğe geri yüklenemedi</item>
+        <item quantity="other">%d öğe geri yüklenemedi</item>
+    </plurals>
+    <plurals name="restore_failed_others_to">
+        <item quantity="one">Diğer %1$d öğe %2$s klasörüne döndü.</item>
+        <item quantity="other">Diğer %1$d öğe %2$s klasörüne döndü.</item>
+    </plurals>
+    <plurals name="restore_failed_others">
+        <item quantity="one">Diğer %d öğe bu telefona döndü.</item>
+        <item quantity="other">Diğer %d öğe bu telefona döndü.</item>
+    </plurals>
+    <plurals name="restore_failed_left">
+        <item quantity="one">Burada kalan %d öğe değişmedi.</item>
+        <item quantity="other">Burada kalan %d öğe değişmedi.</item>
+    </plurals>
+    <plurals name="restore_failed_left_in_drive">
+        <item quantity="one">Burada kalan %d öğe değişmedi ve hâlâ Drive\'da.</item>
+        <item quantity="other">Burada kalan %d öğe değişmedi ve hâlâ Drive\'da.</item>
+    </plurals>
+    <string name="restore_see_why">Nedenini gör</string>
+    <string name="restore_issues_title">Bunlar neden geri yüklenmedi</string>
+    <string name="restore_problem_auth_body">Settle\'ın Drive\'dan indirebilmesi için Google sizden yeniden oturum açmanızı istiyor. Geri yükleme ardından kendiliğinden sürer.</string>
+    <string name="restore_problem_offline_body">Bu telefon yeniden çevrimiçi olduğunda ve Settle\'ı açtığınızda geri yükleme kendiliğinden sürer.</string>
+    <string name="restore_problem_not_in_drive_body">Drive\'ın çöp kutusunda bu kopya artık yok. Drive\'da boşaltılmış olabilir. Başka hiçbir şey değişmedi.</string>
+    <string name="restore_problem_mismatch_body">Drive\'daki kopya Settle\'ın yedeklediğinden farklı, bu yüzden geri yüklenmedi. Drive kopyasına dokunulmadı.</string>
+    <string name="restore_problem_no_space_body">Bu telefonda %s yer açın, ardından yeniden geri yükleyin.</string>
+    <string name="restore_problem_failed_body">Settle bunları geri yükleyemedi. Hiçbir şey değişmedi; Geri yükle yeniden dener.</string>
+    <string name="restore_open_in_drive">Drive\'da aç</string>
+    <string name="restore_free_up_space">Yer aç</string>
     <string name="media_access_title">Tek dokunuşla silin</string>
     <string name="media_access_text">Settle bir şeyi çöp kutusuna her taşıdığında Android onay ister. Bu adımı atlamak için Settle\'ın medyayı yönetmesine izin verin. İsteğe bağlıdır; silinen öğeler yine 30 gün boyunca geri yüklenebilir.</string>
     <string name="media_access_allow">Android ayarlarında izin ver</string>

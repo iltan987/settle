@@ -3,6 +3,7 @@ package com.iltan.settle.ui
 import android.Manifest
 import android.content.Context
 import android.content.Intent
+import android.provider.Settings.ACTION_INTERNAL_STORAGE_SETTINGS
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
@@ -18,6 +19,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -27,6 +29,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
@@ -54,6 +57,7 @@ import com.iltan.settle.ui.folders.CollectionScreen
 import com.iltan.settle.ui.folders.CollectionViewModel
 import com.iltan.settle.ui.folders.FoldersScreen
 import com.iltan.settle.ui.folders.FoldersViewModel
+import com.iltan.settle.ui.folders.folderNames
 import com.iltan.settle.ui.onboarding.MediaAccessGate
 import com.iltan.settle.ui.settings.SettingsScreen
 import com.iltan.settle.ui.theme.SettleMotion
@@ -62,13 +66,16 @@ import com.iltan.settle.ui.timeline.TimelineScreen
 import com.iltan.settle.ui.timeline.TimelineViewModel
 import com.iltan.settle.ui.timeline.cellBackup
 import com.iltan.settle.ui.trash.LocalItemActions
+import com.iltan.settle.ui.trash.LocalTrashActions
+import com.iltan.settle.ui.trash.RestoreIssueHandlers
 import com.iltan.settle.ui.trash.TrashScreen
 import com.iltan.settle.ui.trash.TrashViewModel
-import com.iltan.settle.ui.trash.rememberDeletionRunner
 import com.iltan.settle.ui.trash.rememberItemActions
+import com.iltan.settle.ui.trash.rememberTrashActions
 import com.iltan.settle.ui.viewer.ViewerHandlers
 import com.iltan.settle.ui.viewer.ViewerScreen
 import com.iltan.settle.ui.viewer.ViewerViewModel
+import com.iltan.settle.ui.viewer.openInDrive
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 
@@ -133,7 +140,11 @@ private fun Navigation(openSettings: Boolean, reconnect: Boolean) {
     val breaker by graph.deletion.breakerCount.collectAsStateWithLifecycle(0)
     CompositionLocalProvider(LocalAppMessages provides messages, LocalTabBar provides tabBar) {
         val actions = rememberItemActions(messages)
-        CompositionLocalProvider(LocalItemActions provides actions) {
+        val trashActions = rememberTrashActions(messages)
+        CompositionLocalProvider(
+            LocalItemActions provides actions,
+            LocalTrashActions provides trashActions,
+        ) {
             Box(Modifier.fillMaxSize()) {
                 Destinations(
                     backStack,
@@ -355,33 +366,57 @@ private fun Destinations(
                         )
                     }
                     entry<Trash> {
-                        val viewModel = viewModel { TrashViewModel(graph.deletion) }
+                        val viewModel = viewModel {
+                            TrashViewModel(graph.deletion, graph.trashWork.restoring)
+                        }
                         val state by viewModel.state.collectAsStateWithLifecycle()
-                        val scope = rememberCoroutineScope()
-                        val run = rememberDeletionRunner { _, _ -> }
-                        val deletion = graph.deletion
+                        val messages = LocalAppMessages.current
+                        val resources = LocalResources.current
+                        // A restore from Drive that ended well says so, and where (F6).
+                        LaunchedEffect(viewModel) {
+                            viewModel.finished.collect { outcome ->
+                                val root = resources.getString(R.string.folder_root)
+                                val path = outcome.folder
+                                val name = path?.let { folderNames(listOf(it), root).getValue(it) }
+                                val count = outcome.restored
+                                if (path != null && name != null) {
+                                    messages.show(
+                                        resources.getQuantityString(
+                                            R.plurals.trash_restored_checked_to,
+                                            count,
+                                            count,
+                                            name,
+                                        ),
+                                        resources.getString(R.string.trash_show),
+                                    ) {
+                                        backStack.add(Folder(path, name))
+                                    }
+                                } else {
+                                    messages.show(
+                                        resources.getQuantityString(
+                                            R.plurals.trash_restored_checked,
+                                            count,
+                                            count,
+                                        )
+                                    )
+                                }
+                            }
+                        }
                         TrashScreen(
                             state = state,
                             nowMillis = System.currentTimeMillis(),
                             onBack = { backStack.removeLastOrNull() },
-                            onRestore = { scope.launch { run(deletion.restore(it)) } },
-                            onDeleteForever = { scope.launch { run(deletion.deleteForever(it)) } },
-                            onEmpty = { scope.launch { run(deletion.emptyTrash()) } },
-                            onMoveDriveCopies = {
-                                val ids = state.undecided.map { it.id }
-                                graph.appScope.launch {
-                                    deletion.decide(
-                                        ids,
-                                        VanishedDecision.MOVE_DRIVE_COPIES_TO_TRASH,
-                                    )
-                                }
-                            },
-                            onKeepDriveCopies = {
-                                val ids = state.undecided.map { it.id }
-                                graph.appScope.launch {
-                                    deletion.decide(ids, VanishedDecision.KEEP_DRIVE_COPIES)
-                                }
-                            },
+                            actions = LocalTrashActions.current,
+                            issues =
+                                RestoreIssueHandlers(
+                                    signIn = onSignIn,
+                                    openInDrive = { openInDrive(context, it) },
+                                    freeUpSpace = {
+                                        context.startActivity(
+                                            Intent(ACTION_INTERNAL_STORAGE_SETTINGS)
+                                        )
+                                    },
+                                ),
                         )
                     }
                     entry<Settings> {

@@ -3,6 +3,7 @@ package com.iltan.settle.ui.chrome
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.WindowInsets
@@ -62,6 +63,58 @@ fun SettleTopBar(
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.weight(1f).semantics { heading() },
                 )
+                actions()
+            }
+        }
+    }
+}
+
+/**
+ * A pushed screen's top bar: back, then an optional title and [subtitle] (Trash, G1, G2). It has
+ * the tab bars' height, so a selection bar can take its place without moving the content.
+ */
+@Composable
+fun BackTopBar(
+    title: String?,
+    onBack: () -> Unit,
+    modifier: Modifier = Modifier,
+    subtitle: String? = null,
+    actions: @Composable RowScope.() -> Unit = {},
+) {
+    Surface(color = MaterialTheme.colorScheme.surface, modifier = modifier.fillMaxWidth()) {
+        Box(Modifier.windowInsetsPadding(WindowInsets.statusBars)) {
+            Row(
+                Modifier.fillMaxWidth().height(TopBarHeight).padding(horizontal = 4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                IconButton(onClick = onBack) {
+                    Icon(
+                        painterResource(R.drawable.ic_arrow_back),
+                        contentDescription = stringResource(R.string.navigate_back),
+                    )
+                }
+                Column(Modifier.weight(1f)) {
+                    if (title != null) {
+                        Text(
+                            title,
+                            style =
+                                if (subtitle == null) MaterialTheme.typography.headlineSmall
+                                else MaterialTheme.typography.titleLarge,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.semantics { heading() },
+                        )
+                    }
+                    if (subtitle != null) {
+                        Text(
+                            subtitle,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1,
+                        )
+                    }
+                }
                 actions()
             }
         }
