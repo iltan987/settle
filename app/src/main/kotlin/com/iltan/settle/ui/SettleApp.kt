@@ -6,8 +6,12 @@ import android.content.Intent
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -62,6 +66,7 @@ import com.iltan.settle.ui.trash.TrashScreen
 import com.iltan.settle.ui.trash.TrashViewModel
 import com.iltan.settle.ui.trash.rememberDeletionRunner
 import com.iltan.settle.ui.trash.rememberItemActions
+import com.iltan.settle.ui.viewer.ViewerHandlers
 import com.iltan.settle.ui.viewer.ViewerScreen
 import com.iltan.settle.ui.viewer.ViewerViewModel
 import kotlinx.coroutines.launch
@@ -186,188 +191,226 @@ private fun Destinations(
 ) {
     val context = LocalContext.current
     val graph = context.appGraph
-    NavDisplay(
-        backStack = backStack,
-        onBack = { backStack.removeLastOrNull() },
-        entryDecorators =
-            listOf(
-                rememberSaveableStateHolderNavEntryDecorator(),
-                rememberViewModelStoreNavEntryDecorator(),
-            ),
-        entryProvider =
-            entryProvider {
-                entry<Timeline> {
-                    val viewModel = viewModel {
-                        TimelineViewModel(
-                            graph.library,
-                            graph.librarySync,
-                            graph.backupStatus,
-                            graph.cloudBackup.progress,
-                            graph.deletion.breakerCount,
-                            graph.uiPreferences,
-                        )
-                    }
-                    val state by viewModel.state.collectAsStateWithLifecycle()
-                    val status by viewModel.status.collectAsStateWithLifecycle()
-                    // Read inside each cell, so an upload's progress redraws only its cells.
-                    val decisions = viewModel.decisions.collectAsStateWithLifecycle()
-                    val uploads = viewModel.uploads.collectAsStateWithLifecycle()
-                    val askLocation =
-                        rememberLauncherForActivityResult(
-                            ActivityResultContracts.RequestPermission()
-                        ) {
-                            graph.deviceSetup.refresh()
+    // Photos fly between their grid cell and the viewer (D).
+    SharedTransitionLayout {
+        NavDisplay(
+            backStack = backStack,
+            onBack = { backStack.removeLastOrNull() },
+            entryDecorators =
+                listOf(
+                    rememberSaveableStateHolderNavEntryDecorator(),
+                    rememberViewModelStoreNavEntryDecorator(),
+                    remember(this) { mediaTransitionDecorator(this) },
+                ),
+            sharedTransitionScope = this,
+            entryProvider =
+                entryProvider {
+                    entry<Timeline> {
+                        val viewModel = viewModel {
+                            TimelineViewModel(
+                                graph.library,
+                                graph.librarySync,
+                                graph.backupStatus,
+                                graph.cloudBackup.progress,
+                                graph.deletion.breakerCount,
+                                graph.uiPreferences,
+                            )
                         }
-                    fun decide(decision: VanishedDecision) {
-                        graph.appScope.launch { graph.deletion.decide(null, decision) }
-                    }
-                    TimelineScreen(
-                        state = state,
-                        onOpen = { backStack.add(Viewer(GridSource.Timeline, it.id)) },
-                        onOpenSettings = { backStack.add(Settings) },
-                        actions = LocalItemActions.current,
-                        status = status,
-                        notices =
-                            NoticeHandlers(
-                                review = {
-                                    val ids = viewModel.attentionIds()
-                                    val inTimeline =
-                                        state.sections.any { day ->
-                                            day.items.any { it.id == ids.singleOrNull() }
+                        val state by viewModel.state.collectAsStateWithLifecycle()
+                        val status by viewModel.status.collectAsStateWithLifecycle()
+                        // Read inside each cell, so an upload's progress redraws only its cells.
+                        val decisions = viewModel.decisions.collectAsStateWithLifecycle()
+                        val uploads = viewModel.uploads.collectAsStateWithLifecycle()
+                        val askLocation =
+                            rememberLauncherForActivityResult(
+                                ActivityResultContracts.RequestPermission()
+                            ) {
+                                graph.deviceSetup.refresh()
+                            }
+                        fun decide(decision: VanishedDecision) {
+                            graph.appScope.launch { graph.deletion.decide(null, decision) }
+                        }
+                        TimelineScreen(
+                            state = state,
+                            onOpen = { backStack.add(Viewer(GridSource.Timeline, it.id)) },
+                            onOpenSettings = { backStack.add(Settings) },
+                            actions = LocalItemActions.current,
+                            status = status,
+                            notices =
+                                NoticeHandlers(
+                                    review = {
+                                        val ids = viewModel.attentionIds()
+                                        val inTimeline =
+                                            state.sections.any { day ->
+                                                day.items.any { it.id == ids.singleOrNull() }
+                                            }
+                                        when {
+                                            // Restore problems are the only attention left.
+                                            ids.isEmpty() -> backStack.add(Trash)
+                                            inTimeline ->
+                                                backStack.add(
+                                                    Viewer(GridSource.Timeline, ids.single())
+                                                )
+                                            else -> selectTab(Tab.BACKUP)
                                         }
-                                    when {
-                                        // Restore problems are the only attention left.
-                                        ids.isEmpty() -> backStack.add(Trash)
-                                        inTimeline ->
-                                            backStack.add(Viewer(GridSource.Timeline, ids.single()))
-                                        else -> selectTab(Tab.BACKUP)
-                                    }
-                                },
-                                connect = { backStack.add(Settings) },
-                                signIn = onSignIn,
-                                manageStorage = { openUrl(context, MANAGE_STORAGE_URL) },
-                                allowLocation = {
-                                    askLocation.launch(Manifest.permission.ACCESS_MEDIA_LOCATION)
-                                },
-                                resume = {
-                                    graph.appScope.launch { graph.cloudBackup.setPaused(false) }
-                                },
-                                details = { selectTab(Tab.BACKUP) },
-                                dismiss = viewModel::dismiss,
-                                keepDriveCopies = { decide(VanishedDecision.KEEP_DRIVE_COPIES) },
-                                moveDriveCopies = {
-                                    decide(VanishedDecision.MOVE_DRIVE_COPIES_TO_TRASH)
-                                },
-                                checkAgain = { graph.librarySync.requestScan(full = true) },
-                            ),
-                        onOpenBackup = { selectTab(Tab.BACKUP) },
-                        backup = { entry -> cellBackup(entry, decisions.value, uploads.value) },
-                        onColumnsChange = viewModel::setColumns,
-                        onChooseFolders = { selectTab(Tab.FOLDERS) },
-                    )
-                }
-                entry<Backup> {
-                    val email by graph.backupStatus.accountEmail.collectAsStateWithLifecycle(null)
-                    BackupTab(email, onOpenSettings = { backStack.add(Settings) })
-                }
-                entry<Folders> {
-                    val viewModel = viewModel {
-                        FoldersViewModel(graph.library) { graph.backupScheduler.reschedule() }
-                    }
-                    val state by viewModel.state.collectAsStateWithLifecycle()
-                    val trash by graph.deletion.trash.collectAsStateWithLifecycle(emptyList())
-                    FoldersScreen(
-                        modifier = Modifier.padding(bottom = BottomBarHeight),
-                        state = state,
-                        onOpenFolder = { path, name -> backStack.add(Folder(path, name)) },
-                        onOpenFavorites = { backStack.add(Favorites) },
-                        onSetHidden = viewModel::setHiddenFromTimeline,
-                        onSetBackUp = viewModel::setBackUp,
-                        trashCount = trash.size,
-                        onOpenTrash = { backStack.add(Trash) },
-                    )
-                }
-                entry<Folder> { key ->
-                    val source = GridSource.Folder(key.relativePath)
-                    val viewModel = viewModel { CollectionViewModel(graph.library, source) }
-                    val state by viewModel.state.collectAsStateWithLifecycle()
-                    CollectionScreen(
-                        title = key.name,
-                        state = state,
-                        emptyText = stringResource(R.string.folder_empty),
-                        onOpen = { backStack.add(Viewer(source, it.id)) },
-                        onBack = { backStack.removeLastOrNull() },
-                    )
-                }
-                entry<Favorites> {
-                    val viewModel = viewModel {
-                        CollectionViewModel(graph.library, GridSource.Favorites)
-                    }
-                    val state by viewModel.state.collectAsStateWithLifecycle()
-                    CollectionScreen(
-                        title = stringResource(R.string.favorites_title),
-                        state = state,
-                        emptyText = stringResource(R.string.favorites_empty),
-                        onOpen = { backStack.add(Viewer(GridSource.Favorites, it.id)) },
-                        onBack = { backStack.removeLastOrNull() },
-                    )
-                }
-                entry<Viewer> { key ->
-                    val viewModel = viewModel {
-                        ViewerViewModel(
-                            graph.library,
-                            key.source,
-                            graph.database.backupDao(),
-                            graph.cloudBackup,
+                                    },
+                                    connect = { backStack.add(Settings) },
+                                    signIn = onSignIn,
+                                    manageStorage = { openUrl(context, MANAGE_STORAGE_URL) },
+                                    allowLocation = {
+                                        askLocation.launch(
+                                            Manifest.permission.ACCESS_MEDIA_LOCATION
+                                        )
+                                    },
+                                    resume = {
+                                        graph.appScope.launch { graph.cloudBackup.setPaused(false) }
+                                    },
+                                    details = { selectTab(Tab.BACKUP) },
+                                    dismiss = viewModel::dismiss,
+                                    keepDriveCopies = {
+                                        decide(VanishedDecision.KEEP_DRIVE_COPIES)
+                                    },
+                                    moveDriveCopies = {
+                                        decide(VanishedDecision.MOVE_DRIVE_COPIES_TO_TRASH)
+                                    },
+                                    checkAgain = { graph.librarySync.requestScan(full = true) },
+                                ),
+                            onOpenBackup = { selectTab(Tab.BACKUP) },
+                            backup = { entry -> cellBackup(entry, decisions.value, uploads.value) },
+                            onColumnsChange = viewModel::setColumns,
+                            onChooseFolders = { selectTab(Tab.FOLDERS) },
                         )
                     }
-                    ViewerScreen(
-                        viewModel = viewModel,
-                        initialId = key.itemId,
-                        onBack = { backStack.removeLastOrNull() },
-                        onOpenSettings = { backStack.add(Settings) },
-                    )
-                }
-                entry<Trash> {
-                    val viewModel = viewModel { TrashViewModel(graph.deletion) }
-                    val state by viewModel.state.collectAsStateWithLifecycle()
-                    val scope = rememberCoroutineScope()
-                    val run = rememberDeletionRunner { _, _ -> }
-                    val deletion = graph.deletion
-                    TrashScreen(
-                        state = state,
-                        nowMillis = System.currentTimeMillis(),
-                        onBack = { backStack.removeLastOrNull() },
-                        onRestore = { scope.launch { run(deletion.restore(it)) } },
-                        onDeleteForever = { scope.launch { run(deletion.deleteForever(it)) } },
-                        onEmpty = { scope.launch { run(deletion.emptyTrash()) } },
-                        onMoveDriveCopies = {
-                            val ids = state.undecided.map { it.id }
-                            graph.appScope.launch {
-                                deletion.decide(
-                                    ids,
-                                    VanishedDecision.MOVE_DRIVE_COPIES_TO_TRASH,
-                                )
+                    entry<Backup> {
+                        val email by
+                            graph.backupStatus.accountEmail.collectAsStateWithLifecycle(null)
+                        BackupTab(email, onOpenSettings = { backStack.add(Settings) })
+                    }
+                    entry<Folders> {
+                        val viewModel = viewModel {
+                            FoldersViewModel(graph.library) { graph.backupScheduler.reschedule() }
+                        }
+                        val state by viewModel.state.collectAsStateWithLifecycle()
+                        val trash by graph.deletion.trash.collectAsStateWithLifecycle(emptyList())
+                        FoldersScreen(
+                            modifier = Modifier.padding(bottom = BottomBarHeight),
+                            state = state,
+                            onOpenFolder = { path, name -> backStack.add(Folder(path, name)) },
+                            onOpenFavorites = { backStack.add(Favorites) },
+                            onSetHidden = viewModel::setHiddenFromTimeline,
+                            onSetBackUp = viewModel::setBackUp,
+                            trashCount = trash.size,
+                            onOpenTrash = { backStack.add(Trash) },
+                        )
+                    }
+                    entry<Folder> { key ->
+                        val source = GridSource.Folder(key.relativePath)
+                        val viewModel = viewModel { CollectionViewModel(graph.library, source) }
+                        val state by viewModel.state.collectAsStateWithLifecycle()
+                        CollectionScreen(
+                            title = key.name,
+                            state = state,
+                            emptyText = stringResource(R.string.folder_empty),
+                            onOpen = { backStack.add(Viewer(source, it.id)) },
+                            onBack = { backStack.removeLastOrNull() },
+                        )
+                    }
+                    entry<Favorites> {
+                        val viewModel = viewModel {
+                            CollectionViewModel(graph.library, GridSource.Favorites)
+                        }
+                        val state by viewModel.state.collectAsStateWithLifecycle()
+                        CollectionScreen(
+                            title = stringResource(R.string.favorites_title),
+                            state = state,
+                            emptyText = stringResource(R.string.favorites_empty),
+                            onOpen = { backStack.add(Viewer(GridSource.Favorites, it.id)) },
+                            onBack = { backStack.removeLastOrNull() },
+                        )
+                    }
+                    entry<Viewer>(metadata = ViewerTransitions) { key ->
+                        val viewModel = viewModel {
+                            ViewerViewModel(
+                                graph.library,
+                                key.source,
+                                graph.database.backupDao(),
+                                graph.cloudBackup,
+                                graph.backupPreferences,
+                                graph.places,
+                            ) {
+                                graph.backupScheduler.reschedule()
                             }
-                        },
-                        onKeepDriveCopies = {
-                            val ids = state.undecided.map { it.id }
-                            graph.appScope.launch {
-                                deletion.decide(ids, VanishedDecision.KEEP_DRIVE_COPIES)
-                            }
-                        },
-                    )
-                }
-                entry<Settings> {
-                    SettingsScreen(
-                        onBack = { backStack.removeLastOrNull() },
-                        reconnect = reconnectPending,
-                        onReconnectStarted = onReconnectStarted,
-                    )
-                }
-            },
-    )
+                        }
+                        ViewerScreen(
+                            viewModel = viewModel,
+                            initialId = key.itemId,
+                            onBack = { backStack.removeLastOrNull() },
+                            handlers =
+                                ViewerHandlers(
+                                    openSettings = { backStack.add(Settings) },
+                                    signIn = onSignIn,
+                                    manageStorage = { openUrl(context, MANAGE_STORAGE_URL) },
+                                    reopen = { backStack.add(Viewer(key.source, it)) },
+                                ),
+                        )
+                    }
+                    entry<Trash> {
+                        val viewModel = viewModel { TrashViewModel(graph.deletion) }
+                        val state by viewModel.state.collectAsStateWithLifecycle()
+                        val scope = rememberCoroutineScope()
+                        val run = rememberDeletionRunner { _, _ -> }
+                        val deletion = graph.deletion
+                        TrashScreen(
+                            state = state,
+                            nowMillis = System.currentTimeMillis(),
+                            onBack = { backStack.removeLastOrNull() },
+                            onRestore = { scope.launch { run(deletion.restore(it)) } },
+                            onDeleteForever = { scope.launch { run(deletion.deleteForever(it)) } },
+                            onEmpty = { scope.launch { run(deletion.emptyTrash()) } },
+                            onMoveDriveCopies = {
+                                val ids = state.undecided.map { it.id }
+                                graph.appScope.launch {
+                                    deletion.decide(
+                                        ids,
+                                        VanishedDecision.MOVE_DRIVE_COPIES_TO_TRASH,
+                                    )
+                                }
+                            },
+                            onKeepDriveCopies = {
+                                val ids = state.undecided.map { it.id }
+                                graph.appScope.launch {
+                                    deletion.decide(ids, VanishedDecision.KEEP_DRIVE_COPIES)
+                                }
+                            },
+                        )
+                    }
+                    entry<Settings> {
+                        SettingsScreen(
+                            onBack = { backStack.removeLastOrNull() },
+                            reconnect = reconnectPending,
+                            onReconnectStarted = onReconnectStarted,
+                        )
+                    }
+                },
+        )
+    }
 }
+
+/**
+ * The viewer fades over the grid while the photo grows out of its cell, and fades away while it
+ * shrinks back (300 ms); the grid stays put underneath.
+ */
+private val ViewerTransitions =
+    NavDisplay.transitionSpec {
+        fadeIn(SettleMotion.sharedElement()) togetherWith
+            ExitTransition.KeepUntilTransitionsFinished
+    } +
+        NavDisplay.popTransitionSpec {
+            EnterTransition.None togetherWith fadeOut(SettleMotion.sharedElement())
+        } +
+        NavDisplay.predictivePopTransitionSpec {
+            EnterTransition.None togetherWith fadeOut(SettleMotion.sharedElement())
+        }
 
 /** Google One's storage page, where Drive space is freed or bought (B7). */
 private const val MANAGE_STORAGE_URL = "https://one.google.com/storage"

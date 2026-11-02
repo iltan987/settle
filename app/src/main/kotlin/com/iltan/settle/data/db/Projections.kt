@@ -19,11 +19,21 @@ data class MediaEntry(
     @ColumnInfo(name = "is_favorite") val isFavorite: Boolean,
     val width: Int,
     val height: Int,
+    /** Degrees clockwise the stored pixels are turned for display (EXIF orientation). */
+    val orientation: Int = 0,
     val volume: String,
     @ColumnInfo(name = "media_store_id") val mediaStoreId: Long,
     @ColumnInfo(name = "date_modified_s") val dateModifiedS: Long,
     @ColumnInfo(name = "cloud_state") val cloudState: CloudState,
 )
+
+/** Width over height as the photo is shown, or null when MediaStore didn't know its size. */
+val MediaEntry.displayAspectRatio: Float?
+    get() {
+        if (width <= 0 || height <= 0) return null
+        val turned = orientation % 180 != 0
+        return if (turned) height.toFloat() / width else width.toFloat() / height
+    }
 
 /** A folder on the phone with its newest item as the cover. */
 data class FolderSummary(

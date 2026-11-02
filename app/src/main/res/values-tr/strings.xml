@@ -45,8 +45,6 @@
     <string name="viewer_info">Ayrıntılar</string>
     <string name="viewer_play_motion">Hareketi oynat</string>
     <string name="viewer_dimensions">%1$d × %2$d</string>
-    <string name="viewer_folder">Klasör</string>
-    <string name="viewer_open_map">Haritada aç</string>
 
     <string name="folders_title">Klasörler</string>
     <string name="favorites_title">Favoriler</string>
@@ -84,10 +82,7 @@
     <string name="backup_done">Yedeklendi ve doğrulandı</string>
     <string name="backup_checking">Yüklendi. Drive sağlama toplamını henüz doğrulamadı; Settle daha sonra yeniden kontrol edecek.</string>
     <string name="backup_deferred">Şu an başlatılamadı. Bir sonraki otomatik yedeklemede yedeklenecek.</string>
-    <string name="backup_checking_short">Yüklendi, Drive\'ın doğrulaması bekleniyor</string>
     <string name="backup_not_backed_up">Yedeklenmedi</string>
-    <string name="backup_not_connected">Yedeklenmedi · Google Drive bağlı değil</string>
-    <string name="backup_verified">Boyut, SHA-256 ve MD5 orijinalle aynı</string>
     <string name="backup_open_in_drive">Google Drive\'da aç</string>
     <string name="backup_needs_location">Orijinalleri yedeklemek için fotoğraf konumlarına erişim gerekli</string>
     <string name="backup_allow">İzin ver</string>
@@ -115,9 +110,7 @@
     <string name="notification_reconnect_text">Yedeklemenin devam edebilmesi için Google\'da yeniden oturum açman gerekiyor. Hiçbir şey kaybolmadı.</string>
     <string name="notification_drive_full_title">Google Drive dolu</string>
     <string name="notification_drive_full_text">Google Drive\'ında yeniden yer açılana kadar yedekleme duraklatıldı. Hiçbir şey kaybolmadı.</string>
-    <string name="backup_not_chosen">Yedeklenmiyor · klasörü yedeklenmiyor</string>
     <string name="backup_queued">Bir sonraki otomatik yedeklemede yedeklenecek</string>
-    <string name="backup_waiting">%1$s kendiliğinden yedeklenecek</string>
     <string name="folder_back_up">Yedekle</string>
     <string name="settings_backup">Yedekleme</string>
     <string name="backup_status_not_connected">Yedeklemek için yukarıdan Google Drive\'ı bağla</string>
@@ -320,6 +313,44 @@
     <string name="cell_queued">Yedekleme sırasında</string>
     <string name="cell_uploading">Yükleniyor · %%%1$d</string>
     <string name="cell_not_backed_up">Yedeklenmedi</string>
+    <!-- Görüntüleyici (D) -->
+    <string name="viewer_more">Diğer seçenekler</string>
+    <string name="viewer_use_as">Farklı kullan</string>
+    <string name="viewer_zoomed_to">%%%1$d yakınlaştırıldı</string>
+    <string name="viewer_backed_up">Yedeklendi</string>
+    <string name="viewer_uploading">Yükleniyor</string>
+    <string name="viewer_uploading_pct">Yükleniyor · %%%1$d</string>
+    <string name="viewer_checking">Drive\'daki kopya kontrol ediliyor</string>
+    <string name="viewer_backs_up_in">%1$s yedeklenecek</string>
+    <string name="viewer_backs_up_tonight">Bu gece yedeklenecek</string>
+    <string name="viewer_backs_up_soon">Yakında yedeklenecek</string>
+    <string name="viewer_folder_not_backed_up">%1$s yedeklenmiyor</string>
+    <string name="viewer_back_up_folder">Klasörü yedekle</string>
+    <string name="viewer_not_connected">Yedeklenmedi · Drive bağlı değil</string>
+    <string name="viewer_paused_sign_in">Yedekleme duraklatıldı · Google\'da oturum açın</string>
+    <string name="viewer_paused_drive_full">Yedekleme duraklatıldı · Drive dolu</string>
+    <string name="viewer_paused_location">Duraklatıldı · konum erişimi gerekiyor</string>
+    <string name="viewer_problem_offline">Yükleme yarıda kaldı</string>
+    <string name="viewer_problem_unreadable">Bu dosya okunamadı</string>
+    <string name="viewer_problem_changed">Dosya yüklenirken değişti</string>
+    <string name="viewer_problem_mismatch">Drive\'daki kopya eşleşmedi</string>
+    <string name="viewer_problem_failed">Yedekleme başarısız oldu</string>
+    <string name="action_manage">Yönet</string>
+    <string name="viewer_opens_in_maps">Haritalar\'da açılır</string>
+    <string name="viewer_folder_on_phone">%1$s · bu telefonda</string>
+    <string name="viewer_checks_match">Boyut ve sağlama toplamları orijinalle eşleşiyor</string>
+    <string name="viewer_checks_match_at">Boyut ve sağlama toplamları orijinalle eşleşiyor · son kontrol: %1$s</string>
+    <string name="viewer_uploading_body">Yükleme bitince Settle boyutunu ve sağlama toplamlarını kontrol eder.</string>
+    <string name="viewer_uploaded">Google Drive\'a yüklendi</string>
+    <string name="viewer_not_backed_up_yet">Henüz yedeklenmedi</string>
+    <string name="viewer_folder_not_chosen_body">%1$s klasörü yedeklenmiyor.</string>
+    <string name="viewer_not_backed_up_body">Şimdi yedekleyin ya da bir sonraki otomatik yedeklemeyle yedeklensin.</string>
+    <string name="viewer_not_connected_body">Yedeklemek için Ayarlar\'dan Google Drive\'ı bağlayın.</string>
+    <string name="viewer_needs_attention">İlgilenmeniz gerekiyor</string>
+    <string name="viewer_problem_unreadable_body">Settle bu telefondaki orijinali okuyamadı. Burada açılıyorsa yeniden yedekleyin.</string>
+    <string name="viewer_paused_by_you_body">Yedeklemeyi siz duraklattınız. Yeniden yedeklemek için devam ettirin.</string>
+    <string name="viewer_technical_details">Teknik ayrıntılar</string>
+    <string name="viewer_drive_file_id">Drive dosya kimliği</string>
     <!-- Silme (E) -->
     <plurals name="trash_moved_none_backed_up">
         <item quantity="one">Çöp kutusuna taşındı. Yedeklenmemişti; 30 gün sonra kalıcı olarak silinecek.</item>

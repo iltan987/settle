@@ -111,6 +111,15 @@ data class SettleColors(
     val onStage: Color = Color.White
     /** #202020 at 92%, no blur: the viewer's toolbar and status chip. */
     val stageChrome: Color = Color(0xEB202020)
+    /** The viewer chip's icon hints on the stage (D4): safe, paused, attention. */
+    val stageOk: Color = Color(0xFF8ED5CC)
+    val stageWarn: Color = Color(0xFFF0BE6E)
+    val stageErr: Color = Color(0xFFF2B8B5)
+    /** The viewer chip's one action pill. */
+    val stageAction: Color = Color(0xFFBFEDE6)
+    val onStageAction: Color = Color(0xFF00201D)
+    /** Behind the viewer's top bar: black at 55%, fading out over 120 dp. */
+    val stageScrim: Color = Color(0x8C000000)
     val onPhoto: Color = Color.White
     /** Behind a cell's status glyph (black at 46%). */
     val photoBadge: Color = Color(0x75000000)

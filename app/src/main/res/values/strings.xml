@@ -50,8 +50,6 @@
     <string name="viewer_info">Details</string>
     <string name="viewer_play_motion">Play motion</string>
     <string name="viewer_dimensions">%1$d × %2$d</string>
-    <string name="viewer_folder">Folder</string>
-    <string name="viewer_open_map">Open in maps</string>
 
     <string name="folders_title">Folders</string>
     <string name="favorites_title">Favorites</string>
@@ -89,10 +87,7 @@
     <string name="backup_done">Backed up and verified</string>
     <string name="backup_checking">Uploaded. Drive hasn\'t confirmed its checksum yet; Settle checks again later.</string>
     <string name="backup_deferred">Couldn\'t start now. It backs up with the next automatic backup.</string>
-    <string name="backup_checking_short">Uploaded, waiting for Drive to confirm it</string>
     <string name="backup_not_backed_up">Not backed up</string>
-    <string name="backup_not_connected">Not backed up · Google Drive not connected</string>
-    <string name="backup_verified">Size, SHA-256 and MD5 match the original</string>
     <string name="backup_open_in_drive">Open in Google Drive</string>
     <string name="backup_needs_location">Backing up originals needs access to photo locations</string>
     <string name="backup_allow">Allow</string>
@@ -120,9 +115,7 @@
     <string name="notification_reconnect_text">Google needs you to sign in again before backup can continue. Nothing was lost.</string>
     <string name="notification_drive_full_title">Google Drive is full</string>
     <string name="notification_drive_full_text">Backup is paused until your Google Drive has space again. Nothing was lost.</string>
-    <string name="backup_not_chosen">Not backed up · its folder isn\'t backed up</string>
     <string name="backup_queued">Backs up with the next automatic backup</string>
-    <string name="backup_waiting">Backs up on its own %1$s</string>
     <string name="folder_back_up">Back up</string>
     <string name="settings_backup">Backup</string>
     <string name="backup_status_not_connected">Connect Google Drive above to back up</string>
@@ -325,6 +318,44 @@
     <string name="cell_queued">Queued for backup</string>
     <string name="cell_uploading">Uploading · %1$d%%</string>
     <string name="cell_not_backed_up">Not backed up</string>
+    <!-- Viewer (D) -->
+    <string name="viewer_more">More options</string>
+    <string name="viewer_use_as">Use as</string>
+    <string name="viewer_zoomed_to">Zoomed to %1$d%%</string>
+    <string name="viewer_backed_up">Backed up</string>
+    <string name="viewer_uploading">Uploading</string>
+    <string name="viewer_uploading_pct">Uploading · %1$d%%</string>
+    <string name="viewer_checking">Checking Drive\'s copy</string>
+    <string name="viewer_backs_up_in">Backs up %1$s</string>
+    <string name="viewer_backs_up_tonight">Backs up tonight</string>
+    <string name="viewer_backs_up_soon">Backs up soon</string>
+    <string name="viewer_folder_not_backed_up">%1$s isn\'t backed up</string>
+    <string name="viewer_back_up_folder">Back up folder</string>
+    <string name="viewer_not_connected">Not backed up · Drive not connected</string>
+    <string name="viewer_paused_sign_in">Backup paused · sign in to Google</string>
+    <string name="viewer_paused_drive_full">Backup paused · Drive is full</string>
+    <string name="viewer_paused_location">Paused · needs location access</string>
+    <string name="viewer_problem_offline">Upload interrupted</string>
+    <string name="viewer_problem_unreadable">Couldn\'t read this file</string>
+    <string name="viewer_problem_changed">File changed while uploading</string>
+    <string name="viewer_problem_mismatch">Drive\'s copy didn\'t match</string>
+    <string name="viewer_problem_failed">Backup failed</string>
+    <string name="action_manage">Manage</string>
+    <string name="viewer_opens_in_maps">Opens in Maps</string>
+    <string name="viewer_folder_on_phone">%1$s · on this phone</string>
+    <string name="viewer_checks_match">Size and checksums match the original</string>
+    <string name="viewer_checks_match_at">Size and checksums match the original · checked %1$s</string>
+    <string name="viewer_uploading_body">Settle checks its size and checksums once the upload ends.</string>
+    <string name="viewer_uploaded">Uploaded to Google Drive</string>
+    <string name="viewer_not_backed_up_yet">Not backed up yet</string>
+    <string name="viewer_folder_not_chosen_body">Its folder, %1$s, isn\'t backed up.</string>
+    <string name="viewer_not_backed_up_body">Back it up now, or it goes with the next automatic backup.</string>
+    <string name="viewer_not_connected_body">Connect Google Drive in Settings to back it up.</string>
+    <string name="viewer_needs_attention">Needs your attention</string>
+    <string name="viewer_problem_unreadable_body">Settle couldn\'t read the original on this phone. If it opens here, back it up again.</string>
+    <string name="viewer_paused_by_you_body">You paused backup. Resume it to back up again.</string>
+    <string name="viewer_technical_details">Technical details</string>
+    <string name="viewer_drive_file_id">Drive file ID</string>
     <!-- Delete (E) -->
     <plurals name="trash_moved_none_backed_up">
         <item quantity="one">Moved to the trash. It wasn\'t backed up; it\'s deleted for good after 30 days.</item>

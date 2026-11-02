@@ -74,4 +74,8 @@ object SettleType {
     val micro = style(11f, 600, 1f)
     /** Days-left chips on trash cells. */
     val chipMicro = style(10.5f, 600, 1f)
+    /** The viewer's date. */
+    val viewerTitle = style(15f, 600, 1.3f)
+    /** The viewer's time and place under its date. */
+    val viewerSubtitle = style(12.5f, 400, 1.3f)
 }

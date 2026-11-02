@@ -49,6 +49,7 @@ import com.iltan.settle.data.db.MediaEntry
 import com.iltan.settle.data.thumbnail
 import com.iltan.settle.domain.ItemStatus
 import com.iltan.settle.domain.scan.MediaKind
+import com.iltan.settle.ui.sharedMedia
 import com.iltan.settle.ui.theme.SettleMotion
 import com.iltan.settle.ui.theme.SettleShape
 import com.iltan.settle.ui.theme.SettleType
@@ -116,6 +117,7 @@ fun GridCell(
             modifier =
                 Modifier.fillMaxSize()
                     .padding(shownInset)
+                    .sharedMedia(entry.id)
                     .clip(RoundedCornerShape(shownInset * 0.75f)),
         )
         if (favorite || selected != null) Scrim(top = true)

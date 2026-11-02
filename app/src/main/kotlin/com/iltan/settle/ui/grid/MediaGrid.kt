@@ -1,7 +1,6 @@
 package com.iltan.settle.ui.grid
 
 import android.content.res.Resources
-import android.text.format.DateFormat
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.fadeIn
@@ -83,12 +82,12 @@ import com.iltan.settle.domain.ItemStatus
 import com.iltan.settle.domain.backup.cellShowsStatus
 import com.iltan.settle.domain.scan.MediaKind
 import com.iltan.settle.domain.timeline.DaySection
+import com.iltan.settle.ui.DayTitles
 import com.iltan.settle.ui.theme.SettleMotion
 import com.iltan.settle.ui.theme.SettleType
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
-import java.time.format.DateTimeFormatter
 import java.util.Locale
 import kotlin.math.roundToInt
 import kotlinx.coroutines.delay
@@ -489,24 +488,13 @@ private class DateLabels(
     private val resources: Resources,
     locale: Locale,
 ) {
-    private fun pattern(locale: Locale, skeleton: String) =
-        DateTimeFormatter.ofPattern(DateFormat.getBestDateTimePattern(locale, skeleton))
-            .withLocale(locale)
-
-    private val thisYear = pattern(locale, "EEEEdMMMM")
-    private val otherYear = pattern(locale, "EEEEdMMMMyyyy")
-    private val monthYear = pattern(locale, "MMMMyyyy")
-    private val cellDate = pattern(locale, "dMMMMjm")
+    private val days = DayTitles(resources, locale)
+    private val monthYear = DayTitles.pattern(locale, "MMMMyyyy")
+    private val cellDate = DayTitles.pattern(locale, "dMMMMjm")
     private val zone = ZoneId.systemDefault()
 
     fun header(row: HeaderRow): String =
-        when {
-            row.month -> monthYear.format(row.date)
-            row.date == today -> resources.getString(R.string.day_today)
-            row.date == today.minusDays(1) -> resources.getString(R.string.day_yesterday)
-            row.date.year == today.year -> thisYear.format(row.date)
-            else -> otherYear.format(row.date)
-        }
+        if (row.month) monthYear.format(row.date) else days.of(row.date, today)
 
     fun month(date: LocalDate): String = monthYear.format(date)
 

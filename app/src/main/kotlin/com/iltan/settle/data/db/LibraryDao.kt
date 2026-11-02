@@ -16,7 +16,7 @@ import kotlinx.coroutines.flow.Flow
 private const val ENTRY_COLUMNS =
     """
     m.id, m.kind, m.mime_type, m.taken_at_ms, m.duration_ms, m.special_format, m.is_favorite,
-    m.width, m.height, f.volume, f.media_store_id, f.date_modified_s, m.cloud_state
+    m.width, m.height, m.orientation, f.volume, f.media_store_id, f.date_modified_s, m.cloud_state
     """
 
 private const val ON_PHONE =
