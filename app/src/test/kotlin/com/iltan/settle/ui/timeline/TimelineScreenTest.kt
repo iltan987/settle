@@ -370,19 +370,19 @@ class TimelineScreenTest {
     }
 
     @Test
-    fun aMassDisappearanceAsksBeforeTouchingDriveAndCannotBeDismissed() {
-        var kept = false
+    fun aMassDisappearanceLeadsToItsReviewAndCannotBeDismissed() {
+        var reviewed = false
         show(
             twoDays(),
             status = TimelineStatus(breakerCount = 312),
-            notices = NoticeHandlers(keepDriveCopies = { kept = true }),
+            notices = NoticeHandlers(reviewMass = { reviewed = true }),
         )
 
         compose.onNodeWithText("312 items disappeared from this phone").assertIsDisplayed()
         compose.onNodeWithContentDescription("Dismiss").assertDoesNotExist()
-        compose.onNodeWithText("Keep Drive copies").performClick()
+        compose.onNodeWithText("Review").performClick()
 
-        assertTrue(kept)
+        assertTrue(reviewed)
     }
 
     @Test
@@ -399,6 +399,15 @@ class TimelineScreenTest {
         status = TimelineStatus(breakerCount = 312)
 
         compose.onNodeWithText("312 items disappeared from this phone").assertIsDisplayed()
+    }
+
+    @Test
+    fun checkingAgainShowsInTheNoticesPlace() {
+        show(twoDays(), status = TimelineStatus(breakerCount = 312, checkingMass = true))
+
+        compose.onNodeWithText("Checking this phone again…").assertIsDisplayed()
+        compose.onNodeWithText("Nothing in Drive will change.").assertIsDisplayed()
+        compose.onNodeWithText("Review").assertDoesNotExist()
     }
 
     @Test

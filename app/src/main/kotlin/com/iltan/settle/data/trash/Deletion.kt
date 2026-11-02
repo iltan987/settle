@@ -57,6 +57,11 @@ class Deletion(
     /** Items that left the phone without Settle and wait for the user's decision. */
     val undecided: Flow<List<VanishedEntry>> = dao.observeUndecided()
 
+    /** The files of the mass disappearance waiting for the user (R14, G1). */
+    val breakerItems: Flow<List<VanishedEntry>> = undecided.map { list ->
+        list.filter { it.reason == VanishedReason.BREAKER }
+    }
+
     /** The mass disappearance waiting for the user (R14), as a count; 0 when there is none. */
     val breakerCount: Flow<Int> = undecided.map { list ->
         list.count { it.reason == VanishedReason.BREAKER }

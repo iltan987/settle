@@ -80,7 +80,9 @@ Play Store release later must stay possible, so Play-policy-forbidden permission
   a countdown until the user keeps their Drive copies or moves them to the trash.
 - R14. A mass disappearance of files (circuit breaker, ADR-006) never moves or deletes anything in
   Drive without confirmation, also when it reaches Settle spread over several scans. The question
-  stays until it is answered.
+  stays until it is answered, on one screen reached from the timeline: keep the Drive copies, check
+  the phone again (which says how many came back), or move the Drive copies to the trash after a
+  confirmation. Files that come back answer it by themselves.
 
 ### Library survival
 - R15. After a phone reset or reinstall, signing in restores items, albums, folders, favourites and pins from Drive.

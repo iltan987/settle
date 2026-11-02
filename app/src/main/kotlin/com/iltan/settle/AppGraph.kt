@@ -29,6 +29,7 @@ import com.iltan.settle.data.media.MediaChangeObserver
 import com.iltan.settle.data.media.MediaStoreSource
 import com.iltan.settle.data.media.Places
 import com.iltan.settle.data.system.DeviceSetup
+import com.iltan.settle.data.trash.BreakerCheck
 import com.iltan.settle.data.trash.Deletion
 import com.iltan.settle.data.trash.MediaStoreTrash
 import com.iltan.settle.data.trash.TrashStore
@@ -214,6 +215,11 @@ class AppGraph(context: Context) {
             reschedule = { backupScheduler.reschedule() },
             startRestore = { backupScheduler.startRestore() },
         )
+    }
+
+    /** "Check again" after a mass disappearance (G4): a full scan, then what came back. */
+    val breakerCheck by lazy {
+        BreakerCheck(scan = { librarySync.scan(full = true) }, missing = deletion.breakerCount)
     }
 
     val trashWork by lazy {

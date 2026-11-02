@@ -91,6 +91,8 @@ data class TimelineStatus(
     val breakerCount: Int = 0,
     /** Keys of notices the user collapsed into the chip. */
     val dismissed: Set<String> = emptySet(),
+    /** "Check again" is scanning the phone for the files that disappeared (G4). */
+    val checkingMass: Boolean = false,
 )
 
 /**
@@ -123,7 +125,7 @@ fun TimelineScreen(
     val barItems = chosen.ifEmpty { lastChosen }
     HideTabBar(selecting)
 
-    val applicable = backupNotices(status.headline, status.breakerCount)
+    val applicable = backupNotices(status.headline, status.breakerCount, status.checkingMass)
     val cards = applicable.filter { it.key == null || it.key !in status.dismissed }
     val connected = status.accountEmail != null
     val empty = state.sections.isEmpty() && !state.loading

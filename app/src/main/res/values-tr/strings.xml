@@ -225,9 +225,42 @@
         <item quantity="one">%d fotoğraf veya video bu telefondan bir anda kayboldu</item>
         <item quantity="other">%d fotoğraf ve video bu telefondan bir anda kayboldu</item>
     </plurals>
-    <string name="breaker_text">Drive kopyalarına dokunulmadı. Çıkarılan bir hafıza kartı ya da erişimdeki bir değişiklik buna yol açabilir.</string>
+    <string name="breaker_text">Drive kopyalarına dokunulmadı. Bu genellikle bir SD kartın çıkarıldığı, bir iznin değiştiği veya telefonun sıfırlandığı anlamına gelir; sizin sildiğiniz anlamına gelmez.</string>
     <string name="breaker_keep">Drive kopyalarını tut</string>
-    <string name="breaker_check_again">Yeniden kontrol et</string>
+    <string name="breaker_check_again">Tekrar kontrol et</string>
+    <!-- Mass disappearance (G) -->
+    <string name="mass_noticed">Fark edildi: %s</string>
+    <string name="mass_from_card">Çoğu SD karttan</string>
+    <string name="mass_from_folder">Çoğu şu klasörden: %s</string>
+    <string name="mass_years">%1$d - %2$d</string>
+    <plurals name="mass_see_all">
+        <item quantity="one">%d öğeyi gör</item>
+        <item quantity="other">%d öğenin tümünü gör</item>
+    </plurals>
+    <string name="mass_move">Drive kopyalarını çöp kutusuna taşı…</string>
+    <plurals name="mass_move_title">
+        <item quantity="one">%d Drive kopyası çöp kutusuna taşınsın mı?</item>
+        <item quantity="other">%d Drive kopyası çöp kutusuna taşınsın mı?</item>
+    </plurals>
+    <string name="mass_move_text">Drive\'ın çöp kutusunda 30 gün kalacak, ardından kalıcı olarak silinecekler. Dosyalar bu telefona geri gelirse Settle kopyalarını Drive\'ın çöp kutusundan yeniden çıkarır.</string>
+    <string name="mass_checking">Bu telefon tekrar kontrol ediliyor…</string>
+    <string name="mass_checking_body">Drive\'da hiçbir şey değişmeyecek.</string>
+    <plurals name="mass_all_back">
+        <item quantity="one">%d öğe bu telefona geri döndü. Hiçbir şey kaybolmadı.</item>
+        <item quantity="other">%d öğenin hepsi bu telefona geri döndü. Hiçbir şey kaybolmadı.</item>
+    </plurals>
+    <plurals name="mass_some_back">
+        <item quantity="one">%d öğe bu telefona geri döndü; diğerleri hâlâ kayıp.</item>
+        <item quantity="other">%d öğe bu telefona geri döndü; diğerleri hâlâ kayıp.</item>
+    </plurals>
+    <string name="mass_none_back">Hâlâ kayıp. Drive\'da hiçbir şey değişmedi.</string>
+    <plurals name="mass_missing_title">
+        <item quantity="one">%d kayıp öğe</item>
+        <item quantity="other">%d kayıp öğe</item>
+    </plurals>
+    <string name="mass_missing_subtitle">Drive kopyalarına dokunulmadı</string>
+    <string name="mass_volume_card">SD kart</string>
+    <string name="mass_volume_phone">Telefon</string>
     <string name="settings_deletion">Silme</string>
     <string name="deletion_policy_title">Başka bir uygulamada sildiğinizde</string>
     <string name="deletion_policy_text">Yedeklenmiş fotoğraf ve videolar için</string>

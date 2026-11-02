@@ -230,9 +230,42 @@
         <item quantity="one">%d photo or video disappeared from this phone at once</item>
         <item quantity="other">%d photos and videos disappeared from this phone at once</item>
     </plurals>
-    <string name="breaker_text">Their Drive copies are untouched. A removed memory card or a change in access can cause this.</string>
+    <string name="breaker_text">Their Drive copies are untouched. This usually means an SD card was removed, a permission changed or the phone was reset, not that you deleted them.</string>
     <string name="breaker_keep">Keep Drive copies</string>
     <string name="breaker_check_again">Check again</string>
+    <!-- Mass disappearance (G) -->
+    <string name="mass_noticed">Noticed %s</string>
+    <string name="mass_from_card">Mostly from the SD card</string>
+    <string name="mass_from_folder">Mostly from %s</string>
+    <string name="mass_years">%1$d to %2$d</string>
+    <plurals name="mass_see_all">
+        <item quantity="one">See the %d item</item>
+        <item quantity="other">See all %d items</item>
+    </plurals>
+    <string name="mass_move">Move Drive copies to trash…</string>
+    <plurals name="mass_move_title">
+        <item quantity="one">Move %d Drive copy to the trash?</item>
+        <item quantity="other">Move %d Drive copies to the trash?</item>
+    </plurals>
+    <string name="mass_move_text">They\'ll stay in Drive\'s trash for 30 days, then they\'re deleted for good. If the files come back on this phone, Settle takes their copies out of Drive\'s trash again.</string>
+    <string name="mass_checking">Checking this phone again…</string>
+    <string name="mass_checking_body">Nothing in Drive will change.</string>
+    <plurals name="mass_all_back">
+        <item quantity="one">It\'s back on this phone. Nothing was lost.</item>
+        <item quantity="other">All %d are back on this phone. Nothing was lost.</item>
+    </plurals>
+    <plurals name="mass_some_back">
+        <item quantity="one">%d is back on this phone; the rest are still missing.</item>
+        <item quantity="other">%d are back on this phone; the rest are still missing.</item>
+    </plurals>
+    <string name="mass_none_back">Still missing. Nothing in Drive changed.</string>
+    <plurals name="mass_missing_title">
+        <item quantity="one">%d missing item</item>
+        <item quantity="other">%d missing items</item>
+    </plurals>
+    <string name="mass_missing_subtitle">Their Drive copies are untouched</string>
+    <string name="mass_volume_card">SD card</string>
+    <string name="mass_volume_phone">Phone</string>
     <string name="settings_deletion">Deletion</string>
     <string name="deletion_policy_title">When you delete in another app</string>
     <string name="deletion_policy_text">For photos and videos that are backed up</string>

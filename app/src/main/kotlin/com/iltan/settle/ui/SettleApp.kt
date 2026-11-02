@@ -3,6 +3,7 @@ package com.iltan.settle.ui
 import android.Manifest
 import android.content.Context
 import android.content.Intent
+import android.content.res.Resources
 import android.provider.Settings.ACTION_INTERNAL_STORAGE_SETTINGS
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -45,6 +46,7 @@ import androidx.navigation3.ui.NavDisplay
 import com.iltan.settle.R
 import com.iltan.settle.appGraph
 import com.iltan.settle.data.GridSource
+import com.iltan.settle.data.trash.BreakerCheck
 import com.iltan.settle.domain.backup.BackupHeadline
 import com.iltan.settle.domain.deletion.VanishedDecision
 import com.iltan.settle.ui.backup.BackupTab
@@ -67,6 +69,8 @@ import com.iltan.settle.ui.timeline.TimelineViewModel
 import com.iltan.settle.ui.timeline.cellBackup
 import com.iltan.settle.ui.trash.LocalItemActions
 import com.iltan.settle.ui.trash.LocalTrashActions
+import com.iltan.settle.ui.trash.MassReviewScreen
+import com.iltan.settle.ui.trash.MissingItemsScreen
 import com.iltan.settle.ui.trash.RestoreIssueHandlers
 import com.iltan.settle.ui.trash.TrashScreen
 import com.iltan.settle.ui.trash.TrashViewModel
@@ -94,6 +98,11 @@ import kotlinx.serialization.Serializable
 @Serializable data object Settings : NavKey
 
 @Serializable data object Trash : NavKey
+
+/** The review of a mass disappearance (G1), and its list of missing items (G2). */
+@Serializable data object MassReview : NavKey
+
+@Serializable data object MissingItems : NavKey
 
 /** Root of the UI: onboarding until media access is granted, then one Navigation 3 back stack. */
 @Composable
@@ -202,6 +211,8 @@ private fun Destinations(
 ) {
     val context = LocalContext.current
     val graph = context.appGraph
+    val messages = LocalAppMessages.current
+    val resources = LocalResources.current
     // Photos fly between their grid cell and the viewer (D).
     SharedTransitionLayout {
         NavDisplay(
@@ -225,6 +236,7 @@ private fun Destinations(
                                 graph.cloudBackup.progress,
                                 graph.deletion.breakerCount,
                                 graph.uiPreferences,
+                                graph.breakerCheck.checking,
                             )
                         }
                         val state by viewModel.state.collectAsStateWithLifecycle()
@@ -238,9 +250,6 @@ private fun Destinations(
                             ) {
                                 graph.deviceSetup.refresh()
                             }
-                        fun decide(decision: VanishedDecision) {
-                            graph.appScope.launch { graph.deletion.decide(null, decision) }
-                        }
                         TimelineScreen(
                             state = state,
                             onOpen = { backStack.add(Viewer(GridSource.Timeline, it.id)) },
@@ -278,13 +287,7 @@ private fun Destinations(
                                     },
                                     details = { selectTab(Tab.BACKUP) },
                                     dismiss = viewModel::dismiss,
-                                    keepDriveCopies = {
-                                        decide(VanishedDecision.KEEP_DRIVE_COPIES)
-                                    },
-                                    moveDriveCopies = {
-                                        decide(VanishedDecision.MOVE_DRIVE_COPIES_TO_TRASH)
-                                    },
-                                    checkAgain = { graph.librarySync.requestScan(full = true) },
+                                    reviewMass = { backStack.add(MassReview) },
                                 ),
                             onOpenBackup = { selectTab(Tab.BACKUP) },
                             backup = { entry -> cellBackup(entry, decisions.value, uploads.value) },
@@ -370,8 +373,6 @@ private fun Destinations(
                             TrashViewModel(graph.deletion, graph.trashWork.restoring)
                         }
                         val state by viewModel.state.collectAsStateWithLifecycle()
-                        val messages = LocalAppMessages.current
-                        val resources = LocalResources.current
                         // A restore from Drive that ended well says so, and where (F6).
                         LaunchedEffect(viewModel) {
                             viewModel.finished.collect { outcome ->
@@ -419,6 +420,44 @@ private fun Destinations(
                                 ),
                         )
                     }
+                    entry<MassReview> {
+                        val items by graph.deletion.breakerItems.collectAsStateWithLifecycle(null)
+                        val checking by graph.breakerCheck.checking.collectAsStateWithLifecycle()
+                        val trashActions = LocalTrashActions.current
+                        val shown = items
+                        // Answered, or every file came back: nothing is left to review.
+                        LaunchedEffect(shown?.isEmpty()) {
+                            if (shown?.isEmpty() == true) backStack.remove(MassReview)
+                        }
+                        if (shown != null && shown.isNotEmpty()) {
+                            fun answer(decision: VanishedDecision, onViewTrash: (() -> Unit)?) {
+                                trashActions.decide(null, shown.size, decision, onViewTrash)
+                                backStack.removeLastOrNull()
+                            }
+                            MassReviewScreen(
+                                items = shown,
+                                checking = checking,
+                                onBack = { backStack.removeLastOrNull() },
+                                onSeeAll = { backStack.add(MissingItems) },
+                                onKeep = { answer(VanishedDecision.KEEP_DRIVE_COPIES, null) },
+                                onCheckAgain = {
+                                    // The timeline's notice shows the check (G4).
+                                    backStack.removeLastOrNull()
+                                    checkAgain(graph.breakerCheck, messages, resources)
+                                },
+                                onMove = {
+                                    answer(VanishedDecision.MOVE_DRIVE_COPIES_TO_TRASH) {
+                                        backStack.add(Trash)
+                                    }
+                                },
+                            )
+                        }
+                    }
+                    entry<MissingItems> {
+                        val items by
+                            graph.deletion.breakerItems.collectAsStateWithLifecycle(emptyList())
+                        MissingItemsScreen(items, onBack = { backStack.removeLastOrNull() })
+                    }
                     entry<Settings> {
                         SettingsScreen(
                             onBack = { backStack.removeLastOrNull() },
@@ -446,6 +485,29 @@ private val ViewerTransitions =
         NavDisplay.predictivePopTransitionSpec {
             EnterTransition.None togetherWith fadeOut(SettleMotion.sharedElement())
         }
+
+/**
+ * Scans the phone once more after a mass disappearance and says what came back (G4). Runs in the
+ * app's scope: the user may leave the timeline meanwhile.
+ */
+private fun checkAgain(check: BreakerCheck, messages: AppMessages, resources: Resources) {
+    messages.launch {
+        val result = check.run()
+        messages.show(
+            when {
+                result.missingAfter == 0 ->
+                    resources.getQuantityString(
+                        R.plurals.mass_all_back,
+                        result.missingBefore,
+                        result.missingBefore,
+                    )
+                result.back > 0 ->
+                    resources.getQuantityString(R.plurals.mass_some_back, result.back, result.back)
+                else -> resources.getString(R.string.mass_none_back)
+            }
+        )
+    }
+}
 
 /** Google One's storage page, where Drive space is freed or bought (B7). */
 private const val MANAGE_STORAGE_URL = "https://one.google.com/storage"

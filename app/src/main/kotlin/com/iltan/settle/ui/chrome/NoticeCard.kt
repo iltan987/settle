@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalContentColor
@@ -49,6 +50,8 @@ data class NoticeContent(
     val primary: NoticeAction? = null,
     /** Text buttons before [primary], in order. */
     val secondary: List<NoticeAction> = emptyList(),
+    /** Something is under way: a spinner takes the icon's place (G4). */
+    val progress: Boolean = false,
 )
 
 private data class NoticeColors(
@@ -150,12 +153,20 @@ private fun NoticeBody(
 ) {
     Column(Modifier.padding(padding), verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            Icon(
-                painterResource(content.icon),
-                contentDescription = null,
-                tint = iconTint,
-                modifier = Modifier.size(24.dp),
-            )
+            if (content.progress) {
+                CircularProgressIndicator(
+                    color = iconTint,
+                    strokeWidth = 2.5.dp,
+                    modifier = Modifier.size(24.dp).padding(2.dp),
+                )
+            } else {
+                Icon(
+                    painterResource(content.icon),
+                    contentDescription = null,
+                    tint = iconTint,
+                    modifier = Modifier.size(24.dp),
+                )
+            }
             Column(
                 Modifier.weight(1f).padding(top = 2.dp),
                 verticalArrangement = Arrangement.spacedBy(4.dp),

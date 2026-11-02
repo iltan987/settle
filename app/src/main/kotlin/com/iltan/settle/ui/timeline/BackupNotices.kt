@@ -26,15 +26,22 @@ sealed interface BackupNotice {
         override val key = "pause:$reason"
     }
 
-    /** Many files vanished at once and wait for the user's answer (B9, R14): never dismissed. */
-    data class Mass(val count: Int) : BackupNotice {
+    /**
+     * Many files vanished at once and wait for the user's answer (B9, R14): never dismissed. While
+     * [checking], it shows the phone being scanned again in its place (G4).
+     */
+    data class Mass(val count: Int, val checking: Boolean = false) : BackupNotice {
         override val key: String? = null
     }
 }
 
 /** Every notice that applies now, the most important first. */
-fun backupNotices(headline: BackupHeadline?, breakerCount: Int): List<BackupNotice> = buildList {
-    if (breakerCount > 0) add(BackupNotice.Mass(breakerCount))
+fun backupNotices(
+    headline: BackupHeadline?,
+    breakerCount: Int,
+    checkingMass: Boolean = false,
+): List<BackupNotice> = buildList {
+    if (breakerCount > 0) add(BackupNotice.Mass(breakerCount, checkingMass))
     when (headline) {
         is BackupHeadline.NeedsAttention -> add(BackupNotice.Attention(headline.count))
         is BackupHeadline.Paused -> add(BackupNotice.Pause(headline.reason, headline.waitingItems))
@@ -54,9 +61,8 @@ data class NoticeHandlers(
     /** Opens the Backup tab. */
     val details: () -> Unit = {},
     val dismiss: (key: String) -> Unit = {},
-    val keepDriveCopies: () -> Unit = {},
-    val moveDriveCopies: () -> Unit = {},
-    val checkAgain: () -> Unit = {},
+    /** Opens the review of a mass disappearance (G1). */
+    val reviewMass: () -> Unit = {},
 )
 
 /**
@@ -78,21 +84,23 @@ fun noticeContent(notice: BackupNotice, on: NoticeHandlers, popover: Boolean): N
                 extra,
             )
         is BackupNotice.Mass ->
-            NoticeContent(
-                Tone.WARN,
-                R.drawable.ic_hide_image,
-                pluralStringResource(R.plurals.notice_mass_title, notice.count, notice.count),
-                stringResource(R.string.notice_mass_body),
-                NoticeAction(stringResource(R.string.breaker_keep), on.keepDriveCopies),
-                // Until the full-screen review (G1) arrives, the card holds every answer.
-                listOf(
-                    NoticeAction(stringResource(R.string.breaker_check_again), on.checkAgain),
-                    NoticeAction(
-                        stringResource(R.string.move_drive_copies_to_trash),
-                        on.moveDriveCopies,
-                    ),
-                ),
-            )
+            if (notice.checking) {
+                NoticeContent(
+                    Tone.WARN,
+                    R.drawable.ic_hide_image,
+                    stringResource(R.string.mass_checking),
+                    stringResource(R.string.mass_checking_body),
+                    progress = true,
+                )
+            } else {
+                NoticeContent(
+                    Tone.WARN,
+                    R.drawable.ic_hide_image,
+                    pluralStringResource(R.plurals.notice_mass_title, notice.count, notice.count),
+                    stringResource(R.string.notice_mass_body),
+                    NoticeAction(stringResource(R.string.action_review), on.reviewMass),
+                )
+            }
         is BackupNotice.Pause -> pauseContent(notice, on, extra)
     }
 }

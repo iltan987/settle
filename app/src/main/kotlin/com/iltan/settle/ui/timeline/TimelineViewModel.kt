@@ -22,6 +22,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
@@ -34,6 +35,8 @@ class TimelineViewModel(
     progress: StateFlow<Map<String, UploadProgress>>,
     breakerCount: Flow<Int>,
     private val preferences: UiPreferences,
+    /** True while "Check again" scans the phone after a mass disappearance (G4). */
+    checkingMass: Flow<Boolean> = flowOf(false),
 ) : ViewModel() {
     val state: StateFlow<MediaGridState> =
         combine(
@@ -53,12 +56,14 @@ class TimelineViewModel(
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), MediaGridState())
 
     val status: StateFlow<TimelineStatus> =
-        combine(status.headline, status.accountEmail, breakerCount, preferences.dismissed) {
-                headline,
-                email,
-                breaker,
-                dismissed ->
-                TimelineStatus(headline, email, breaker, dismissed)
+        combine(
+                status.headline,
+                status.accountEmail,
+                breakerCount,
+                preferences.dismissed,
+                checkingMass,
+            ) { headline, email, breaker, dismissed, checking ->
+                TimelineStatus(headline, email, breaker, dismissed, checking)
             }
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), TimelineStatus())
 

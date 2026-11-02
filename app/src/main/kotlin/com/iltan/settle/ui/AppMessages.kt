@@ -72,6 +72,11 @@ class AppMessages(val host: SnackbarHostState, private val scope: CoroutineScope
     /** How far above the bottom the snackbar sits; each screen sets it for its own bars. */
     var bottomOffset by mutableStateOf(0.dp)
 
+    /** Runs [block] for as long as the app's messages live, e.g. work whose end is reported. */
+    fun launch(block: suspend CoroutineScope.() -> Unit) {
+        scope.launch(block = block)
+    }
+
     /** Shows [text] for 4 s, with an optional [action]; [onAction] if tapped. */
     fun show(text: String, action: String? = null, onAction: () -> Unit = {}) {
         scope.launch {
