@@ -43,17 +43,23 @@ import androidx.compose.ui.unit.dp
 import com.iltan.settle.ui.theme.SettleMotion
 import com.iltan.settle.ui.theme.SettleShape
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-/** A message with Tidepool's options: Undo offers get a 10 s countdown bar (E3). */
+/**
+ * A message with Tidepool's options: Undo offers get a 10 s countdown bar (E3), and a [brief] note
+ * such as "Restored" leaves after 2 s.
+ */
 private class SettleVisuals(
     override val message: String,
     override val actionLabel: String?,
     val countdown: Boolean,
+    val brief: Boolean = false,
 ) : SnackbarVisuals {
     override val withDismissAction = false
-    // The countdown dismisses its own snackbar; plain messages stay 4 s, as the design says.
-    override val duration = if (countdown) SnackbarDuration.Indefinite else SnackbarDuration.Short
+    // Countdowns and notes dismiss themselves; plain messages stay 4 s, as the design says.
+    override val duration =
+        if (countdown || brief) SnackbarDuration.Indefinite else SnackbarDuration.Short
 }
 
 /**
@@ -71,6 +77,13 @@ class AppMessages(val host: SnackbarHostState, private val scope: CoroutineScope
         scope.launch {
             val result = host.showSnackbar(SettleVisuals(text, action, countdown = false))
             if (result == SnackbarResult.ActionPerformed) onAction()
+        }
+    }
+
+    /** Shows [text] for 2 s: a confirmation such as "Restored". */
+    fun note(text: String) {
+        scope.launch {
+            host.showSnackbar(SettleVisuals(text, null, countdown = false, brief = true))
         }
     }
 
@@ -118,6 +131,12 @@ fun AppSnackbarHost(messages: AppMessages, tabBarOffset: Dp?, modifier: Modifier
 fun SettleSnackbar(data: SnackbarData) {
     val visuals = data.visuals
     val countdown = (visuals as? SettleVisuals)?.countdown == true
+    if ((visuals as? SettleVisuals)?.brief == true) {
+        LaunchedEffect(data) {
+            delay(NOTE_MILLIS)
+            data.dismiss()
+        }
+    }
     val left = remember(data) { Animatable(1f) }
     var touched by remember(data) { mutableStateOf(false) }
     if (countdown) {
@@ -183,3 +202,5 @@ fun SettleSnackbar(data: SnackbarData) {
         }
     }
 }
+
+private const val NOTE_MILLIS = 2_000L

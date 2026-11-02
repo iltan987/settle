@@ -94,9 +94,9 @@ class TimelineScreenTest {
 
     private val actions =
         ItemActions(
-            delete = { entries, onDeleted ->
-                deleted += entries.map { it.id }
-                finishDeletion = onDeleted
+            delete = { request ->
+                deleted += request.entries.map { it.id }
+                finishDeletion = request.onDeleted
             },
             backUp = { entries -> backedUp += entries.map { it.id } },
             share = {},

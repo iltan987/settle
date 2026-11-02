@@ -67,6 +67,8 @@ Play Store release later must stay possible, so Play-policy-forbidden permission
 - R12. Deleting in Settle, one item or a selection, moves the item to the trash on the phone and
   in Drive, with Undo. It can be restored until retention ends. Delete forever and Empty trash
   remove items from the phone and Drive at once, only after a confirmation that names the count.
+  The first delete explains Android's own confirmation once, while Settle can't manage media; the
+  message after deleting says plainly when items weren't backed up.
 - R13. A backed-up item deleted in another app is handled by the external-deletion policy (ADR-006,
   ADR-015). Default: it enters Settle's trash and its Drive copy moves to Drive trash an hour after
   it vanished, unless it comes back first; "Ask me first" waits for the user. Restoring it

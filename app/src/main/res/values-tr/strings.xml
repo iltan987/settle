@@ -320,4 +320,14 @@
     <string name="cell_queued">Yedekleme sırasında</string>
     <string name="cell_uploading">Yükleniyor · %%%1$d</string>
     <string name="cell_not_backed_up">Yedeklenmedi</string>
+    <!-- Silme (E) -->
+    <plurals name="trash_moved_none_backed_up">
+        <item quantity="one">Çöp kutusuna taşındı. Yedeklenmemişti; 30 gün sonra kalıcı olarak silinecek.</item>
+        <item quantity="other">Çöp kutusuna taşındı. Bunlar yedeklenmemişti; 30 gün sonra kalıcı olarak silinecekler.</item>
+    </plurals>
+    <string name="trash_restored">Geri yüklendi</string>
+    <string name="media_access_title">Tek dokunuşla silin</string>
+    <string name="media_access_text">Settle bir şeyi çöp kutusuna her taşıdığında Android onay ister. Bu adımı atlamak için Settle\'ın medyayı yönetmesine izin verin. İsteğe bağlıdır; silinen öğeler yine 30 gün boyunca geri yüklenebilir.</string>
+    <string name="media_access_allow">Android ayarlarında izin ver</string>
+    <string name="media_access_keep">Her seferinde onaylamaya devam et</string>
 </resources>

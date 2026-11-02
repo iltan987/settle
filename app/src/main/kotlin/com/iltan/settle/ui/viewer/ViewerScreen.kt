@@ -79,6 +79,7 @@ import com.iltan.settle.ui.LocalAppMessages
 import com.iltan.settle.ui.SnackbarAbove
 import com.iltan.settle.ui.grid.SPECIAL_FORMAT_MOTION_PHOTO
 import com.iltan.settle.ui.theme.SettleTheme
+import com.iltan.settle.ui.trash.DeleteRequest
 import com.iltan.settle.ui.trash.LocalItemActions
 import java.util.Date
 import java.util.Locale
@@ -204,7 +205,7 @@ private fun Viewer(
                 onBack = onBack,
                 onFavorite = { viewModel.toggleFavorite(current) },
                 onShare = { share(context, current) },
-                onDelete = { actions.delete(listOf(current)) {} },
+                onDelete = { actions.delete(DeleteRequest(listOf(current))) },
                 onInfo = { showInfo = true },
             )
         }

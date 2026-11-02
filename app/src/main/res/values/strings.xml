@@ -325,4 +325,14 @@
     <string name="cell_queued">Queued for backup</string>
     <string name="cell_uploading">Uploading · %1$d%%</string>
     <string name="cell_not_backed_up">Not backed up</string>
+    <!-- Delete (E) -->
+    <plurals name="trash_moved_none_backed_up">
+        <item quantity="one">Moved to the trash. It wasn\'t backed up; it\'s deleted for good after 30 days.</item>
+        <item quantity="other">Moved to the trash. These weren\'t backed up; they\'re deleted for good after 30 days.</item>
+    </plurals>
+    <string name="trash_restored">Restored</string>
+    <string name="media_access_title">Delete with one tap</string>
+    <string name="media_access_text">Android asks you to confirm each time Settle moves something to the trash. Allow Settle to manage media to skip that step. It\'s optional, and deleted items can still be restored for 30 days.</string>
+    <string name="media_access_allow">Allow in Android settings</string>
+    <string name="media_access_keep">Keep confirming each time</string>
 </resources>

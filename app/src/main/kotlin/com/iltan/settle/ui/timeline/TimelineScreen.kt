@@ -81,6 +81,7 @@ import com.iltan.settle.ui.grid.SelectionTopBar
 import com.iltan.settle.ui.grid.rememberSelection
 import com.iltan.settle.ui.theme.SettleMotion
 import com.iltan.settle.ui.theme.SettleShape
+import com.iltan.settle.ui.trash.DeleteRequest
 import com.iltan.settle.ui.trash.ItemActions
 
 /** What the timeline's bars and notices say about backup. */
@@ -227,7 +228,11 @@ fun TimelineScreen(
                             actions.backUp(chosen.filter { it.cloudState != CloudState.VERIFIED })
                             selection = emptySet()
                         },
-                        onDelete = { actions.delete(chosen) { selection = emptySet() } },
+                        onDelete = {
+                            actions.delete(
+                                DeleteRequest(chosen, onDeleted = { selection = emptySet() })
+                            )
+                        },
                         onBackUpHint = { messages.show(alreadyInDrive) },
                     )
                 }
