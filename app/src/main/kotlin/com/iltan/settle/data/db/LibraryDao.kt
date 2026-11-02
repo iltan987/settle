@@ -50,18 +50,19 @@ interface LibraryDao : TrashDao {
     fun favorites(): Flow<List<MediaEntry>>
 
     /**
-     * Folders with their item count and newest item. SQLite takes the bare columns from the row
-     * that holds MAX(taken_at_ms), which makes that row the cover.
+     * Folders with their item count and newest item, the biggest first (H1). SQLite takes the bare
+     * columns from the row that holds MAX(taken_at_ms), which makes that row the cover.
      */
     @Query(
         """
         SELECT f.relative_path, COUNT(*) AS item_count, MAX(m.taken_at_ms) AS latest_taken_at_ms,
             COALESCE(s.hidden_from_timeline, 0) AS hidden_from_timeline, s.back_up,
+            SUM(m.cloud_state = 'VERIFIED') AS backed_up_count, SUM(f.size_bytes) AS size_bytes,
             m.kind AS cover_kind, f.volume AS cover_volume,
             f.media_store_id AS cover_media_store_id, f.date_modified_s AS cover_date_modified_s
         $ON_PHONE_LEFT_JOIN_SETTINGS
         GROUP BY f.relative_path
-        ORDER BY latest_taken_at_ms DESC
+        ORDER BY item_count DESC, latest_taken_at_ms DESC
         """
     )
     fun folders(): Flow<List<FolderSummary>>

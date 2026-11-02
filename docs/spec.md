@@ -44,7 +44,8 @@ Play Store release later must stay possible, so Play-policy-forbidden permission
   run several uploads at once when the connection allows, and slow down when it is poor. Polite
   mode stays below three quarters of the measured speed and backs off when the network's delay
   rises; a fixed limit or no limit can be chosen instead.
-- R24. Each folder has a backup switch; only the camera folder is on by default. Automatic backup
+- R24. Each folder has a backup switch; only the camera folder is on by default. Turning it off
+  for a folder with copies in Drive asks first; those copies stay. Automatic backup
   can be turned off, and backup can be paused; "Back up everything now" skips the grace period
   and the charger.
 

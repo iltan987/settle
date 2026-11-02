@@ -44,7 +44,7 @@ class BackupPageTest {
             waiting = 12,
             queued = 3,
             needsAttention = 1,
-            folders = listOf(folder("DCIM/Camera/"), folder("DCIM/Screenshots/")),
+            folders = listOf(folder("DCIM/Camera/", backedUp = 2), folder("DCIM/Screenshots/")),
         )
 
     private val actions =
@@ -216,7 +216,7 @@ class BackupPageTest {
         assertEquals(listOf("app info", "never sleeping"), calls)
     }
 
-    private fun folder(path: String, backUp: Boolean? = null) =
+    private fun folder(path: String, backUp: Boolean? = null, backedUp: Int = 0) =
         FolderSummary(
             relativePath = path,
             itemCount = 3,
@@ -227,5 +227,6 @@ class BackupPageTest {
             coverMediaStoreId = 1,
             coverDateModifiedS = 0,
             backUp = backUp,
+            backedUpCount = backedUp,
         )
 }

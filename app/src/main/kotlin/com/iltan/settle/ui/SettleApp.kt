@@ -16,7 +16,6 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -31,6 +30,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalResources
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
@@ -46,6 +46,7 @@ import androidx.navigation3.ui.NavDisplay
 import com.iltan.settle.R
 import com.iltan.settle.appGraph
 import com.iltan.settle.data.GridSource
+import com.iltan.settle.data.db.FolderSummary
 import com.iltan.settle.data.trash.BreakerCheck
 import com.iltan.settle.domain.backup.BackupHeadline
 import com.iltan.settle.domain.deletion.VanishedDecision
@@ -58,11 +59,15 @@ import com.iltan.settle.ui.chrome.BottomBarHeight
 import com.iltan.settle.ui.chrome.LocalTabBar
 import com.iltan.settle.ui.chrome.NavItem
 import com.iltan.settle.ui.chrome.TabBarState
+import com.iltan.settle.ui.chrome.chipState
 import com.iltan.settle.ui.folders.CollectionScreen
 import com.iltan.settle.ui.folders.CollectionViewModel
+import com.iltan.settle.ui.folders.FolderPage
 import com.iltan.settle.ui.folders.FoldersScreen
 import com.iltan.settle.ui.folders.FoldersViewModel
 import com.iltan.settle.ui.folders.folderNames
+import com.iltan.settle.ui.folders.folderSubtitle
+import com.iltan.settle.ui.folders.rememberFolderChoices
 import com.iltan.settle.ui.onboarding.MediaAccessGate
 import com.iltan.settle.ui.settings.AboutScreen
 import com.iltan.settle.ui.settings.BackupFoldersScreen
@@ -387,41 +392,49 @@ private fun Destinations(
                         }
                         val state by viewModel.state.collectAsStateWithLifecycle()
                         val trash by graph.deletion.trash.collectAsStateWithLifecycle(emptyList())
+                        val headline by graph.backupStatus.headline.collectAsStateWithLifecycle()
+                        val email by
+                            graph.backupStatus.accountEmail.collectAsStateWithLifecycle(null)
                         FoldersScreen(
-                            modifier = Modifier.padding(bottom = BottomBarHeight),
                             state = state,
                             onOpenFolder = { path, name -> backStack.add(Folder(path, name)) },
                             onOpenFavorites = { backStack.add(Favorites) },
-                            onSetHidden = viewModel::setHiddenFromTimeline,
-                            onSetBackUp = viewModel::setBackUp,
-                            trashCount = trash.size,
+                            choices =
+                                rememberFolderChoices(
+                                    viewModel::setHiddenFromTimeline,
+                                    viewModel::setBackUp,
+                                ),
+                            trashCount = trash.count { it.inTrash },
                             onOpenTrash = { backStack.add(Trash) },
+                            chip = headline?.let { chipState(it) },
+                            onOpenBackup = { selectTab(Tab.BACKUP) },
+                            accountEmail = email,
+                            onOpenSettings = { backStack.add(Settings) },
                         )
                     }
                     entry<Folder> { key ->
                         val source = GridSource.Folder(key.relativePath)
-                        val viewModel = viewModel { CollectionViewModel(graph.library, source) }
-                        val state by viewModel.state.collectAsStateWithLifecycle()
-                        CollectionScreen(
-                            title = key.name,
-                            state = state,
-                            emptyText = stringResource(R.string.folder_empty),
-                            onOpen = { backStack.add(Viewer(source, it.id)) },
-                            onBack = { backStack.removeLastOrNull() },
-                        )
+                        val folders = viewModel {
+                            FoldersViewModel(graph.library) { graph.backupScheduler.reschedule() }
+                        }
+                        val choices =
+                            rememberFolderChoices(
+                                folders::setHiddenFromTimeline,
+                                folders::setBackUp,
+                            )
+                        Collection(backStack, source, key.name, R.string.folder_empty) { folder ->
+                            folder?.let { FolderPage(it, key.name, choices) }
+                        }
                     }
                     entry<Favorites> {
-                        val viewModel = viewModel {
-                            CollectionViewModel(graph.library, GridSource.Favorites)
+                        Collection(
+                            backStack,
+                            GridSource.Favorites,
+                            stringResource(R.string.favorites_title),
+                            R.string.favorites_empty,
+                        ) {
+                            null
                         }
-                        val state by viewModel.state.collectAsStateWithLifecycle()
-                        CollectionScreen(
-                            title = stringResource(R.string.favorites_title),
-                            state = state,
-                            emptyText = stringResource(R.string.favorites_empty),
-                            onOpen = { backStack.add(Viewer(GridSource.Favorites, it.id)) },
-                            onBack = { backStack.removeLastOrNull() },
-                        )
                     }
                     entry<Viewer>(metadata = ViewerTransitions) { key ->
                         val viewModel = viewModel {
@@ -572,6 +585,42 @@ private fun Destinations(
                 },
         )
     }
+}
+
+/** A folder's page or the favourites, wired to the app (H2, H5). */
+@Composable
+private fun Collection(
+    backStack: NavBackStack<NavKey>,
+    source: GridSource,
+    title: String,
+    emptyText: Int,
+    page: @Composable (FolderSummary?) -> FolderPage?,
+) {
+    val graph = LocalContext.current.appGraph
+    val viewModel = viewModel { CollectionViewModel(graph.library, source, graph.uiPreferences) }
+    val state by viewModel.state.collectAsStateWithLifecycle()
+    val folder by viewModel.folder.collectAsStateWithLifecycle()
+    val email by graph.backupStatus.accountEmail.collectAsStateWithLifecycle(null)
+    // Read inside each cell, so an upload's progress redraws only its cells.
+    val decisions = graph.backupStatus.decisions.collectAsStateWithLifecycle()
+    val uploads = graph.cloudBackup.progress.collectAsStateWithLifecycle()
+    CollectionScreen(
+        title = title,
+        subtitle =
+            folder?.let { folderSubtitle(it) }
+                ?: state.count
+                    .takeIf { it > 0 }
+                    ?.let { pluralStringResource(R.plurals.item_count, it, it) },
+        state = state,
+        emptyText = stringResource(emptyText),
+        onOpen = { backStack.add(Viewer(source, it.id)) },
+        onBack = { backStack.removeLastOrNull() },
+        actions = LocalItemActions.current,
+        backup = { entry -> cellBackup(entry, decisions.value, uploads.value) },
+        connected = email != null,
+        onColumnsChange = viewModel::setColumns,
+        page = page(folder),
+    )
 }
 
 /**

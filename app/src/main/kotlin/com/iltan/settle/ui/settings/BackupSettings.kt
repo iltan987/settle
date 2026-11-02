@@ -392,8 +392,8 @@ private fun networkLabel(use: NetworkUse): String =
     }
 
 /**
- * Folders to back up: every folder with its switch. Turning one off asks first, since new photos
- * there then stay only on the phone (H4).
+ * Folders to back up: every folder with its switch. Turning off one that has copies in Drive asks
+ * first, since its new photos then stay only on the phone (H4).
  */
 @Composable
 fun BackupFoldersPage(folders: List<FolderSummary>, onChange: (FolderSummary, Boolean) -> Unit) {
@@ -412,7 +412,14 @@ fun BackupFoldersPage(folders: List<FolderSummary>, onChange: (FolderSummary, Bo
                             folder.itemCount,
                         ),
                     trailing = Trailing.Toggle(folder.backsUp),
-                    onClick = { if (folder.backsUp) stopping = folder else onChange(folder, true) },
+                    onClick = {
+                        when {
+                            !folder.backsUp -> onChange(folder, true)
+                            // Only a folder with copies in Drive has something to explain.
+                            folder.backedUpCount > 0 -> stopping = folder
+                            else -> onChange(folder, false)
+                        }
+                    },
                 )
             }
         }

@@ -615,4 +615,22 @@
     <string name="backup_nothing_waiting">Nothing waiting</string>
     <string name="backup_rhythm">New photos and videos back up %1$s after they appear.</string>
     <string name="backup_rhythm_no_wait">New photos and videos back up at the next chance.</string>
+    <!-- Phase 5 · M5: Folders (docs/design/turn4, H) -->
+    <string name="folders_on_phone">On this phone</string>
+    <string name="folder_hidden_pill">Hidden</string>
+    <string name="folder_backs_up_mark">Backs up</string>
+    <string name="folder_shown_in_photos">Shown in Photos</string>
+    <string name="folder_options_title">Folder options</string>
+    <string name="folder_show_in_photos_sub">Its photos and videos appear in your timeline</string>
+    <string name="folder_back_up_sub">Copies its photos and videos to your Drive</string>
+    <string name="folder_only_camera">Only Camera backs up unless you turn this on.</string>
+    <string name="folder_hidden_body">Photos from %1$s don’t appear in your timeline. They’re still on this phone and aren’t backed up.</string>
+    <string name="folder_hidden_body_backs_up">Photos from %1$s don’t appear in your timeline. They’re still on this phone and still back up.</string>
+    <string name="folder_hidden_done">%1$s hidden from Photos</string>
+    <string name="folder_backup_stopped">New photos from %1$s won’t be backed up</string>
+    <string name="folder_backs_up">%1$s will back up.</string>
+    <plurals name="folder_backs_up_now">
+        <item quantity="one">%2$s will back up its %1$d item.</item>
+        <item quantity="other">%2$s will back up its %1$d items.</item>
+    </plurals>
 </resources>

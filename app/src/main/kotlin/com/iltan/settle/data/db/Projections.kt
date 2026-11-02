@@ -58,6 +58,9 @@ data class FolderSummary(
     @ColumnInfo(name = "cover_date_modified_s") val coverDateModifiedS: Long,
     /** The user's backup switch for the folder; null means the default. */
     @ColumnInfo(name = "back_up") val backUp: Boolean? = null,
+    /** Items with a verified copy in Drive. */
+    @ColumnInfo(name = "backed_up_count") val backedUpCount: Int = 0,
+    @ColumnInfo(name = "size_bytes") val sizeBytes: Long = 0,
 ) {
     /** Whether new items in this folder are backed up (only the camera's by default). */
     val backsUp: Boolean

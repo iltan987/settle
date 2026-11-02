@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room3.Room
 import androidx.sqlite.driver.AndroidSQLiteDriver
 import androidx.test.core.app.ApplicationProvider
+import com.iltan.settle.domain.CloudState
 import com.iltan.settle.domain.LocalState
 import com.iltan.settle.domain.MediaItemId
 import com.iltan.settle.domain.scan.IndexedRow
@@ -141,6 +142,37 @@ class LibraryDaoTest {
         assertEquals(2L, folders[0].coverMediaStoreId)
         assertFalse(folders[0].hiddenFromTimeline)
         assertTrue(folders[1].hiddenFromTimeline)
+    }
+
+    @Test
+    fun foldersComeBiggestFirstWithWhatIsBackedUpAndTheirSize() = runTest {
+        val (a) =
+            insert(
+                row(1, taken = 1_000),
+                row(2, taken = 2_000),
+                row(3, path = "DCIM/Screenshots/", taken = 9_000),
+            )
+        db.backupDao().setCloudState(a.value, CloudState.VERIFIED)
+
+        val folders = dao.folders().first()
+
+        // Screenshots holds the newest item, but Camera holds more.
+        assertEquals(listOf("DCIM/Camera/", "DCIM/Screenshots/"), folders.map { it.relativePath })
+        assertEquals(1, folders[0].backedUpCount)
+        assertEquals(101L + 102L, folders[0].sizeBytes)
+        assertEquals(0, folders[1].backedUpCount)
+    }
+
+    @Test
+    fun pendingBackupListsItemsWithoutAVerifiedCopy() = runTest {
+        val (a, b) = insert(row(1, taken = 1_000), row(2, taken = 2_000), row(3, trashed = true))
+        db.backupDao().setCloudState(a.value, CloudState.VERIFIED)
+
+        val pending = dao.pendingBackup().first()
+
+        assertEquals(listOf(b.value), pending.map { it.entry.id })
+        assertEquals("DCIM/Camera/", pending.single().relativePath)
+        assertEquals(102L, pending.single().sizeBytes)
     }
 
     @Test

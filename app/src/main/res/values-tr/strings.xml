@@ -610,4 +610,22 @@
     <string name="backup_nothing_waiting">Bekleyen bir şey yok</string>
     <string name="backup_rhythm">Yeni fotoğraf ve videolar göründükten %1$s sonra yedeklenir.</string>
     <string name="backup_rhythm_no_wait">Yeni fotoğraf ve videolar ilk fırsatta yedeklenir.</string>
+    <!-- Phase 5 · M5: Folders (docs/design/turn4, H) -->
+    <string name="folders_on_phone">Bu telefonda</string>
+    <string name="folder_hidden_pill">Gizli</string>
+    <string name="folder_backs_up_mark">Yedekleniyor</string>
+    <string name="folder_shown_in_photos">Fotoğraflar\'da gösteriliyor</string>
+    <string name="folder_options_title">Klasör seçenekleri</string>
+    <string name="folder_show_in_photos_sub">Fotoğraf ve videoları zaman akışınızda görünür</string>
+    <string name="folder_back_up_sub">Fotoğraf ve videolarını Drive\'ınıza kopyalar</string>
+    <string name="folder_only_camera">Siz açmadıkça yalnızca Kamera yedeklenir.</string>
+    <string name="folder_hidden_body">%1$s klasöründeki fotoğraflar zaman akışınızda görünmez. Hâlâ bu telefondalar ve yedeklenmiyorlar.</string>
+    <string name="folder_hidden_body_backs_up">%1$s klasöründeki fotoğraflar zaman akışınızda görünmez. Hâlâ bu telefondalar ve yedeklenmeye devam ediyorlar.</string>
+    <string name="folder_hidden_done">%1$s Fotoğraflar\'dan gizlendi</string>
+    <string name="folder_backup_stopped">%1$s klasöründeki yeni fotoğraflar yedeklenmeyecek</string>
+    <string name="folder_backs_up">%1$s yedeklenecek.</string>
+    <plurals name="folder_backs_up_now">
+        <item quantity="one">%2$s klasöründeki %1$d öğe yedeklenecek.</item>
+        <item quantity="other">%2$s klasöründeki %1$d öğe yedeklenecek.</item>
+    </plurals>
 </resources>

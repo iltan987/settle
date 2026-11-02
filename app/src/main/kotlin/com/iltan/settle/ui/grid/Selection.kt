@@ -43,12 +43,17 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.round
 import androidx.compose.ui.unit.sp
 import com.iltan.settle.R
+import com.iltan.settle.data.db.MediaEntry
+import com.iltan.settle.domain.CloudState
+import com.iltan.settle.ui.LocalAppMessages
 import com.iltan.settle.ui.chrome.BarAction
 import com.iltan.settle.ui.chrome.BottomBarFrame
 import com.iltan.settle.ui.chrome.TopBarHeight
 import com.iltan.settle.ui.theme.SettleMotion
 import com.iltan.settle.ui.theme.SettleShape
 import com.iltan.settle.ui.theme.cardColor
+import com.iltan.settle.ui.trash.DeleteRequest
+import com.iltan.settle.ui.trash.ItemActions
 
 /** The IDs of the selected items; survives rotation and process death. */
 @Composable
@@ -226,6 +231,35 @@ fun SelectionBar(
             )
         }
     }
+}
+
+/**
+ * The selection bar acting on [chosen] through [actions]; [shown] is what the bar counts, which
+ * stays the last selection while the bar fades out. [clear] ends selecting.
+ */
+@Composable
+fun ItemSelectionBar(
+    chosen: List<MediaEntry>,
+    shown: List<MediaEntry>,
+    actions: ItemActions,
+    clear: () -> Unit,
+) {
+    val messages = LocalAppMessages.current
+    val alreadyInDrive = stringResource(R.string.selection_already_in_drive)
+    val allFavorite = shown.all { it.isFavorite }
+    SelectionBar(
+        count = shown.size,
+        notInDrive = shown.count { it.cloudState != CloudState.VERIFIED },
+        allFavorite = allFavorite,
+        onShare = { actions.share(chosen) },
+        onFavorite = { actions.favorite(chosen, !allFavorite) },
+        onBackUp = {
+            actions.backUp(chosen.filter { it.cloudState != CloudState.VERIFIED })
+            clear()
+        },
+        onDelete = { actions.delete(DeleteRequest(chosen, onDeleted = clear)) },
+        onBackUpHint = { messages.show(alreadyInDrive) },
+    )
 }
 
 /** A floating note above a bottom bar (InfoStrip): the card surface, radius 16. */

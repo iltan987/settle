@@ -56,7 +56,6 @@ import androidx.compose.ui.window.PopupPositionProvider
 import androidx.compose.ui.window.PopupProperties
 import com.iltan.settle.R
 import com.iltan.settle.data.db.MediaEntry
-import com.iltan.settle.domain.CloudState
 import com.iltan.settle.domain.backup.BackupHeadline
 import com.iltan.settle.ui.LocalAppMessages
 import com.iltan.settle.ui.chrome.AccountButton
@@ -70,14 +69,13 @@ import com.iltan.settle.ui.chrome.StatusPopoverCard
 import com.iltan.settle.ui.chrome.TopBarHeight
 import com.iltan.settle.ui.chrome.chipState
 import com.iltan.settle.ui.grid.CellBackup
+import com.iltan.settle.ui.grid.ItemSelectionBar
 import com.iltan.settle.ui.grid.MediaGrid
 import com.iltan.settle.ui.grid.MediaGridState
-import com.iltan.settle.ui.grid.SelectionBar
 import com.iltan.settle.ui.grid.SelectionTopBar
 import com.iltan.settle.ui.grid.rememberSelection
 import com.iltan.settle.ui.theme.SettleMotion
 import com.iltan.settle.ui.theme.SettleShape
-import com.iltan.settle.ui.trash.DeleteRequest
 import com.iltan.settle.ui.trash.ItemActions
 
 /** What the timeline's bars and notices say about backup. */
@@ -214,25 +212,7 @@ fun TimelineScreen(
                 modifier = Modifier.align(Alignment.BottomCenter),
             ) {
                 if (actions != null) {
-                    val alreadyInDrive = stringResource(R.string.selection_already_in_drive)
-                    val allFavorite = barItems.all { it.isFavorite }
-                    SelectionBar(
-                        count = barItems.size,
-                        notInDrive = barItems.count { it.cloudState != CloudState.VERIFIED },
-                        allFavorite = allFavorite,
-                        onShare = { actions.share(chosen) },
-                        onFavorite = { actions.favorite(chosen, !allFavorite) },
-                        onBackUp = {
-                            actions.backUp(chosen.filter { it.cloudState != CloudState.VERIFIED })
-                            selection = emptySet()
-                        },
-                        onDelete = {
-                            actions.delete(
-                                DeleteRequest(chosen, onDeleted = { selection = emptySet() })
-                            )
-                        },
-                        onBackUpHint = { messages.show(alreadyInDrive) },
-                    )
+                    ItemSelectionBar(chosen, barItems, actions) { selection = emptySet() }
                 }
             }
         }
