@@ -6,9 +6,11 @@ import com.iltan.settle.data.db.TrashDao
 import com.iltan.settle.data.db.TrashedEntry
 import com.iltan.settle.data.db.VanishedEntry
 import com.iltan.settle.domain.MediaItemId
+import com.iltan.settle.domain.backup.BackupPause
 import com.iltan.settle.domain.deletion.DriveOp
 import com.iltan.settle.domain.deletion.DriveOpKind
 import com.iltan.settle.domain.deletion.ExternalDeletionPolicy
+import com.iltan.settle.domain.deletion.RestoreProblem
 import com.iltan.settle.domain.deletion.TrashChanges
 import com.iltan.settle.domain.deletion.TrashItem
 import com.iltan.settle.domain.deletion.VanishedDecision
@@ -112,6 +114,24 @@ class Deletion(
                 }
             }
         return DeletionRequest(steps, plan.phoneUntrash.size + plan.downloads.size)
+    }
+
+    /**
+     * Restores that stopped because the phone was offline, or Google wanted the user to sign in
+     * again, continue once that is over (F7). Called whenever Settle comes to the front: restore
+     * downloads may only start while Settle is visible, and wait for the network by themselves.
+     */
+    suspend fun resumeRestores() {
+        val causes = buildList {
+            add(RestoreProblem.OFFLINE)
+            if (preferences.current().blocked != BackupPause.AUTH_NEEDED) {
+                add(RestoreProblem.AUTH_NEEDED)
+            }
+        }
+        val stopped = dao.restoresStoppedBy(causes)
+        if (stopped.isEmpty()) return
+        betweenScans { dao.requestRestore(stopped, clock()) }
+        startRestore()
     }
 
     /** Deletes these items for good, on the phone and in Drive. Only items in the trash. */

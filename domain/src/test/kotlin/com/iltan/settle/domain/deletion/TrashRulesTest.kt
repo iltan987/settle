@@ -372,11 +372,22 @@ class TrashRulesTest {
 
         changes.entries.size shouldBe 2
         changes.removeVanished shouldContainExactlyInAnyOrder gone.map { it.itemId }
+        // Confirmed by the user, so the next scan's breaker doesn't count them again.
+        changes.entries.forEach { it.origin shouldBe TrashOrigin.DISAPPEARED }
         changes.ops.forEach {
             it.kind shouldBe DriveOpKind.TRASH
             it.notBeforeMillis shouldBe 0
         }
         assertSafe(changes, gone)
+    }
+
+    @Test
+    fun `moving items deleted in another app keeps them as deleted elsewhere`() {
+        val asked = item(local = LocalState.MISSING, vanished = VanishedReason.ASK)
+        val changes =
+            decideVanished(listOf(asked), VanishedDecision.MOVE_DRIVE_COPIES_TO_TRASH, now)
+
+        changes.entries.single().origin shouldBe TrashOrigin.ELSEWHERE
     }
 
     @Test

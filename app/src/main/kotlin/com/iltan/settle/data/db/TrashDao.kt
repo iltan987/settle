@@ -53,7 +53,21 @@ data class TrashedEntry(
     /** Set when the user asked to restore it and it is downloading. */
     @ColumnInfo(name = "restore_requested_at_ms") val restoreRequestedAtMs: Long?,
     @ColumnInfo(name = "restore_problem") val restoreProblem: RestoreProblem?,
-)
+    /** The folder it was in, and goes back to. */
+    @ColumnInfo(name = "relative_path") val relativePath: String = "",
+    @ColumnInfo(name = "size_bytes") val sizeBytes: Long = 0,
+    /** Its current Drive copy, if one was ever created. */
+    @ColumnInfo(name = "drive_file_id") val driveFileId: String? = null,
+    /**
+     * Set while it waits for the user's decision (R13 "Ask me first"): no countdown runs. Such an
+     * item may not be in the trash at all, only gone from the phone.
+     */
+    @ColumnInfo(name = "waiting_reason") val waitingReason: VanishedReason? = null,
+) {
+    /** In the trash proper: Delete forever and Empty trash act on it. */
+    val inTrash: Boolean
+        get() = origin != null || localState == LocalState.TRASHED
+}
 
 /** An item that left the phone without Settle and waits for the user's decision. */
 data class VanishedEntry(
@@ -63,6 +77,8 @@ data class VanishedEntry(
     @ColumnInfo(name = "display_name") val displayName: String,
     val reason: VanishedReason,
     @ColumnInfo(name = "since_ms") val sinceMs: Long,
+    val volume: String = "",
+    @ColumnInfo(name = "relative_path") val relativePath: String = "",
 )
 
 /** Where an item's phone file is in MediaStore, trashed or not. */
@@ -141,18 +157,25 @@ interface TrashDao {
     @Query("$TRASH_ITEM_COLUMNS WHERE t.expires_at_ms <= :nowMs")
     suspend fun expiredTrash(nowMs: Long): List<TrashItemRow>
 
-    /** Every item in the trash: Settle's entries and anything in the phone's trash. */
+    /**
+     * Every item in the trash, Settle's entries and anything in the phone's trash, and the items
+     * deleted in another app that wait for the user (R13 "Ask me first").
+     */
     @Query(
         """
         SELECT m.id, m.kind, m.mime_type, m.taken_at_ms, m.duration_ms, f.volume,
             f.media_store_id, f.date_modified_s, f.local_state, m.cloud_state, t.origin,
             t.trashed_at_ms, t.expires_at_ms, r.requested_at_ms AS restore_requested_at_ms,
-            r.problem AS restore_problem
+            r.problem AS restore_problem, f.relative_path, f.size_bytes, u.drive_file_id,
+            CASE WHEN v.kept THEN NULL ELSE v.reason END AS waiting_reason
         FROM media_item m JOIN local_file f ON f.item_id = m.id
         LEFT JOIN trash_entry t ON t.item_id = m.id
         LEFT JOIN restore_request r ON r.item_id = m.id
-        WHERE (t.item_id IS NOT NULL OR f.local_state = 'TRASHED')
-        ORDER BY COALESCE(t.trashed_at_ms, 0) DESC, m.taken_at_ms DESC
+        LEFT JOIN upload u ON u.item_id = m.id
+        LEFT JOIN vanished v ON v.item_id = m.id
+        WHERE (t.item_id IS NOT NULL OR f.local_state = 'TRASHED'
+            OR (v.reason = 'ASK' AND NOT v.kept AND f.local_state <> 'PRESENT'))
+        ORDER BY COALESCE(t.trashed_at_ms, v.since_ms, 0) DESC, m.taken_at_ms DESC
         """
     )
     fun observeTrash(): Flow<List<TrashedEntry>>
@@ -160,7 +183,8 @@ interface TrashDao {
     /** Items waiting for the user's decision, newest first. */
     @Query(
         """
-        SELECT m.id, m.kind, m.taken_at_ms, f.display_name, v.reason, v.since_ms
+        SELECT m.id, m.kind, m.taken_at_ms, f.display_name, v.reason, v.since_ms, f.volume,
+            f.relative_path
         FROM vanished v JOIN media_item m ON m.id = v.item_id
         JOIN local_file f ON f.item_id = m.id
         WHERE NOT v.kept AND f.local_state <> 'PRESENT'
@@ -277,6 +301,9 @@ interface TrashDao {
 
     @Query("SELECT * FROM restore_request ORDER BY requested_at_ms, rowid")
     suspend fun restoreRequests(): List<RestoreRequestEntity>
+
+    @Query("SELECT item_id FROM restore_request WHERE problem IN (:problems)")
+    suspend fun restoresStoppedBy(problems: List<RestoreProblem>): List<String>
 
     @Query("SELECT pending_uri FROM restore_request WHERE item_id = :itemId")
     suspend fun pendingUri(itemId: String): String?

@@ -17,6 +17,11 @@ enum class TrashOrigin {
     SETTLE,
     /** Deleted in another app, e.g. Samsung Gallery. */
     ELSEWHERE,
+    /**
+     * Part of a mass disappearance whose Drive copies the user chose to move to the trash (R14).
+     * Already confirmed, so it never counts toward another one.
+     */
+    DISAPPEARED,
 }
 
 /** An item in Settle's trash: its phone file in the system trash and its Drive copy in Drive's. */
@@ -342,7 +347,14 @@ fun decideVanished(
     return when (decision) {
         VanishedDecision.MOVE_DRIVE_COPIES_TO_TRASH ->
             TrashChanges(
-                entries = waiting.map { TrashEntry(it.itemId, TrashOrigin.ELSEWHERE, nowMillis) },
+                entries =
+                    waiting.map {
+                        val origin =
+                            if (it.vanished?.reason == VanishedReason.BREAKER) {
+                                TrashOrigin.DISAPPEARED
+                            } else TrashOrigin.ELSEWHERE
+                        TrashEntry(it.itemId, origin, nowMillis)
+                    },
                 removeVanished = waiting.map { it.itemId },
                 ops = waiting.flatMap { ops(it.itemId, it.driveFiles.all, DriveOpKind.TRASH) },
             )

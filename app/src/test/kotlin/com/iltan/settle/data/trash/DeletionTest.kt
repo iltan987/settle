@@ -16,6 +16,7 @@ import com.iltan.settle.data.media.MediaSource
 import com.iltan.settle.domain.CloudState
 import com.iltan.settle.domain.LocalState
 import com.iltan.settle.domain.MediaItemId
+import com.iltan.settle.domain.backup.BackupPause
 import com.iltan.settle.domain.backup.FakeDrive
 import com.iltan.settle.domain.backup.FileSnapshot
 import com.iltan.settle.domain.backup.UploadRecord
@@ -26,9 +27,11 @@ import com.iltan.settle.domain.deletion.DriveOpKind
 import com.iltan.settle.domain.deletion.ExternalDeletionPolicy
 import com.iltan.settle.domain.deletion.FakeRestoreTarget
 import com.iltan.settle.domain.deletion.RestoreDownload
+import com.iltan.settle.domain.deletion.RestoreProblem
 import com.iltan.settle.domain.deletion.TRASH_RETENTION_MILLIS
 import com.iltan.settle.domain.deletion.TrashOrigin
 import com.iltan.settle.domain.deletion.VanishedDecision
+import com.iltan.settle.domain.deletion.VanishedReason
 import com.iltan.settle.domain.deletion.afterScan
 import com.iltan.settle.domain.scan.MediaKind
 import com.iltan.settle.domain.scan.ScanRow
@@ -332,6 +335,14 @@ class DeletionTest {
 
         assertTrue(drive.trashed.isEmpty())
         assertEquals(listOf(id), deletion.undecided.first().map { it.id })
+        // The trash shows it as waiting, outside the trash proper: emptying it leaves it alone.
+        val waiting = deletion.trash.first().single()
+        assertEquals(VanishedReason.ASK, waiting.waitingReason)
+        assertFalse(waiting.inTrash)
+        deletion.emptyTrash()
+        work.runDriveChanges()
+        assertTrue("drive1" in drive.files)
+        assertEquals(listOf(id), deletion.undecided.first().map { it.id })
 
         deletion.decide(listOf(id), VanishedDecision.MOVE_DRIVE_COPIES_TO_TRASH)
         work.runDriveChanges()
@@ -355,6 +366,53 @@ class DeletionTest {
         assertTrue(drive.trashed.isEmpty())
         assertEquals(0, deletion.breakerCount.first())
         assertEquals(ids.size, allIds().size)
+    }
+
+    @Test
+    fun aMassDisappearanceMovedToTheTrashIsNotCountedAgain() = runTest {
+        backedUp(*(1L..280L).toList().toLongArray())
+        (1L..250L).forEach { source.files.remove(it) }
+        sync.scan()
+        // Offline: the Drive changes the answer queued haven't run yet.
+        deletion.decide(null, VanishedDecision.MOVE_DRIVE_COPIES_TO_TRASH)
+
+        (251L..270L).forEach { source.files.remove(it) }
+        sync.scan()
+
+        assertEquals(0, deletion.breakerCount.first())
+        val origins = deletion.trash.first().groupingBy { it.origin }.eachCount()
+        assertEquals(mapOf(TrashOrigin.DISAPPEARED to 250, TrashOrigin.ELSEWHERE to 20), origins)
+    }
+
+    @Test
+    fun restoresStoppedOfflineContinueWhenSettleIsBack() = runTest {
+        val (id) = backedUp(1)
+        source.files.remove(1)
+        sync.scan()
+        deletion.restore(listOf(id))
+        db.trashDao().setRestoreProblem(id, RestoreProblem.OFFLINE)
+
+        deletion.resumeRestores()
+
+        assertEquals(2, restoreStarted)
+        assertNull(db.trashDao().restoreRequests().single().problem)
+    }
+
+    @Test
+    fun restoresStoppedForSignInWaitUntilTheAccountIsBack() = runTest {
+        val (id) = backedUp(1)
+        source.files.remove(1)
+        sync.scan()
+        deletion.restore(listOf(id))
+        db.trashDao().setRestoreProblem(id, RestoreProblem.AUTH_NEEDED)
+        preferences.block(BackupPause.AUTH_NEEDED)
+
+        deletion.resumeRestores()
+        assertEquals(RestoreProblem.AUTH_NEEDED, db.trashDao().restoreRequests().single().problem)
+
+        preferences.update { it.copy(blocked = null) }
+        deletion.resumeRestores()
+        assertNull(db.trashDao().restoreRequests().single().problem)
     }
 
     @Test
