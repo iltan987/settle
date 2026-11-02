@@ -110,3 +110,30 @@ Owner's ideas from 2026-10-31, to research when scheduled:
 - **Places.** A map of the library with photos placed where they were taken (the details sheet's
   address is R25).
 - **People.** Group photos by the faces in them, on the phone, and browse one person's photos.
+
+Owner's ideas from 2026-11-02, in the suggested order (to research when scheduled):
+- **Memories.** "On this day": the same day in earlier years, as a row on the Photos tab, with an
+  optional notification (off by default; Settle stays quiet otherwise).
+- **Trips and places.** Settle learns where the user usually is from the photos themselves, on the
+  phone; a run of photos far from there over a few days becomes a trip ("İzmir, July 2025") with
+  a cover and dates. A places view groups photos by city. "Then and now" pairs photos taken at
+  the same spot in different years. Photos are grouped by coordinates on the phone first and only
+  each group is named, so a trip costs one geocoder request (ADR-017 allows only the photo on
+  screen today; this needs its own decision).
+- **Search by text and things.** Find photos by the text in them (a Wi-Fi password, a receipt, a
+  booking) and by what they show ("cat", "beach", "document"), with on-device recognition such as
+  ML Kit's text recognition and image labelling.
+- **Documents and screenshots apart.** Receipts, IDs and screenshots kept out of the timeline in
+  their own place, with a suggestion to clean up old screenshots; pairs with the "temporary" tag.
+- **People and pets.** Beyond grouping faces: name a group or link it to a contact, then browse
+  that person's photos, selfies included; pets too. Face detection exists on the phone; telling
+  who is who needs a bundled recognition model (check what is current).
+- **Search by description.** "Sunset at the sea", "kids at the birthday", with an on-device model;
+  check what the S24 FE supports. The heaviest of these.
+
+Rules for all of them:
+- Recognition and indexing run on the phone only, while charging, like automatic backup. Nothing
+  new leaves the phone except what an ADR allows.
+- What the user sets (a person's name, a trip's title, a hidden match) is kept apart from what
+  Settle computes, so recomputing never overwrites it, and it is saved in Drive like albums and
+  favourites (R15), so a new phone doesn't need the work again.
