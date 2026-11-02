@@ -68,6 +68,19 @@ interface LibraryDao : TrashDao {
 
     @Query("SELECT COUNT(*) $ON_PHONE") fun onPhoneCount(): Flow<Int>
 
+    /** Items on the phone without a verified copy, newest first, with why an upload stopped. */
+    @Query(
+        """
+        SELECT $ENTRY_COLUMNS, f.relative_path, f.size_bytes, u.problem
+        FROM media_item m JOIN local_file f ON f.item_id = m.id
+        LEFT JOIN upload u ON u.item_id = m.id
+        WHERE f.local_state = 'PRESENT' AND f.media_store_id IS NOT NULL
+            AND m.cloud_state <> 'VERIFIED'
+        $NEWEST_FIRST
+        """
+    )
+    fun pendingBackup(): Flow<List<PendingEntry>>
+
     @Query(
         """
         SELECT m.id, f.display_name, f.relative_path, f.size_bytes, m.mime_type, m.taken_at_ms,

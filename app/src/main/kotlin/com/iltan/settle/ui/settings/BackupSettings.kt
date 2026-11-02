@@ -142,7 +142,9 @@ fun BackupPage(state: BackupSettingsState, debugOptions: Boolean, actions: Backu
 @Composable
 private fun StatusRow(state: BackupSettingsState, actions: BackupActions) {
     val waiting =
-        pluralStringResource(R.plurals.backup_count_waiting, state.upcoming, state.upcoming)
+        state.upcoming
+            .takeIf { it > 0 }
+            ?.let { pluralStringResource(R.plurals.backup_count_waiting, it, it) }
     data class Status(
         val icon: Int,
         val tone: RowTone,
@@ -365,7 +367,7 @@ private fun chosenFolders(folders: List<FolderSummary>): String {
 }
 
 @Composable
-internal fun graceLabel(millis: Long): String =
+fun graceLabel(millis: Long): String =
     when (millis) {
         0L -> stringResource(R.string.backup_grace_none)
         60_000L -> stringResource(R.string.backup_grace_minute)

@@ -99,12 +99,21 @@ fun chipState(headline: BackupHeadline): ChipState =
                         headline.run.totalItems,
                     ),
             )
+        // Never "First backup tonight" when no chosen folder has anything to send.
         is BackupHeadline.FirstBackupPending ->
-            ChipState(
-                stringResource(R.string.status_first_backup),
-                Tone.OK,
-                R.drawable.ic_schedule,
-            )
+            if (headline.upcoming > 0) {
+                ChipState(
+                    stringResource(R.string.status_first_backup),
+                    Tone.OK,
+                    R.drawable.ic_schedule,
+                )
+            } else {
+                ChipState(
+                    stringResource(R.string.status_nothing_to_back_up),
+                    Tone.OK,
+                    R.drawable.ic_cloud_done_filled,
+                )
+            }
         is BackupHeadline.AllInDrive ->
             ChipState(
                 stringResource(R.string.status_all_in_drive),

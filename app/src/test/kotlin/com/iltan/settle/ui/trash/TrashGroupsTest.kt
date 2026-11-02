@@ -92,11 +92,17 @@ class TrashGroupsTest {
         val b = entry("b", restoring = true)
 
         val started = tracker.update(listOf(a, b))
-        assertEquals(RestoreBatch(total = 2, restored = 0, bytesLeft = 2_000), started.batch)
+        assertEquals(
+            RestoreBatch(total = 2, restored = 0, bytesLeft = 2_000, bytesTotal = 2_000),
+            started.batch,
+        )
 
         val half = tracker.update(listOf(b))
         assertEquals(listOf("a"), half.justRestored.map { it.id })
-        assertEquals(RestoreBatch(total = 2, restored = 1, bytesLeft = 1_000), half.batch)
+        assertEquals(
+            RestoreBatch(total = 2, restored = 1, bytesLeft = 1_000, bytesTotal = 2_000),
+            half.batch,
+        )
         assertNull(half.outcome)
 
         val done = tracker.update(emptyList())

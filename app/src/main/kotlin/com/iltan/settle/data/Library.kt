@@ -11,6 +11,7 @@ import com.iltan.settle.data.db.FolderSummary
 import com.iltan.settle.data.db.LibraryDao
 import com.iltan.settle.data.db.MediaDetails
 import com.iltan.settle.data.db.MediaEntry
+import com.iltan.settle.data.db.PendingEntry
 import com.iltan.settle.data.media.MediaThumbnail
 import com.iltan.settle.data.media.MotionPhotos
 import com.iltan.settle.domain.scan.MediaKind
@@ -42,6 +43,9 @@ class Library(private val dao: LibraryDao, private val resolver: ContentResolver
     fun folders(): Flow<List<FolderSummary>> = dao.folders()
 
     fun onPhoneCount(): Flow<Int> = dao.onPhoneCount()
+
+    /** Items without a verified copy in Drive, for the Backup tab. */
+    fun pendingBackup(): Flow<List<PendingEntry>> = dao.pendingBackup()
 
     fun lastScanAt(): Flow<Long?> = dao.lastScanAt()
 

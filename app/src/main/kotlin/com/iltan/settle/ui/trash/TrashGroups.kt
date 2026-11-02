@@ -72,6 +72,8 @@ data class RestoreBatch(
     val restored: Int,
     /** Bytes still to download. */
     val bytesLeft: Long,
+    /** Bytes of the whole batch, done or not. */
+    val bytesTotal: Long = 0,
 )
 
 /** A restore from Drive that ended: how many came back, and where (F6). */
@@ -110,7 +112,12 @@ class RestoreTracker {
         if (running.isNotEmpty()) {
             return Update(
                 back,
-                RestoreBatch(batch.size, restored.size, running.sumOf { it.sizeBytes }),
+                RestoreBatch(
+                    batch.size,
+                    restored.size,
+                    running.sumOf { it.sizeBytes },
+                    batch.values.sumOf { it.sizeBytes },
+                ),
                 null,
             )
         }

@@ -542,4 +542,72 @@
     <string name="about_safety">Settle fotoğraflarınızı nasıl güvende tutar</string>
     <string name="about_privacy">Gizlilik politikası</string>
     <string name="about_feedback">Geri bildirim gönder</string>
+    <!-- Phase 5 · M5: Backup tab (docs/design/turn4, J) -->
+    <string name="status_nothing_to_back_up">Yedeklenecek bir şey yok</string>
+    <string name="header_attention_body">Geri kalan her şey Drive\'da. Hiçbir şey kaybolmadı.</string>
+    <string name="header_off_body">Orijinalleri kendi Drive\'ınıza yedeklemek için Google Drive\'ı bağlayın.</string>
+    <string name="header_sign_in_body">Google, Settle\'ın oturumunu kapattı. Bu telefonda hiçbir şey değişmedi.</string>
+    <plurals name="header_drive_full_body">
+        <item quantity="one">%d öğe bu telefonda güvenle bekliyor. Drive\'da yer açın veya depolama alanı ekleyin.</item>
+        <item quantity="other">%d öğe bu telefonda güvenle bekliyor. Drive\'da yer açın veya depolama alanı ekleyin.</item>
+    </plurals>
+    <string name="header_location_body">Orijinaller Drive\'a konumlarıyla birlikte ulaşsın diye Settle\'ın fotoğrafların çekildiği yeri okuma izni gerekiyor.</string>
+    <plurals name="header_paused_body">
+        <item quantity="one">%d öğe bu telefonda güvenle ve değişmeden bekliyor.</item>
+        <item quantity="other">%d öğe bu telefonda güvenle ve değişmeden bekliyor.</item>
+    </plurals>
+    <string name="header_backing_up_body">Her dosya güvende sayılmadan önce Drive\'da kontrol edilir.</string>
+    <string name="header_speed">%1$s/sn</string>
+    <string name="header_less_than_minute">Bir dakikadan az kaldı</string>
+    <plurals name="header_minutes_left">
+        <item quantity="one">Yaklaşık %d dakika kaldı</item>
+        <item quantity="other">Yaklaşık %d dakika kaldı</item>
+    </plurals>
+    <plurals name="header_hours_left">
+        <item quantity="one">Yaklaşık %d saat kaldı</item>
+        <item quantity="other">Yaklaşık %d saat kaldı</item>
+    </plurals>
+    <plurals name="header_first_body">
+        <item quantity="one">%d öğe ilk yedeklemesini bekliyor.</item>
+        <item quantity="other">%d öğe ilk yedeklemesini bekliyor.</item>
+    </plurals>
+    <plurals name="header_safe">
+        <item quantity="one">%d öğe güvende ve kontrol edildi.</item>
+        <item quantity="other">%d öğe güvende ve kontrol edildi.</item>
+    </plurals>
+    <plurals name="header_upcoming">
+        <item quantity="one">%d yeni öğe sonraki yedeklemeyi bekliyor.</item>
+        <item quantity="other">%d yeni öğe sonraki yedeklemeyi bekliyor.</item>
+    </plurals>
+    <string name="header_last_backup">Son yedekleme %1$s.</string>
+    <plurals name="section_in_run">
+        <item quantity="one">Bu yedeklemede · %d kaldı</item>
+        <item quantity="other">Bu yedeklemede · %d kaldı</item>
+    </plurals>
+    <string name="section_uploading">Yükleniyor</string>
+    <string name="section_waiting">Bekliyor · %1$d</string>
+    <string name="section_waiting_from">Başlangıç: %1$s</string>
+    <string name="section_queued">Sırada · %1$d</string>
+    <string name="section_after_resume">Siz devam ettirdikten sonra</string>
+    <string name="section_attention">İlgi bekleyenler</string>
+    <string name="queue_tonight">Bu gece, Wi-Fi ve şarjdayken</string>
+    <string name="queue_charger">Şarjdayken</string>
+    <string name="queue_wifi">Wi-Fi\'dayken</string>
+    <string name="queue_soon">İlk fırsatta</string>
+    <string name="queue_when_asked">Siz yedeklediğinizde</string>
+    <string name="restore_card_title">Çöp kutusundan geri yükleniyor · %2$d öğeden %1$d tanesi</string>
+    <string name="restore_card_body">Drive\'dan indiriliyor ve her dosya kontrol ediliyor</string>
+    <string name="restore_card_bytes">%2$s içinden %1$s</string>
+    <string name="restore_card_view">Çöp kutusunda gör</string>
+    <string name="attention_restore_sub">Onları durduran nedenle birlikte çöp kutusunda bekliyorlar</string>
+    <string name="attention_sub">%1$s · %2$s · %3$s. %4$s</string>
+    <string name="attention_unreadable_body">Hasarlı olabilir veya başka bir uygulama hâlâ kaydediyor olabilir. Bu telefonda kalıyor.</string>
+    <string name="attention_changed_body">Yüklenirken düzenlendi. Bu telefonda kalıyor.</string>
+    <string name="attention_mismatch_body">Drive\'daki kopya aynı değildi, bu yüzden yedeklenmiş sayılmıyor. Bu telefonda kalıyor.</string>
+    <string name="attention_failed_body">Settle yedeklemeyi tamamlayamadı. Bu telefonda kalıyor.</string>
+    <string name="backup_how_title">Yedekleme nasıl çalışır</string>
+    <string name="backup_how_body">Yeni fotoğraflar 24 saat bekler, ardından gece Wi-Fi ve şarjdayken yedeklenir. Her kopya, Settle güvende demeden önce kontrol edilir.</string>
+    <string name="backup_nothing_waiting">Bekleyen bir şey yok</string>
+    <string name="backup_rhythm">Yeni fotoğraf ve videolar göründükten %1$s sonra yedeklenir.</string>
+    <string name="backup_rhythm_no_wait">Yeni fotoğraf ve videolar ilk fırsatta yedeklenir.</string>
 </resources>

@@ -28,6 +28,7 @@ import com.iltan.settle.R
 import com.iltan.settle.appGraph
 import com.iltan.settle.data.system.SystemState
 import com.iltan.settle.domain.backup.BackupPause
+import com.iltan.settle.domain.backup.BackupSettings
 import com.iltan.settle.domain.deletion.ExternalDeletionPolicy
 import com.iltan.settle.ui.LocalAppMessages
 import com.iltan.settle.ui.chrome.RowButtonStyle
@@ -241,9 +242,24 @@ internal fun nextBackup(state: BackupSettingsState): String {
     )
 }
 
+/**
+ * When queued items go, as a section's meta on the Backup tab: "Tonight, on Wi-Fi and the charger".
+ */
+@Composable
+fun nextBackupWhen(settings: BackupSettings): String =
+    stringResource(
+        when {
+            !settings.automatic -> R.string.queue_when_asked
+            settings.onlyWhileCharging && !settings.useMobileData -> R.string.queue_tonight
+            settings.onlyWhileCharging -> R.string.queue_charger
+            !settings.useMobileData -> R.string.queue_wifi
+            else -> R.string.queue_soon
+        }
+    )
+
 /** "today at 09:58", "yesterday at 21:40", or "25 October at 03:12". */
 @Composable
-internal fun whenText(atMillis: Long): String {
+fun whenText(atMillis: Long): String {
     val context = LocalContext.current
     val locale = LocalConfiguration.current.locales[0]
     val zone = ZoneId.systemDefault()
@@ -400,7 +416,7 @@ fun BackupSettingsScreen(
 
 /** The Backup page's groups, wired to the app. */
 @Composable
-fun BackupSettingsContent(
+private fun BackupSettingsContent(
     onOpenFolders: () -> Unit,
     onOpenAttention: () -> Unit,
     onConnect: () -> Unit,

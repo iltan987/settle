@@ -547,4 +547,72 @@
     <string name="about_safety">How Settle keeps your photos safe</string>
     <string name="about_privacy">Privacy policy</string>
     <string name="about_feedback">Send feedback</string>
+    <!-- Phase 5 · M5: Backup tab (docs/design/turn4, J) -->
+    <string name="status_nothing_to_back_up">Nothing to back up</string>
+    <string name="header_attention_body">Everything else is in Drive. Nothing was lost.</string>
+    <string name="header_off_body">Connect Google Drive to back up originals to your own Drive.</string>
+    <string name="header_sign_in_body">Google signed Settle out. Nothing on this phone has changed.</string>
+    <plurals name="header_drive_full_body">
+        <item quantity="one">%d item is waiting safely on this phone. Free up space in Drive or add storage.</item>
+        <item quantity="other">%d items are waiting safely on this phone. Free up space in Drive or add storage.</item>
+    </plurals>
+    <string name="header_location_body">Settle needs permission to read where photos were taken, so originals reach Drive with their location intact.</string>
+    <plurals name="header_paused_body">
+        <item quantity="one">%d item waits on this phone, safe and unchanged.</item>
+        <item quantity="other">%d items wait on this phone, safe and unchanged.</item>
+    </plurals>
+    <string name="header_backing_up_body">Each file is checked in Drive before it counts as safe.</string>
+    <string name="header_speed">%1$s/s</string>
+    <string name="header_less_than_minute">Less than a minute left</string>
+    <plurals name="header_minutes_left">
+        <item quantity="one">About %d minute left</item>
+        <item quantity="other">About %d minutes left</item>
+    </plurals>
+    <plurals name="header_hours_left">
+        <item quantity="one">About %d hour left</item>
+        <item quantity="other">About %d hours left</item>
+    </plurals>
+    <plurals name="header_first_body">
+        <item quantity="one">%d item waits for its first backup.</item>
+        <item quantity="other">%d items wait for their first backup.</item>
+    </plurals>
+    <plurals name="header_safe">
+        <item quantity="one">%d item is safe and checked.</item>
+        <item quantity="other">%d items are safe and checked.</item>
+    </plurals>
+    <plurals name="header_upcoming">
+        <item quantity="one">%d new one waits for the next backup.</item>
+        <item quantity="other">%d new ones wait for the next backup.</item>
+    </plurals>
+    <string name="header_last_backup">Last backup %1$s.</string>
+    <plurals name="section_in_run">
+        <item quantity="one">In this backup · %d left</item>
+        <item quantity="other">In this backup · %d left</item>
+    </plurals>
+    <string name="section_uploading">Uploading</string>
+    <string name="section_waiting">Waiting · %1$d</string>
+    <string name="section_waiting_from">From %1$s</string>
+    <string name="section_queued">Queued · %1$d</string>
+    <string name="section_after_resume">After you resume</string>
+    <string name="section_attention">Needs attention</string>
+    <string name="queue_tonight">Tonight, on Wi-Fi and the charger</string>
+    <string name="queue_charger">On the charger</string>
+    <string name="queue_wifi">On Wi-Fi</string>
+    <string name="queue_soon">At the next chance</string>
+    <string name="queue_when_asked">When you back them up</string>
+    <string name="restore_card_title">Restoring from trash · %1$d of %2$d</string>
+    <string name="restore_card_body">Downloading from Drive and checking each file</string>
+    <string name="restore_card_bytes">%1$s of %2$s</string>
+    <string name="restore_card_view">View in Trash</string>
+    <string name="attention_restore_sub">They wait in the trash, with what stopped them</string>
+    <string name="attention_sub">%1$s · %2$s · %3$s. %4$s</string>
+    <string name="attention_unreadable_body">It may be damaged or still being saved by another app. It stays on this phone.</string>
+    <string name="attention_changed_body">It was edited while it uploaded. It stays on this phone.</string>
+    <string name="attention_mismatch_body">Drive’s copy wasn’t identical, so it doesn’t count as backed up. It stays on this phone.</string>
+    <string name="attention_failed_body">Settle couldn’t finish its backup. It stays on this phone.</string>
+    <string name="backup_how_title">How backup works</string>
+    <string name="backup_how_body">New photos wait 24 hours, then back up at night on Wi-Fi and the charger. Each copy is checked before Settle calls it safe.</string>
+    <string name="backup_nothing_waiting">Nothing waiting</string>
+    <string name="backup_rhythm">New photos and videos back up %1$s after they appear.</string>
+    <string name="backup_rhythm_no_wait">New photos and videos back up at the next chance.</string>
 </resources>

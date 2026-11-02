@@ -50,6 +50,9 @@ import com.iltan.settle.data.trash.BreakerCheck
 import com.iltan.settle.domain.backup.BackupHeadline
 import com.iltan.settle.domain.deletion.VanishedDecision
 import com.iltan.settle.ui.backup.BackupTab
+import com.iltan.settle.ui.backup.BackupTabActions
+import com.iltan.settle.ui.backup.BackupTabViewModel
+import com.iltan.settle.ui.backup.ids
 import com.iltan.settle.ui.chrome.BottomBarFrame
 import com.iltan.settle.ui.chrome.BottomBarHeight
 import com.iltan.settle.ui.chrome.LocalTabBar
@@ -69,6 +72,7 @@ import com.iltan.settle.ui.settings.KeepRunningScreen
 import com.iltan.settle.ui.settings.LanguageScreen
 import com.iltan.settle.ui.settings.SettingsScreen
 import com.iltan.settle.ui.settings.SettingsSection
+import com.iltan.settle.ui.settings.everythingChosen
 import com.iltan.settle.ui.theme.SettleMotion
 import com.iltan.settle.ui.timeline.NoticeHandlers
 import com.iltan.settle.ui.timeline.TimelineScreen
@@ -308,13 +312,73 @@ private fun Destinations(
                     entry<Backup> {
                         val email by
                             graph.backupStatus.accountEmail.collectAsStateWithLifecycle(null)
+                        val viewModel = viewModel {
+                            BackupTabViewModel(
+                                pending = graph.library.pendingBackup(),
+                                decisions = graph.backupStatus.decisions,
+                                uploading = graph.cloudBackup.progress.ids(),
+                                headline = graph.backupStatus.headline,
+                                counts = graph.backupStatus.counts,
+                                run = graph.backupStatus.run,
+                                choices = graph.backupPreferences.choices,
+                                lastBackupAt = graph.database.backupDao().lastVerifiedAt(),
+                                trash = graph.deletion.trash,
+                                restoring = graph.trashWork.restoring,
+                                breakerCount = graph.deletion.breakerCount,
+                                checkingMass = graph.breakerCheck.checking,
+                            )
+                        }
+                        val state by viewModel.state.collectAsStateWithLifecycle()
+                        val uploads = graph.cloudBackup.progress.collectAsStateWithLifecycle()
+                        val decisions = graph.backupStatus.decisions.collectAsStateWithLifecycle()
+                        val askLocation =
+                            rememberLauncherForActivityResult(
+                                ActivityResultContracts.RequestPermission()
+                            ) {
+                                graph.deviceSetup.refresh()
+                            }
+                        fun inFront(block: suspend () -> Unit) {
+                            graph.appScope.launch { block() }
+                        }
                         BackupTab(
-                            email,
+                            state = state,
+                            accountEmail = email,
                             onOpenSettings = { backStack.add(Settings) },
-                            onOpenFolders = {
-                                backStack.add(SettingsSubpage(SettingsSection.BACKUP_FOLDERS))
-                            },
-                            onSignIn = onSignIn,
+                            uploads = uploads,
+                            decisions = decisions,
+                            actions =
+                                BackupTabActions(
+                                    connect = { backStack.add(Settings) },
+                                    signIn = onSignIn,
+                                    manageStorage = { openUrl(context, MANAGE_STORAGE_URL) },
+                                    allowLocation = {
+                                        askLocation.launch(
+                                            Manifest.permission.ACCESS_MEDIA_LOCATION
+                                        )
+                                    },
+                                    setPaused = { inFront { graph.cloudBackup.setPaused(it) } },
+                                    backUpEverythingNow = {
+                                        inFront {
+                                            graph.cloudBackup.backUpNow(
+                                                everythingChosen(
+                                                    graph.database.backupDao(),
+                                                    graph.backupPreferences,
+                                                    System::currentTimeMillis,
+                                                )
+                                            )
+                                        }
+                                    },
+                                    tryAgain = { id ->
+                                        inFront { graph.cloudBackup.backUpNow(listOf(id)) }
+                                    },
+                                    open = {
+                                        backStack.add(
+                                            Viewer(GridSource.Folder(it.relativePath), it.entry.id)
+                                        )
+                                    },
+                                    viewTrash = { backStack.add(Trash) },
+                                    reviewMass = { backStack.add(MassReview) },
+                                ),
                         )
                     }
                     entry<Folders> {

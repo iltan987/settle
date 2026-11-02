@@ -1,9 +1,11 @@
 package com.iltan.settle.data.db
 
 import androidx.room3.ColumnInfo
+import androidx.room3.Embedded
 import com.iltan.settle.domain.CloudState
 import com.iltan.settle.domain.LocalState
 import com.iltan.settle.domain.MediaItemId
+import com.iltan.settle.domain.backup.UploadProblem
 import com.iltan.settle.domain.backup.folderBacksUp
 import com.iltan.settle.domain.scan.KnownFile
 import com.iltan.settle.domain.scan.MediaKind
@@ -25,6 +27,15 @@ data class MediaEntry(
     @ColumnInfo(name = "media_store_id") val mediaStoreId: Long,
     @ColumnInfo(name = "date_modified_s") val dateModifiedS: Long,
     @ColumnInfo(name = "cloud_state") val cloudState: CloudState,
+)
+
+/** An item on the phone without a verified copy in Drive, for the Backup tab (J). */
+data class PendingEntry(
+    @Embedded val entry: MediaEntry,
+    @ColumnInfo(name = "relative_path") val relativePath: String,
+    @ColumnInfo(name = "size_bytes") val sizeBytes: Long,
+    /** Why its last upload stopped, if it did. */
+    val problem: UploadProblem?,
 )
 
 /** Width over height as the photo is shown, or null when MediaStore didn't know its size. */
