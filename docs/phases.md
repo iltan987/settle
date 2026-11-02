@@ -110,28 +110,54 @@ Not done or deviations from the plan:
   - Some queued meta and folder messages are worded slightly differently from the design.
   - "From November 3 at 7:26" is used where the design says "tomorrow".
 - **Not seen on a device; covered by tests:**
-  - pinch, since adb can't send two fingers;
   - place names, since the test images have no GPS;
-  - the viewer closing after its last photo is deleted, and Undo reopening it;
   - the problem cards and their popover, since nothing was wrong on the emulator during M2;
   - Connect Drive (A5), since the emulator and the phone are already connected;
   - the "First backup starts tonight" card (A9), since both already have verified uploads.
-- **Phone check still to do (end of phase, with the owner's OK):**
-  - two wallpapers for dynamic colour;
+- **Phone check still to do:**
   - Turkish at 130% font scale;
-  - grid scroll and pinch performance;
-  - a delete and Undo on test media only;
-  - place names on a real photo with a location;
-  - whether the status bar hides with the viewer's chrome.
+  - place names on a real photo with a location.
+
+Checked on the phone (2026-11-02; test media `undo_1`, `undo_2` in `Pictures/SettleTest/` only):
+- **Status bar.** It hides with the viewer's chrome, smoothly.
+- **Wallpaper colours.** The owner saw no change, because One UI's Colour palette is off on the phone
+  (`wallpapertheme_state=0`, no theme overlay). Android then gives every app the same default
+  palette. Settle follows the palette once it's on; the launcher icon keeps its fixed colours by
+  design.
+- **Delete and Undo in the viewer.**
+  - Deleting the folder's only photo closed the viewer, and Undo reopened it on that photo.
+  - With two photos, the viewer moved to the next one, and Undo went back to the restored one.
+  - Through Settle, Samsung keeps the MediaStore ID, so the item keeps its identity.
+- **Restored outside Settle.** A backed-up test image was deleted in Settle. Then its trashed row was
+  removed and the identical file put back, which is what Samsung Gallery's restore does to
+  MediaStore. Settle first marked it missing, keeping its trash record and its Drive copy. When the
+  file came back under a new ID, it matched it to the same item, took the Drive copy out of Drive's
+  trash, and uploaded nothing again. A photo never backed up that is restored outside Settle comes
+  back as a new item: nothing of it is in Drive, but the viewer can't find it again. That is what
+  the owner saw with a camera photo restored while Samsung Gallery was in front.
+- **Scrolling, measured while the owner scrolled** (Perfetto and gfxinfo):
+  - The debug build had 14.4% late frames; the 99th percentile was 250 ms and the worst 217 ms.
+    The worst frames were fast-scroller drags: each move composed a screen of new cells twice (the
+    shared-element lookahead), and each cell registered its own shared-element state.
+  - The same build made non-debuggable and compiled ahead of time, with only the photo in flight
+    taking part in the shared element, had 6.8% late frames, a 99th percentile of 36 ms and a
+    worst of 52 ms. The owner felt no lag. Frames over 33 ms went from 84 to 3.
+  - The non-debuggable build was a local, uncommitted change for the measurement; the debug build
+    is back on the phone. The daily build stays slower until a release build exists.
 
 Found on the phone, fixed:
+- **Pinch ran through densities.** A small pinch went from 3 to 4 to 5 columns. `gridGestures`
+  repeated the whole modifier chain, so the grid had two pinch detectors and two zoom layers. The
+  detector also sat inside the zoom layer and could step again within one pinch. One pinch now
+  makes one step.
+- **Scroll cost.** Only the photo in flight takes part in the shared element.
 - **Never sleeping apps.** The owner opened Never sleeping apps from the setup step and couldn't
   find Settle in Samsung's picker. One UI leaves out every app whose battery use is Unrestricted,
   and such an app is in Android's exempted standby bucket, so it can't be put to sleep. The
   Samsung step now shows only while battery use isn't Unrestricted (ADR-014, R5).
 
-Left on the phone: the M6 build with the fix above. Notifications and Unrestricted battery use are
-on, so no setup step is left and onboarding ends at the timeline on the next start.
+Left on the phone: the debug build with these fixes; Media management is on. The test images
+`undo_1.png` (backed up to `Settle (debug)/`) and `undo_2.png` are in `Pictures/SettleTest/`.
 
 Left on the emulator:
 - Backup resumed. The test folder doesn't back up (`back_up` is an explicit `false`) and is shown.
