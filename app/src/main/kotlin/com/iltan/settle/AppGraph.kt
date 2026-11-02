@@ -27,6 +27,7 @@ import com.iltan.settle.data.media.LibrarySync
 import com.iltan.settle.data.media.MediaAccess
 import com.iltan.settle.data.media.MediaChangeObserver
 import com.iltan.settle.data.media.MediaStoreSource
+import com.iltan.settle.data.media.Places
 import com.iltan.settle.data.system.DeviceSetup
 import com.iltan.settle.data.trash.Deletion
 import com.iltan.settle.data.trash.MediaStoreTrash
@@ -61,6 +62,8 @@ class AppGraph(context: Context) {
     val library = Library(database.libraryDao(), appContext.contentResolver)
 
     val uiPreferences = UiPreferences(database.uiDao())
+
+    val places by lazy { Places(appContext) }
 
     val librarySync =
         LibrarySync(

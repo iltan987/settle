@@ -90,6 +90,9 @@ Play Store release later must stay possible, so Play-policy-forbidden permission
 - R17. UI in English and Turkish, switchable in the app and in system settings.
 - R18. Material 3 Expressive look in Settle's Tidepool design (ADR-016): the wallpaper's colours,
   Figtree, photos first with light chrome; few prompts; sensible defaults.
+- R25. The viewer names where a photo was taken when it has a location, and its details show the
+  address and open it in a maps app. Only the coordinates of the photo on screen go to the
+  platform geocoder for this (ADR-017); without a name, the folder shows instead.
 
 ## Later (not scheduled)
 Storage overview, duplicates and similar shots, a "temporary" tag with auto-delete, exposing
@@ -102,6 +105,6 @@ Owner's ideas from 2026-10-31, to research when scheduled:
   (seen 2026-10-31). An "Open in Samsung Gallery" action is the way in; "Edit in Google Photos"
   works through `ACTION_EDIT`.
   Circle to Search is system-wide and already works on Settle's screens.
-- **Places.** In the details sheet, an address instead of raw coordinates and a small map; a map
-  of the library with photos placed where they were taken.
+- **Places.** A map of the library with photos placed where they were taken (the details sheet's
+  address is R25).
 - **People.** Group photos by the faces in them, on the phone, and browse one person's photos.
