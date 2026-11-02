@@ -20,12 +20,7 @@ data class SystemState(
     val samsung: Boolean = false,
     /** Media location access, without which originals can't be read byte for byte (R1). */
     val canReadOriginals: Boolean = true,
-) {
-    /** Setup steps still open, apart from Samsung's, which Android can't report. */
-    val openSteps: Int
-        get() =
-            listOf(!notificationsAllowed, !batteryUnrestricted || backgroundRestricted).count { it }
-}
+)
 
 /**
  * Android's permission and battery settings as a flow. Android sends no callback when the user

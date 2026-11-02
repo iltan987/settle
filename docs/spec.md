@@ -34,8 +34,9 @@ Play Store release later must stay possible, so Play-policy-forbidden permission
 - R4. An interrupted upload resumes without re-sending confirmed bytes and without creating duplicate Drive files.
 - R5. Backup continues in the background without the app open, after a one-time setup. New media
   are noticed without opening the app. Settings shows each setup step (notifications, unrestricted
-  battery use, Samsung's Never sleeping apps) only while it is still needed; Android can't report
-  Samsung's, so on Samsung that step stays listed and explains the way there first.
+  battery use, Samsung's Never sleeping apps) only while it is still needed. Android can't report
+  Samsung's list, so that step shows on Samsung while battery use isn't Unrestricted, which covers
+  it, and explains the way there first.
 - R6. When Drive is full or sign-in needs the user, backup pauses and says why; nothing is lost.
 - R22. Google Drive is connected once, during onboarding or in Settings, by picking an account and
   allowing only access to the files Settle creates; Settings shows the account

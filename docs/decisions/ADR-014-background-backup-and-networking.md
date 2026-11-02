@@ -98,6 +98,11 @@
   - The user can pause too.
 - **Reliability setup**: Settings shows notifications, unrestricted battery use (App info) and, on
   Samsung, the Never sleeping apps list, each only while it is still needed.
+  Amended 2026-11-02: Samsung's step shows only while battery use isn't Unrestricted. On the
+  S24 FE (One UI 9) an Unrestricted app is in the exempted standby bucket (5), and Samsung's
+  "add" picker for Never sleeping apps leaves out every Unrestricted app, so asking for both sent
+  the user looking for Settle in a list that can't contain it. Samsung's page doesn't document
+  this; it was seen on the phone with every Unrestricted app.
   - No battery-exemption permission is declared.
   - No promoted notifications are used.
 

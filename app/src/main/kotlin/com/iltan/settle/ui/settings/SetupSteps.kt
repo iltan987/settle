@@ -37,16 +37,25 @@ import com.iltan.settle.ui.theme.settleColors
 enum class SetupStep {
     NOTIFICATIONS,
     BATTERY,
-    /** Samsung's Never sleeping apps: Android can't report it, so it shows on every Samsung. */
+    /**
+     * Samsung's Never sleeping apps, while battery use isn't Unrestricted. Android can't report the
+     * list. An Unrestricted app is in the exempted standby bucket, which Samsung's sleeping can't
+     * restrict, and One UI leaves such apps out of the list's picker (seen on the S24 FE, One UI
+     * 9).
+     */
     NEVER_SLEEPING,
 }
 
-/** The steps Android still lacks, with Samsung's on every Samsung phone. */
+/**
+ * The steps Android still lacks. Samsung's only shows while battery use isn't Unrestricted:
+ * Unrestricted covers it, and Samsung then won't offer Settle in that list at all.
+ */
 val SystemState.openSetupSteps: List<SetupStep>
     get() = buildList {
+        val batteryOpen = backgroundRestricted || !batteryUnrestricted
         if (!notificationsAllowed) add(SetupStep.NOTIFICATIONS)
-        if (backgroundRestricted || !batteryUnrestricted) add(SetupStep.BATTERY)
-        if (samsung) add(SetupStep.NEVER_SLEEPING)
+        if (batteryOpen) add(SetupStep.BATTERY)
+        if (samsung && batteryOpen) add(SetupStep.NEVER_SLEEPING)
     }
 
 /** What the setup steps open. */

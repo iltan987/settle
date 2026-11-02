@@ -53,8 +53,8 @@ val SystemState.keepRunningShown: Boolean
 
 /**
  * Keep backup running (I10): the setup steps Android still lacks, each gone once done. Samsung's
- * Never sleeping apps can't be read back, so on Samsung that step always shows, and opens the guide
- * (A8) first.
+ * Never sleeping apps can't be read back; it shows while battery use isn't Unrestricted, and opens
+ * the guide (A8) first.
  */
 @Composable
 fun KeepRunningPage(system: SystemState, actions: KeepRunningActions) {
@@ -85,12 +85,9 @@ fun KeepRunningPage(system: SystemState, actions: KeepRunningActions) {
 /** The main page's one row for the steps: how many are left and the first one's reason. */
 @Composable
 internal fun KeepRunningRow(system: SystemState, onClick: () -> Unit) {
-    val open = system.openSteps
+    val open = system.openSetupSteps.size
     SettingsRow(
-        title =
-            if (open > 0) {
-                pluralStringResource(R.plurals.keep_running_left, open, open)
-            } else stringResource(R.string.keep_running_never_sleeping),
+        title = pluralStringResource(R.plurals.keep_running_left, open, open),
         sub =
             stringResource(
                 when {
@@ -100,8 +97,8 @@ internal fun KeepRunningRow(system: SystemState, onClick: () -> Unit) {
                     else -> R.string.keep_running_never_sleeping_sub
                 }
             ),
-        icon = if (open > 0) R.drawable.ic_battery_alert else R.drawable.ic_bedtime_off,
-        tone = if (open > 0) RowTone.WARN else RowTone.PLAIN,
+        icon = R.drawable.ic_battery_alert,
+        tone = RowTone.WARN,
         trailing = Trailing.Chevron,
         onClick = onClick,
     )

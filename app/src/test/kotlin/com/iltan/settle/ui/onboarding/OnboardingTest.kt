@@ -14,6 +14,7 @@ import com.iltan.settle.data.media.MediaAccess
 import com.iltan.settle.data.system.SystemState
 import com.iltan.settle.ui.settings.KeepRunningActions
 import com.iltan.settle.ui.settings.SetupStep
+import com.iltan.settle.ui.settings.openSetupSteps
 import com.iltan.settle.ui.theme.SettleTheme
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
@@ -71,6 +72,20 @@ class OnboardingTest {
     }
 
     @Test
+    fun samsungsStepIsNeededOnlyUntilBatteryUseIsUnrestricted() {
+        // One UI leaves Unrestricted apps out of Never sleeping apps; they can't be put to sleep.
+        assertEquals(
+            listOf(SetupStep.BATTERY, SetupStep.NEVER_SLEEPING),
+            SystemState(batteryUnrestricted = false, samsung = true).openSetupSteps,
+        )
+        assertEquals(emptyList<SetupStep>(), SystemState(samsung = true).openSetupSteps)
+        assertEquals(
+            listOf(SetupStep.BATTERY),
+            SystemState(batteryUnrestricted = false).openSetupSteps,
+        )
+    }
+
+    @Test
     fun theBlockedScreenGivesAndroidsWayBack() {
         compose.setContent { SettleTheme { AccessBlockedScreen { calls += "settings" } } }
 
@@ -105,7 +120,14 @@ class OnboardingTest {
 
     @Test
     fun aDoneStepStaysInPlaceCheckedAndSamsungsTrustsTheUser() {
-        var system by mutableStateOf(SystemState(notificationsAllowed = false, samsung = true))
+        var system by
+            mutableStateOf(
+                SystemState(
+                    notificationsAllowed = false,
+                    batteryUnrestricted = false,
+                    samsung = true,
+                )
+            )
         compose.setContent {
             SettleTheme {
                 var neverSleeping by remember { mutableStateOf(false) }
