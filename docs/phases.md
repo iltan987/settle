@@ -120,8 +120,18 @@ Not done or deviations from the plan:
   - two wallpapers for dynamic colour;
   - Turkish at 130% font scale;
   - grid scroll and pinch performance;
-  - a delete and Undo on test media only.
-  The M5 build was installed on the phone at the owner's request; the M6 build is not yet.
+  - a delete and Undo on test media only;
+  - place names on a real photo with a location;
+  - whether the status bar hides with the viewer's chrome.
+
+Found on the phone, fixed:
+- **Never sleeping apps.** The owner opened Never sleeping apps from the setup step and couldn't
+  find Settle in Samsung's picker. One UI leaves out every app whose battery use is Unrestricted,
+  and such an app is in Android's exempted standby bucket, so it can't be put to sleep. The
+  Samsung step now shows only while battery use isn't Unrestricted (ADR-014, R5).
+
+Left on the phone: the M6 build with the fix above. Notifications and Unrestricted battery use are
+on, so no setup step is left and onboarding ends at the timeline on the next start.
 
 Left on the emulator:
 - Backup resumed. The test folder doesn't back up (`back_up` is an explicit `false`) and is shown.
