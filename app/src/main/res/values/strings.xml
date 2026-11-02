@@ -16,15 +16,6 @@
     <string name="language_turkish" translatable="false">Türkçe</string>
     <string name="settings_version">Version %1$s</string>
 
-    <string name="onboarding_title">Welcome to Settle</string>
-    <string name="onboarding_body">Settle shows every photo and video on this phone in one place. To do that it needs access to all of them. Nothing leaves your phone until you connect Google Drive.</string>
-    <string name="onboarding_allow">Allow access</string>
-    <string name="onboarding_partial_title">Settle sees only some photos</string>
-    <string name="onboarding_partial_body">With a selection, Settle can\'t show your whole library or notice new photos. Allow access to all photos and videos.</string>
-    <string name="onboarding_allow_all">Allow all</string>
-    <string name="onboarding_blocked_body">Access is turned off. You can turn it on in Settle\'s app settings, under Permissions, Photos and videos.</string>
-    <string name="onboarding_open_settings">Open settings</string>
-
     <string name="day_today">Today</string>
     <string name="day_yesterday">Yesterday</string>
     <plurals name="item_count">
@@ -148,8 +139,6 @@
     <string name="backup_folders">Folders to back up</string>
     <string name="backup_pause">Pause backup</string>
     <string name="backup_resume">Resume</string>
-    <string name="backup_allow_notifications">Allow notifications</string>
-    <string name="backup_allow_notifications_text">Only to tell you when backup needs you, and for backups you start</string>
     <string name="backup_battery_text">Otherwise Android may hold backups back. In App info, open Battery and choose Unrestricted.</string>
     <string name="backup_battery_restricted">Battery use is Restricted, so backup can\'t run in the background. In App info, open Battery and choose Unrestricted.</string>
     <string name="media_needs_attention">Backup needs attention</string>
@@ -632,5 +621,48 @@
     <plurals name="folder_backs_up_now">
         <item quantity="one">%2$s will back up its %1$d item.</item>
         <item quantity="other">%2$s will back up its %1$d items.</item>
+    </plurals>
+
+    <!-- Phase 5 · M6: Onboarding (docs/design/turn4, A) -->
+    <string name="welcome_title">Your phone and your Drive as one library</string>
+    <string name="welcome_body">Settle shows every photo and video on this phone in one place. To do that it needs access to all of them. Nothing leaves your phone until you connect Google Drive.</string>
+    <string name="welcome_allow">Allow access to photos</string>
+    <string name="access_partial_title">Settle sees only the photos you picked</string>
+    <string name="access_partial_body">To show your whole library in one place and notice new photos, Settle needs access to all of them. You still choose which folders back up.</string>
+    <string name="access_allow_all">Allow all</string>
+    <string name="access_blocked_title">Settle can’t see your photos</string>
+    <string name="access_blocked_body">Photo access is turned off for Settle. Turn it on in Android settings to see your library here.</string>
+    <string name="access_step_permissions">Permissions</string>
+    <string name="access_step_photos">Photos and videos</string>
+    <string name="access_open_settings">Open Android settings</string>
+    <string name="connect_title">Back up to your own Google Drive</string>
+    <string name="connect_body">Originals go to a folder called Settle in your Drive, byte for byte. Settle only sees the files it creates there.</string>
+    <string name="promise_wait">Waits before it uploads</string>
+    <string name="promise_wait_sub">New photos wait 24 hours, so shots you delete soon never reach Drive.</string>
+    <string name="promise_night">Works at night</string>
+    <string name="promise_night_sub">On Wi-Fi and the charger, unnoticed. Each copy is checked.</string>
+    <string name="promise_delete">Delete once, everywhere</string>
+    <string name="promise_delete_sub">Phone and Drive go to the trash together, with 30 days to undo.</string>
+    <string name="connecting">Connecting…</string>
+    <string name="drive_refused">Settle needs permission to create its folder in Drive.</string>
+    <string name="setup_title">Help backup run at night</string>
+    <string name="setup_body">Android sometimes stops apps in the background. These steps prevent that. Each one is optional.</string>
+    <string name="setup_connected">Drive connected · %1$s</string>
+    <string name="setup_skip">Skip</string>
+    <string name="setup_finish">Done</string>
+    <string name="setup_done">Done</string>
+    <string name="setup_notifications">Notifications</string>
+    <string name="setup_notifications_sub">Only when backup needs you, and for backups you start.</string>
+    <string name="guide_never_sleeping_title">Add Settle to Never sleeping apps</string>
+    <string name="guide_never_sleeping_body">Samsung phones put apps to sleep on their own. This keeps Settle awake for its night backup.</string>
+    <string name="guide_step_battery">Battery</string>
+    <string name="guide_step_limits">Background usage limits</string>
+    <string name="guide_step_add">Add Settle</string>
+    <string name="guide_open_battery">Open battery settings</string>
+    <string name="guide_done">I’ve done this</string>
+    <string name="notice_first_backup_title">First backup starts tonight</string>
+    <plurals name="notice_first_backup_body">
+        <item quantity="one">%d item backs up tonight. The newest photos wait a little longer first.</item>
+        <item quantity="other">%d items back up tonight. The newest photos wait a little longer first.</item>
     </plurals>
 </resources>

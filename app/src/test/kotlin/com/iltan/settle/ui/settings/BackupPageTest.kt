@@ -210,9 +210,12 @@ class BackupPageTest {
             }
         }
 
-        compose.onNodeWithText("Allow notifications").assertDoesNotExist()
+        compose.onNodeWithText("Notifications").assertDoesNotExist()
         compose.onNodeWithText("Allow").performClick()
+        // Samsung's step explains the way there first (A8).
         compose.onNodeWithText("Open settings").performClick()
+        compose.onNodeWithText("Add Settle to Never sleeping apps").assertIsDisplayed()
+        compose.onNodeWithText("Open battery settings").performClick()
         assertEquals(listOf("app info", "never sleeping"), calls)
     }
 

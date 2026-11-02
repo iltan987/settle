@@ -30,6 +30,8 @@ import kotlinx.coroutines.launch
 /** Something the Drive section reports once. */
 enum class DriveNotice {
     CONNECT_FAILED,
+    /** Google's consent screen came back without Drive access. */
+    REFUSED,
     SANDBOX_RESET,
     SANDBOX_RESET_FAILED,
 }
@@ -164,6 +166,7 @@ class DriveSettingsViewModel(
                 aboutReads.update { it + 1 }
                 viewModelScope.launch { onAccountChanged(true) }
             }
+            is ConnectStep.Refused -> notice.value = DriveNotice.REFUSED
             is ConnectStep.Failed -> {
                 Log.w(TAG, "Connecting Drive failed: ${step.reason}")
                 notice.value = DriveNotice.CONNECT_FAILED

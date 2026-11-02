@@ -11,7 +11,7 @@ import com.iltan.settle.ui.chrome.NoticeAction
 import com.iltan.settle.ui.chrome.NoticeContent
 import com.iltan.settle.ui.chrome.Tone
 
-/** A card the timeline shows above its grid (B6–B9, B12). */
+/** A card the timeline shows above its grid (A9, B6–B9, B12). */
 sealed interface BackupNotice {
     /** What it is about, to remember a dismissal by; null when it can't be dismissed. */
     val key: String?
@@ -33,6 +33,14 @@ sealed interface BackupNotice {
     data class Mass(val count: Int, val checking: Boolean = false) : BackupNotice {
         override val key: String? = null
     }
+
+    /**
+     * Drive is connected and nothing is in it yet: [upcoming] items go in the first night's backup
+     * (A9). Honest about the start, so nothing says "All in Drive" before it is.
+     */
+    data class FirstBackup(val upcoming: Int) : BackupNotice {
+        override val key = "first-backup"
+    }
 }
 
 /** Every notice that applies now, the most important first. */
@@ -45,6 +53,8 @@ fun backupNotices(
     when (headline) {
         is BackupHeadline.NeedsAttention -> add(BackupNotice.Attention(headline.count))
         is BackupHeadline.Paused -> add(BackupNotice.Pause(headline.reason, headline.waitingItems))
+        is BackupHeadline.FirstBackupPending ->
+            if (headline.upcoming > 0) add(BackupNotice.FirstBackup(headline.upcoming))
         else -> {}
     }
 }
@@ -63,6 +73,8 @@ data class NoticeHandlers(
     val dismiss: (key: String) -> Unit = {},
     /** Opens the review of a mass disappearance (G1). */
     val reviewMass: () -> Unit = {},
+    /** Backs up everything chosen now, without the wait or the charger. */
+    val backUpNow: () -> Unit = {},
 )
 
 /**
@@ -102,6 +114,19 @@ fun noticeContent(notice: BackupNotice, on: NoticeHandlers, popover: Boolean): N
                 )
             }
         is BackupNotice.Pause -> pauseContent(notice, on, extra)
+        is BackupNotice.FirstBackup ->
+            NoticeContent(
+                Tone.INFO,
+                R.drawable.ic_nightlight,
+                stringResource(R.string.notice_first_backup_title),
+                pluralStringResource(
+                    R.plurals.notice_first_backup_body,
+                    notice.upcoming,
+                    notice.upcoming,
+                ),
+                NoticeAction(stringResource(R.string.backup_now), on.backUpNow),
+                extra,
+            )
     }
 }
 

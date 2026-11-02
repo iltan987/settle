@@ -28,6 +28,9 @@ sealed interface ConnectStep {
 
     data class Connected(val email: String) : ConnectStep
 
+    /** Google came back without Drive access: the user didn't allow it (A6). */
+    data object Refused : ConnectStep
+
     data class Failed(val reason: String?) : ConnectStep
 }
 
@@ -66,7 +69,9 @@ class DriveAuth(
             val token = result.accessToken
             when {
                 result.hasResolution() && pending != null -> ConnectStep.NeedsUser(pending)
-                token == null -> ConnectStep.Failed("No access token")
+                token == null ||
+                    (result.grantedScopes.isNotEmpty() &&
+                        DRIVE_FILE.scopeUri !in result.grantedScopes) -> ConnectStep.Refused
                 else -> {
                     val email = emailFor(token)
                     if (email == null) ConnectStep.Failed("Drive didn't name the account")

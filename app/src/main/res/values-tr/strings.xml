@@ -11,15 +11,6 @@
     <string name="language_system">Sistem varsayılanı</string>
     <string name="settings_version">Sürüm %1$s</string>
 
-    <string name="onboarding_title">Settle\'a hoş geldin</string>
-    <string name="onboarding_body">Settle bu telefondaki tüm fotoğraf ve videoları tek bir yerde gösterir. Bunun için hepsine erişmesi gerekir. Google Drive\'ı bağlayana kadar hiçbir şey telefonundan çıkmaz.</string>
-    <string name="onboarding_allow">Erişime izin ver</string>
-    <string name="onboarding_partial_title">Settle yalnızca bazı fotoğrafları görüyor</string>
-    <string name="onboarding_partial_body">Yalnızca seçtiklerinle Settle tüm kitaplığını gösteremez ve yeni fotoğrafları fark edemez. Tüm fotoğraf ve videolara erişim izni ver.</string>
-    <string name="onboarding_allow_all">Tümüne izin ver</string>
-    <string name="onboarding_blocked_body">Erişim kapalı. Settle\'ın uygulama ayarlarında İzinler, Fotoğraflar ve videolar bölümünden açabilirsin.</string>
-    <string name="onboarding_open_settings">Ayarları aç</string>
-
     <string name="day_today">Bugün</string>
     <string name="day_yesterday">Dün</string>
     <plurals name="item_count">
@@ -143,8 +134,6 @@
     <string name="backup_folders">Yedeklenecek klasörler</string>
     <string name="backup_pause">Yedeklemeyi duraklat</string>
     <string name="backup_resume">Devam et</string>
-    <string name="backup_allow_notifications">Bildirimlere izin ver</string>
-    <string name="backup_allow_notifications_text">Yalnızca yedekleme sana ihtiyaç duyduğunda ve başlattığın yedeklemeler için</string>
     <string name="backup_battery_text">Aksi halde Android yedeklemeleri geciktirebilir. Uygulama bilgileri\'nde Pil\'i açıp Sınırsız\'ı seç.</string>
     <string name="backup_battery_restricted">Pil kullanımı Kısıtlı, bu yüzden yedekleme arka planda çalışamaz. Uygulama bilgileri\'nde Pil\'i açıp Sınırsız\'ı seç.</string>
     <string name="media_needs_attention">Yedekleme ilgilenmeni bekliyor</string>
@@ -627,5 +616,48 @@
     <plurals name="folder_backs_up_now">
         <item quantity="one">%2$s klasöründeki %1$d öğe yedeklenecek.</item>
         <item quantity="other">%2$s klasöründeki %1$d öğe yedeklenecek.</item>
+    </plurals>
+
+    <!-- Phase 5 · M6: Onboarding (docs/design/turn4, A) -->
+    <string name="welcome_title">Telefonunuz ve Drive\'ınız tek bir kitaplık</string>
+    <string name="welcome_body">Settle bu telefondaki tüm fotoğraf ve videoları tek bir yerde gösterir. Bunun için hepsine erişmesi gerekir. Google Drive\'ı bağlayana kadar telefonunuzdan hiçbir şey çıkmaz.</string>
+    <string name="welcome_allow">Fotoğraflara erişime izin ver</string>
+    <string name="access_partial_title">Settle yalnızca seçtiğiniz fotoğrafları görüyor</string>
+    <string name="access_partial_body">Tüm kitaplığınızı tek yerde göstermek ve yeni fotoğrafları fark etmek için Settle\'ın hepsine erişmesi gerekir. Hangi klasörlerin yedekleneceğini yine siz seçersiniz.</string>
+    <string name="access_allow_all">Tümüne izin ver</string>
+    <string name="access_blocked_title">Settle fotoğraflarınızı göremiyor</string>
+    <string name="access_blocked_body">Settle için fotoğraf erişimi kapalı. Kitaplığınızı burada görmek için Android ayarlarından açın.</string>
+    <string name="access_step_permissions">İzinler</string>
+    <string name="access_step_photos">Fotoğraflar ve videolar</string>
+    <string name="access_open_settings">Android ayarlarını aç</string>
+    <string name="connect_title">Kendi Google Drive\'ınıza yedekleyin</string>
+    <string name="connect_body">Orijinaller Drive\'ınızdaki Settle adlı klasöre birebir gider. Settle orada yalnızca kendi oluşturduğu dosyaları görür.</string>
+    <string name="promise_wait">Yüklemeden önce bekler</string>
+    <string name="promise_wait_sub">Yeni fotoğraflar 24 saat bekler; kısa sürede sildikleriniz Drive\'a hiç ulaşmaz.</string>
+    <string name="promise_night">Gece çalışır</string>
+    <string name="promise_night_sub">Wi-Fi\'da ve şarjdayken, fark ettirmeden. Her kopya kontrol edilir.</string>
+    <string name="promise_delete">Bir kez silin, her yerden silinsin</string>
+    <string name="promise_delete_sub">Telefon ve Drive birlikte çöp kutusuna gider; geri almak için 30 gün vardır.</string>
+    <string name="connecting">Bağlanıyor…</string>
+    <string name="drive_refused">Settle\'ın Drive\'da klasörünü oluşturmak için izne ihtiyacı var.</string>
+    <string name="setup_title">Yedeklemenin gece çalışmasına yardım edin</string>
+    <string name="setup_body">Android bazen arka plandaki uygulamaları durdurur. Bu adımlar bunu önler. Hepsi isteğe bağlıdır.</string>
+    <string name="setup_connected">Drive bağlandı · %1$s</string>
+    <string name="setup_skip">Atla</string>
+    <string name="setup_finish">Bitti</string>
+    <string name="setup_done">Tamam</string>
+    <string name="setup_notifications">Bildirimler</string>
+    <string name="setup_notifications_sub">Yalnızca yedekleme sizi beklediğinde ve başlattığınız yedeklemeler için.</string>
+    <string name="guide_never_sleeping_title">Settle\'ı Hiç uyumayan uygulamalara ekleyin</string>
+    <string name="guide_never_sleeping_body">Samsung telefonlar uygulamaları kendiliğinden uyutur. Bu, Settle\'ı gece yedeklemesi için uyanık tutar.</string>
+    <string name="guide_step_battery">Pil</string>
+    <string name="guide_step_limits">Arka plan kullanım sınırları</string>
+    <string name="guide_step_add">Settle\'ı ekle</string>
+    <string name="guide_open_battery">Pil ayarlarını aç</string>
+    <string name="guide_done">Bunu yaptım</string>
+    <string name="notice_first_backup_title">İlk yedekleme bu gece başlıyor</string>
+    <plurals name="notice_first_backup_body">
+        <item quantity="one">%d öğe bu gece yedeklenir. En yeni fotoğraflar biraz daha bekler.</item>
+        <item quantity="other">%d öğe bu gece yedeklenir. En yeni fotoğraflar biraz daha bekler.</item>
     </plurals>
 </resources>

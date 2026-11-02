@@ -71,6 +71,9 @@ sealed interface Trailing {
     /** Leaves Settle, for a web page or Drive. */
     data object External : Trailing
 
+    /** A setup step that was just completed: it stays in place, checked (A7). */
+    data object Done : Trailing
+
     /** The current value, then a chevron. */
     data class Value(val text: String) : Trailing
 
@@ -266,6 +269,13 @@ fun SettingsRow(
         when (trailing) {
             null -> {}
             Trailing.Chevron -> Chevron()
+            Trailing.Done ->
+                Icon(
+                    painterResource(R.drawable.ic_check_circle_filled),
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(24.dp),
+                )
             Trailing.External ->
                 Icon(
                     painterResource(R.drawable.ic_open_in_new),

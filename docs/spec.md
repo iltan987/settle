@@ -35,9 +35,10 @@ Play Store release later must stay possible, so Play-policy-forbidden permission
 - R5. Backup continues in the background without the app open, after a one-time setup. New media
   are noticed without opening the app. Settings shows each setup step (notifications, unrestricted
   battery use, Samsung's Never sleeping apps) only while it is still needed; Android can't report
-  Samsung's, so on Samsung that step stays listed.
+  Samsung's, so on Samsung that step stays listed and explains the way there first.
 - R6. When Drive is full or sign-in needs the user, backup pauses and says why; nothing is lost.
-- R22. Google Drive is connected once in Settings by picking an account; Settings shows the account
+- R22. Google Drive is connected once, during onboarding or in Settings, by picking an account and
+  allowing only access to the files Settle creates; Settings shows the account
   and its storage. Disconnecting withdraws access and never deletes anything in Drive or on the
   phone.
 - R23. Transfers adapt to the network: they leave bandwidth for other devices on the same network,
@@ -94,6 +95,11 @@ Play Store release later must stay possible, so Play-policy-forbidden permission
 - R19. Settle needs full photo and video access. With a partial selection it explains why and offers
   "Allow all"; it never treats unseen files as deleted (ADR-012).
 - R20. While Settle is open, new, changed and deleted media appear without user action.
+- R26. Onboarding runs once: a welcome that asks for photo access, then connecting Drive, then the
+  setup steps still needed (R5). Photo access can't be skipped; the rest can, and what's skipped
+  stays available as a notice card or a Settings row, never as a screen. Without full access,
+  Settle shows an access screen in the timeline's place, with Android's way to turn it on. Until
+  the first verified upload, Settle says when the first backup will run, never "All in Drive".
 - R21. A favourite set in Settle is visible to other apps through MediaStore, and one set elsewhere
   shows in Settle.
 

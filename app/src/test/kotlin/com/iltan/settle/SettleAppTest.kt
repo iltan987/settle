@@ -4,6 +4,7 @@ import android.Manifest
 import android.app.Application
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -13,6 +14,8 @@ import androidx.compose.ui.test.performScrollTo
 import androidx.test.core.app.ApplicationProvider
 import com.iltan.settle.ui.SettleApp
 import com.iltan.settle.ui.theme.SettleTheme
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -28,30 +31,69 @@ class SettleAppTest {
         shadowOf(ApplicationProvider.getApplicationContext<Application>())
             .grantPermissions(*permissions)
 
-    private fun grantFullAccess() =
+    private fun grantFullAccess() {
         grant(Manifest.permission.READ_MEDIA_IMAGES, Manifest.permission.READ_MEDIA_VIDEO)
+        // Onboarding ran once before; these tests start in the app itself.
+        runBlocking {
+            ApplicationProvider.getApplicationContext<Application>()
+                .appGraph
+                .uiPreferences
+                .onboardingDone()
+        }
+    }
+
+    /**
+     * Shows the app once the gate has read Settle's records, which Room does off the main thread.
+     */
+    private fun showApp() {
+        compose.setContent { SettleTheme { SettleApp() } }
+        compose.waitUntil(5_000) {
+            compose.onAllNodes(hasClickAction()).fetchSemanticsNodes().isNotEmpty()
+        }
+    }
 
     @Test
-    fun withoutAccessShowsOnboarding() {
-        compose.setContent { SettleTheme { SettleApp() } }
+    fun withoutAccessOnboardingWelcomesAndAsksForPhotos() {
+        showApp()
 
-        compose.onNodeWithText("Welcome to Settle").assertIsDisplayed()
-        compose.onNodeWithText("Allow access").assertIsDisplayed()
+        compose.onNodeWithText("Your phone and your Drive as one library").assertIsDisplayed()
+        compose.onNodeWithText("Allow access to photos").assertIsDisplayed()
     }
 
     @Test
     fun partialAccessAsksForAll() {
         grant(Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED)
-        compose.setContent { SettleTheme { SettleApp() } }
+        showApp()
 
-        compose.onNodeWithText("Settle sees only some photos").assertIsDisplayed()
+        compose.onNodeWithText("Settle sees only the photos you picked").assertIsDisplayed()
         compose.onNodeWithText("Allow all").assertIsDisplayed()
+    }
+
+    @Test
+    fun withAccessOnboardingOffersDriveOnceAndNotNowOpensTheTimeline() {
+        grant(Manifest.permission.READ_MEDIA_IMAGES, Manifest.permission.READ_MEDIA_VIDEO)
+        showApp()
+
+        compose.onNodeWithText("Back up to your own Google Drive").assertIsDisplayed()
+        compose.onNodeWithText("Not now").performClick()
+
+        compose.onNodeWithContentDescription("Settings").assertIsDisplayed()
+        compose.waitUntil {
+            runBlocking {
+                ApplicationProvider.getApplicationContext<Application>()
+                    .appGraph
+                    .uiPreferences
+                    .prefs
+                    .first()
+                    .onboardingDone
+            }
+        }
     }
 
     @Test
     fun withFullAccessStartsOnTimeline() {
         grantFullAccess()
-        compose.setContent { SettleTheme { SettleApp() } }
+        showApp()
 
         // The account button in the timeline's top bar opens Settings.
         compose.onNodeWithContentDescription("Settings").assertIsDisplayed()
@@ -60,7 +102,7 @@ class SettleAppTest {
     @Test
     fun bottomBarSwitchesBetweenPhotosAndFolders() {
         grantFullAccess()
-        compose.setContent { SettleTheme { SettleApp() } }
+        showApp()
 
         compose.onNodeWithText("Folders").performClick()
         compose.onNodeWithText("Favorites").assertIsDisplayed()
@@ -72,7 +114,7 @@ class SettleAppTest {
     @Test
     fun theBackupTabSaysBackupIsOffUntilDriveIsConnected() {
         grantFullAccess()
-        compose.setContent { SettleTheme { SettleApp() } }
+        showApp()
 
         compose.onNodeWithText("Backup").performClick()
 
@@ -82,7 +124,7 @@ class SettleAppTest {
     @Test
     fun settingsOpensItsLanguagePageAndNavigatesBack() {
         grantFullAccess()
-        compose.setContent { SettleTheme { SettleApp() } }
+        showApp()
 
         compose.onNodeWithContentDescription("Settings").performClick()
         compose.onNodeWithText("Google Drive").assertIsDisplayed()

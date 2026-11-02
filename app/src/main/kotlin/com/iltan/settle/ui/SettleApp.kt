@@ -43,6 +43,7 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
+import com.iltan.settle.AppGraph
 import com.iltan.settle.R
 import com.iltan.settle.appGraph
 import com.iltan.settle.data.GridSource
@@ -68,7 +69,7 @@ import com.iltan.settle.ui.folders.FoldersViewModel
 import com.iltan.settle.ui.folders.folderNames
 import com.iltan.settle.ui.folders.folderSubtitle
 import com.iltan.settle.ui.folders.rememberFolderChoices
-import com.iltan.settle.ui.onboarding.MediaAccessGate
+import com.iltan.settle.ui.onboarding.OnboardingGate
 import com.iltan.settle.ui.settings.AboutScreen
 import com.iltan.settle.ui.settings.BackupFoldersScreen
 import com.iltan.settle.ui.settings.BackupSettingsScreen
@@ -123,11 +124,14 @@ import kotlinx.serialization.Serializable
 
 @Serializable data object MissingItems : NavKey
 
-/** Root of the UI: onboarding until media access is granted, then one Navigation 3 back stack. */
+/**
+ * Root of the UI: onboarding until it has run once, and whenever full media access is missing; then
+ * one Navigation 3 back stack.
+ */
 @Composable
 fun SettleApp(openSettings: Boolean = false, reconnect: Boolean = false) {
     val context = LocalContext.current
-    MediaAccessGate(onAccessGranted = { context.appGraph.librarySync.requestScan() }) {
+    OnboardingGate(onAccessGranted = { context.appGraph.librarySync.requestScan() }) {
         Navigation(openSettings, reconnect)
     }
 }
@@ -307,6 +311,7 @@ private fun Destinations(
                                     details = { selectTab(Tab.BACKUP) },
                                     dismiss = viewModel::dismiss,
                                     reviewMass = { backStack.add(MassReview) },
+                                    backUpNow = { backUpEverythingNow(graph) },
                                 ),
                             onOpenBackup = { selectTab(Tab.BACKUP) },
                             backup = { entry -> cellBackup(entry, decisions.value, uploads.value) },
@@ -362,17 +367,7 @@ private fun Destinations(
                                         )
                                     },
                                     setPaused = { inFront { graph.cloudBackup.setPaused(it) } },
-                                    backUpEverythingNow = {
-                                        inFront {
-                                            graph.cloudBackup.backUpNow(
-                                                everythingChosen(
-                                                    graph.database.backupDao(),
-                                                    graph.backupPreferences,
-                                                    System::currentTimeMillis,
-                                                )
-                                            )
-                                        }
-                                    },
+                                    backUpEverythingNow = { backUpEverythingNow(graph) },
                                     tryAgain = { id ->
                                         inFront { graph.cloudBackup.backUpNow(listOf(id)) }
                                     },
@@ -658,6 +653,19 @@ private fun checkAgain(check: BreakerCheck, messages: AppMessages, resources: Re
                     resources.getQuantityString(R.plurals.mass_some_back, result.back, result.back)
                 else -> resources.getString(R.string.mass_none_back)
             }
+        )
+    }
+}
+
+/** Backs up everything chosen now, in the app's scope: it runs while Settle is in front. */
+private fun backUpEverythingNow(graph: AppGraph) {
+    graph.appScope.launch {
+        graph.cloudBackup.backUpNow(
+            everythingChosen(
+                graph.database.backupDao(),
+                graph.backupPreferences,
+                System::currentTimeMillis,
+            )
         )
     }
 }

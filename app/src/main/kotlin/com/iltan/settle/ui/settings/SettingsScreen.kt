@@ -297,7 +297,7 @@ private fun settingsViewModel(graph: AppGraph) =
         run = graph.backupStatus.run,
     )
 
-private fun driveViewModel(graph: AppGraph) =
+internal fun driveViewModel(graph: AppGraph) =
     DriveSettingsViewModel(
         dao = graph.database.backupDao(),
         auth = graph.driveAuth,
@@ -557,10 +557,11 @@ private fun openDriveFolder(context: Context, folderId: String) {
     openUri(context, "https://drive.google.com/drive/folders/$folderId")
 }
 
-private val DriveNotice.message: Int
+internal val DriveNotice.message: Int
     get() =
         when (this) {
             DriveNotice.CONNECT_FAILED -> R.string.drive_connect_failed
+            DriveNotice.REFUSED -> R.string.drive_refused
             DriveNotice.SANDBOX_RESET -> R.string.drive_sandbox_reset_done
             DriveNotice.SANDBOX_RESET_FAILED -> R.string.drive_sandbox_reset_failed
         }

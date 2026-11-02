@@ -14,6 +14,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
@@ -24,7 +28,6 @@ import androidx.core.net.toUri
 import com.iltan.settle.R
 import com.iltan.settle.data.system.SystemState
 import com.iltan.settle.ui.chrome.BackTopBar
-import com.iltan.settle.ui.chrome.RowButtonStyle
 import com.iltan.settle.ui.chrome.RowTone
 import com.iltan.settle.ui.chrome.SettingsColumn
 import com.iltan.settle.ui.chrome.SettingsGroup
@@ -44,67 +47,38 @@ fun SettingsPage(title: String, onBack: () -> Unit, content: @Composable () -> U
     }
 }
 
-/** What the setup steps open. */
-class KeepRunningActions(
-    val allowNotifications: () -> Unit = {},
-    val openAppInfo: () -> Unit = {},
-    val openNeverSleeping: () -> Unit = {},
-)
-
 /** Whether any step to keep backup running is still worth showing (I2, I10). */
 val SystemState.keepRunningShown: Boolean
-    get() = openSteps > 0 || samsung
+    get() = openSetupSteps.isNotEmpty()
 
 /**
  * Keep backup running (I10): the setup steps Android still lacks, each gone once done. Samsung's
- * Never sleeping apps can't be read back, so on Samsung that step always shows.
+ * Never sleeping apps can't be read back, so on Samsung that step always shows, and opens the guide
+ * (A8) first.
  */
 @Composable
 fun KeepRunningPage(system: SystemState, actions: KeepRunningActions) {
-    val allow = stringResource(R.string.backup_allow)
+    var guide by rememberSaveable { mutableStateOf(false) }
     SettingsGroup(lead = stringResource(R.string.keep_running_lead)) {
-        if (!system.notificationsAllowed) {
+        system.openSetupSteps.forEach { step ->
             row {
-                SettingsRow(
-                    title = stringResource(R.string.backup_allow_notifications),
-                    sub = stringResource(R.string.backup_allow_notifications_text),
-                    icon = R.drawable.ic_notifications,
+                SetupStepRow(
+                    step = step,
+                    system = system,
+                    done = false,
+                    actions = actions,
+                    onGuide = { guide = true },
                     tone = RowTone.WARN,
-                    trailing =
-                        Trailing.Action(allow, RowButtonStyle.TONAL, actions.allowNotifications),
                 )
             }
         }
-        if (system.backgroundRestricted || !system.batteryUnrestricted) {
-            row {
-                SettingsRow(
-                    title = stringResource(R.string.keep_running_battery),
-                    sub =
-                        stringResource(
-                            if (system.backgroundRestricted) R.string.backup_battery_restricted
-                            else R.string.backup_battery_text
-                        ),
-                    icon = R.drawable.ic_battery_charging_full,
-                    tone = RowTone.WARN,
-                    trailing = Trailing.Action(allow, RowButtonStyle.TONAL, actions.openAppInfo),
-                )
-            }
-        }
-        if (system.samsung) {
-            row {
-                SettingsRow(
-                    title = stringResource(R.string.keep_running_never_sleeping),
-                    sub = stringResource(R.string.keep_running_never_sleeping_sub),
-                    icon = R.drawable.ic_bedtime_off,
-                    trailing =
-                        Trailing.Action(
-                            stringResource(R.string.action_open_settings),
-                            RowButtonStyle.OUTLINE,
-                            actions.openNeverSleeping,
-                        ),
-                )
-            }
-        }
+    }
+    if (guide) {
+        NeverSleepingGuide(
+            onOpen = actions.openNeverSleeping,
+            onDone = { guide = false },
+            onDismiss = { guide = false },
+        )
     }
 }
 
