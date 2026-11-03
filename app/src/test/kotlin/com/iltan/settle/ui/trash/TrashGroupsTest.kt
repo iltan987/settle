@@ -68,13 +68,28 @@ class TrashGroupsTest {
             listOf(
                 GroupKind.WAITING to null,
                 GroupKind.SETTLE to first,
-                GroupKind.ELSEWHERE to first,
+                GroupKind.ELSEWHERE to null,
                 GroupKind.SETTLE to first.minusDays(3),
-                GroupKind.DISAPPEARED to first.minusDays(3),
+                GroupKind.DISAPPEARED to null,
             ),
             groups.map { it.kind to it.day },
         )
         assertEquals(listOf("a", "c"), groups[1].items.map { it.id })
+    }
+
+    @Test
+    fun deletionsInAnotherAppOnDifferentDaysShareOneGroup() {
+        val groups =
+            trashGroups(
+                listOf(
+                    entry("new", origin = TrashOrigin.ELSEWHERE),
+                    entry("old", origin = TrashOrigin.ELSEWHERE, trashedAt = today - 3 * day),
+                ),
+                ZoneOffset.UTC,
+            )
+
+        assertEquals(listOf(GroupKind.ELSEWHERE), groups.map { it.kind })
+        assertEquals(listOf("new", "old"), groups.single().items.map { it.id })
     }
 
     @Test

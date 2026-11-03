@@ -18,7 +18,7 @@ enum class GroupKind {
     WAITING,
 }
 
-/** One group of the trash: its items were deleted the same way on the same day. */
+/** One group of the trash: its items were deleted the same way, and in Settle on the same [day]. */
 data class TrashGroup(val kind: GroupKind, val day: LocalDate?, val items: List<TrashedEntry>) {
     val key: String
         get() = "$kind-$day"
@@ -30,7 +30,8 @@ val TrashedEntry.restoring: Boolean
 
 /**
  * The trash by deletion, newest first (F1): items waiting for the user first, then one group per
- * day and way of deleting. [entries] come newest first.
+ * day for deletions in Settle, and one each for deletions in another app and disappearances, so
+ * their banner shows once. [entries] come newest first.
  */
 fun trashGroups(entries: List<TrashedEntry>, zone: ZoneId): List<TrashGroup> {
     val (waiting, rest) = entries.partition { it.waitingReason != null }
@@ -46,7 +47,10 @@ fun trashGroups(entries: List<TrashedEntry>, zone: ZoneId): List<TrashGroup> {
                     TrashOrigin.ELSEWHERE,
                     null -> GroupKind.ELSEWHERE
                 }
-            val day = entry.trashedAtMs?.let { Instant.ofEpochMilli(it).atZone(zone).toLocalDate() }
+            val day =
+                entry.trashedAtMs
+                    ?.takeIf { kind == GroupKind.SETTLE }
+                    ?.let { Instant.ofEpochMilli(it).atZone(zone).toLocalDate() }
             kind to day
         }
         .mapTo(groups) { (key, items) -> TrashGroup(key.first, key.second, items) }
