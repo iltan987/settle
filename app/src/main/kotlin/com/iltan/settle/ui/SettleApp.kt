@@ -84,6 +84,7 @@ import com.iltan.settle.ui.timeline.NoticeHandlers
 import com.iltan.settle.ui.timeline.TimelineScreen
 import com.iltan.settle.ui.timeline.TimelineViewModel
 import com.iltan.settle.ui.timeline.cellBackup
+import com.iltan.settle.ui.trash.GalleryTrash
 import com.iltan.settle.ui.trash.LocalItemActions
 import com.iltan.settle.ui.trash.LocalTrashActions
 import com.iltan.settle.ui.trash.MassReviewScreen
@@ -497,11 +498,16 @@ private fun Destinations(
                                 }
                             }
                         }
+                        val galleryTrash = remember { GalleryTrash.intent(context) }
                         TrashScreen(
                             state = state,
                             nowMillis = System.currentTimeMillis(),
                             onBack = { backStack.removeLastOrNull() },
                             actions = LocalTrashActions.current,
+                            onOpenGalleryTrash =
+                                galleryTrash?.let { intent ->
+                                    { runCatching { context.startActivity(intent) } }
+                                },
                             issues =
                                 RestoreIssueHandlers(
                                     signIn = onSignIn,

@@ -93,15 +93,22 @@ class TrashScreenTest {
     private fun state(vararg entries: TrashedEntry) =
         TrashState(groups = trashGroups(entries.toList(), ZoneId.systemDefault()), loading = false)
 
-    private fun show(state: TrashState) = compose.setContent {
-        val scope = rememberCoroutineScope()
-        val messages = remember { AppMessages(SnackbarHostState(), scope) }
-        CompositionLocalProvider(LocalAppMessages provides messages) {
-            SettleTheme {
-                TrashScreen(state = state, nowMillis = now, onBack = {}, actions = actions)
+    private fun show(state: TrashState, onOpenGalleryTrash: (() -> Unit)? = null) =
+        compose.setContent {
+            val scope = rememberCoroutineScope()
+            val messages = remember { AppMessages(SnackbarHostState(), scope) }
+            CompositionLocalProvider(LocalAppMessages provides messages) {
+                SettleTheme {
+                    TrashScreen(
+                        state = state,
+                        nowMillis = now,
+                        onBack = {},
+                        actions = actions,
+                        onOpenGalleryTrash = onOpenGalleryTrash,
+                    )
+                }
             }
         }
-    }
 
     @Test
     fun itemsAreGroupedByHowTheyWereDeletedWithTheirDaysLeft() {
@@ -138,6 +145,31 @@ class TrashScreenTest {
         compose.onNodeWithContentDescription("Photo, ph_1.png, 30 days left").assertIsDisplayed()
         // On the phone it shows the photo itself.
         compose.onNodeWithText("IMG_1.jpg").assertDoesNotExist()
+    }
+
+    @Test
+    fun withSamsungGalleryTheTrashSaysWhereItsDeletionsWent() {
+        var opened = false
+        show(state(entry("a")), onOpenGalleryTrash = { opened = true })
+
+        compose.onNodeWithText("in Gallery's own trash", substring = true).assertIsDisplayed()
+        compose.onNodeWithText("Open").performClick()
+        assertTrue(opened)
+    }
+
+    @Test
+    fun withoutSamsungGalleryThereIsNoGalleryNote() {
+        show(state(entry("a")))
+
+        compose.onNodeWithText("in Gallery's own trash", substring = true).assertDoesNotExist()
+    }
+
+    @Test
+    fun anEmptyTrashStillSaysWhereGalleryDeletionsWent() {
+        show(TrashState(loading = false), onOpenGalleryTrash = {})
+
+        compose.onNodeWithText("Trash is empty").assertIsDisplayed()
+        compose.onNodeWithText("in Gallery's own trash", substring = true).assertIsDisplayed()
     }
 
     @Test

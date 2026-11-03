@@ -660,4 +660,8 @@
         <item quantity="one">%d öğe bu gece yedeklenir. En yeni fotoğraflar biraz daha bekler.</item>
         <item quantity="other">%d öğe bu gece yedeklenir. En yeni fotoğraflar biraz daha bekler.</item>
     </plurals>
+
+    <!-- Trash: other apps' trash and Drive previews -->
+    <string name="trash_gallery_note">Samsung Galeri\'de silinen ve yedeklenmemiş fotoğraflar Galeri\'nin kendi çöp kutusundadır.</string>
+    <string name="trash_gallery_open">Aç</string>
 </resources>

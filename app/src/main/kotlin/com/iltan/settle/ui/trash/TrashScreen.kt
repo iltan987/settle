@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
@@ -36,6 +37,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
@@ -135,6 +137,8 @@ fun TrashScreen(
     onBack: () -> Unit,
     actions: TrashActions,
     issues: RestoreIssueHandlers = RestoreIssueHandlers(),
+    /** Opens Samsung Gallery's own trash; null where there is no Samsung Gallery. */
+    onOpenGalleryTrash: (() -> Unit)? = null,
 ) {
     var selection by rememberSelection()
     var confirm by rememberSaveable { mutableStateOf<ConfirmDelete?>(null) }
@@ -161,6 +165,14 @@ fun TrashScreen(
                     stringResource(R.string.trash_empty_body),
                     Modifier.padding(top = top).align(Alignment.Center),
                 )
+                if (onOpenGalleryTrash != null) {
+                    GalleryTrashNote(
+                        onOpenGalleryTrash,
+                        Modifier.align(Alignment.BottomCenter)
+                            .navigationBarsPadding()
+                            .padding(bottom = 16.dp),
+                    )
+                }
             } else if (!state.loading) {
                 TrashGrid(
                     state,
@@ -184,6 +196,7 @@ fun TrashScreen(
                         if (state.inTrash > 0) {
                             TrashExplainer(onEmpty = { confirm = ConfirmDelete(null) })
                         }
+                        if (onOpenGalleryTrash != null) GalleryTrashNote(onOpenGalleryTrash)
                     },
                 )
             }
@@ -421,6 +434,36 @@ private fun failedBody(
             failed.size,
         )
     return listOfNotNull(others, left).joinToString(" ")
+}
+
+/**
+ * Where photos deleted in Samsung Gallery went: Gallery keeps them in its own trash, which Settle
+ * can't read, so one that was never backed up isn't listed here.
+ */
+@Composable
+private fun GalleryTrashNote(onOpen: () -> Unit, modifier: Modifier = Modifier) {
+    val colors = MaterialTheme.colorScheme
+    Row(
+        modifier.fillMaxWidth().padding(start = 24.dp, end = 12.dp, top = 4.dp, bottom = 4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Icon(
+            painterResource(R.drawable.ic_photo_library),
+            contentDescription = null,
+            tint = colors.onSurfaceVariant,
+            modifier = Modifier.size(20.dp),
+        )
+        Text(
+            stringResource(R.string.trash_gallery_note),
+            style = MaterialTheme.typography.bodySmall,
+            color = colors.onSurfaceVariant,
+            modifier = Modifier.weight(1f),
+        )
+        TextButton(onClick = onOpen, modifier = Modifier.heightIn(min = 48.dp)) {
+            Text(stringResource(R.string.trash_gallery_open))
+        }
+    }
 }
 
 /**

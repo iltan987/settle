@@ -665,4 +665,8 @@
         <item quantity="one">%d item backs up tonight. The newest photos wait a little longer first.</item>
         <item quantity="other">%d items back up tonight. The newest photos wait a little longer first.</item>
     </plurals>
+
+    <!-- Trash: other apps' trash and Drive previews -->
+    <string name="trash_gallery_note">Photos deleted in Samsung Gallery that weren\'t backed up are in Gallery\'s own trash.</string>
+    <string name="trash_gallery_open">Open</string>
 </resources>

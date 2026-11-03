@@ -20,6 +20,14 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
+    <!-- Samsung Gallery's own trash, where photos deleted in Gallery wait (trash screen, F). -->
+    <queries>
+        <intent>
+            <action android:name="com.android.gallery.action.TRASH_VIEW" />
+        </intent>
+        <package android:name="com.sec.android.gallery3d" />
+    </queries>
+
     <!-- No Android backup or device transfer: the library is rebuilt from Drive (ADR-003). -->
     <application
         android:name=".SettleApplication"
