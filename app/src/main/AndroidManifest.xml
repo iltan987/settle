@@ -47,6 +47,13 @@
             </intent-filter>
         </activity>
 
+        <!-- Settle's own notifications open the app through this alias. Other apps can't start
+             it, so only Settle can ask itself to open Settings or to sign in again. -->
+        <activity-alias
+            android:name=".NotificationTarget"
+            android:exported="false"
+            android:targetActivity=".MainActivity" />
+
         <service
             android:name=".data.backup.BackupJobService"
             android:exported="false"

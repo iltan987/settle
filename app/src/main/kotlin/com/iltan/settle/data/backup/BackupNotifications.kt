@@ -135,7 +135,8 @@ class BackupNotifications(private val context: Context) {
         PendingIntent.getActivity(
             context,
             (if (openSettings) 1 else 0) + (if (reconnect) 2 else 0),
-            Intent(context, MainActivity::class.java)
+            Intent()
+                .setClassName(context, MainActivity.NOTIFICATION_TARGET)
                 .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
                 .putExtra(MainActivity.EXTRA_OPEN_SETTINGS, openSettings)
                 .putExtra(MainActivity.EXTRA_RECONNECT, reconnect),

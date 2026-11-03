@@ -1,5 +1,6 @@
 package com.iltan.settle
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -14,12 +15,31 @@ class MainActivity : ComponentActivity() {
         // readable in light and dark themes.
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
-        val openSettings = intent.getBooleanExtra(EXTRA_OPEN_SETTINGS, false)
-        val reconnect = intent.getBooleanExtra(EXTRA_RECONNECT, false)
-        setContent { SettleTheme { SettleApp(openSettings, reconnect) } }
+        val request = openRequest(intent)
+        setContent { SettleTheme { SettleApp(request.openSettings, request.reconnect) } }
     }
 
+    /** Where Settle opens: the timeline, or for a notification, Settings or Google's sign-in. */
+    data class OpenRequest(val openSettings: Boolean = false, val reconnect: Boolean = false)
+
     companion object {
+        /**
+         * The alias notifications open Settle through (manifest). Only Settle can start it, so its
+         * extras are honoured; on the exported launcher activity any app could set them.
+         */
+        val NOTIFICATION_TARGET: String =
+            MainActivity::class.java.name.substringBeforeLast('.') + ".NotificationTarget"
+
+        /** What [intent] asks for, if it came from one of Settle's notifications. */
+        fun openRequest(intent: Intent): OpenRequest =
+            if (intent.component?.className != NOTIFICATION_TARGET) OpenRequest()
+            else {
+                OpenRequest(
+                    openSettings = intent.getBooleanExtra(EXTRA_OPEN_SETTINGS, false),
+                    reconnect = intent.getBooleanExtra(EXTRA_RECONNECT, false),
+                )
+            }
+
         /** Set by backup notifications that need the user in Settings. */
         const val EXTRA_OPEN_SETTINGS = "com.iltan.settle.OPEN_SETTINGS"
 
