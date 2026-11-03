@@ -168,6 +168,7 @@ class DeletionTest {
             preferences,
             betweenScans = { sync.betweenScans(it) },
             drive = { drive },
+            driveRoot = { "settle-folder" },
             clock = { now },
         )
 
@@ -310,8 +311,15 @@ class DeletionTest {
         assertEquals(setOf("drive1"), drive.trashed)
     }
 
+    /** Settle's own folder, which the connected account holds. */
+    private fun ownFolder() {
+        drive.files["settle-folder"] =
+            FakeDrive.StoredFile("settle-folder", "Settle (debug)", null, true)
+    }
+
     @Test
     fun anItemIsForgottenOnceDrivesTrashNoLongerHasItsCopy() = runTest {
+        ownFolder()
         val (id) = backedUp(1)
         source.files.remove(1)
         sync.scan()
@@ -334,7 +342,23 @@ class DeletionTest {
     }
 
     @Test
+    fun anotherAccountsNotFoundsDecideNothing() = runTest {
+        // Signed in to an account without Settle's folder: its 404s say nothing about the copies.
+        val (id) = backedUp(1)
+        source.files.remove(1)
+        sync.scan()
+        now += wait
+        work.runDriveChanges()
+        drive.files.remove("drive1")
+
+        work.forgetGoneFromDrive()
+
+        assertEquals(TrashOrigin.ELSEWHERE, item(id)?.entry?.origin)
+    }
+
+    @Test
     fun anItemStillInThePhonesTrashIsKeptWhenDriveLostItsCopy() = runTest {
+        ownFolder()
         val (id) = backedUp(1)
         deletion.delete(listOf(id)).confirm { source.trash(1, true) }
         drive.files.remove("drive1")

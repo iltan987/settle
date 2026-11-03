@@ -241,6 +241,7 @@ class AppGraph(context: Context) {
             preferences = backupPreferences,
             betweenScans = { librarySync.betweenScans(it) },
             drive = { drive },
+            driveRoot = { database.backupDao().folderId(driveRootFolder) },
             log = { Log.i("TrashWork", it) },
         )
     }

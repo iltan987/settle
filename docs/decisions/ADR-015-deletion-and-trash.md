@@ -99,7 +99,8 @@
   means the phone has no file, not even in its trash, no Drive change is queued, no restore runs,
   and Drive answers 404 for every copy, as after the user empties Drive's trash. Settle asks when
   the trash opens and in the maintenance job. Any other answer, offline or signed out, decides
-  nothing. Only Settle's own record goes; there is no file left to delete. On the S24 FE, three
+  nothing. Another Google account would answer 404 too, so Settle first asks for its own folder.
+  If the account doesn't hold it, nothing is decided; expiry ends those items instead. Only Settle's own record goes; there is no file left to delete. On the S24 FE, three
   test items whose Drive copies were gone still offered a restore that couldn't succeed.
 - **Media management** is offered once in Settings, and deletion works without it.
 

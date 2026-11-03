@@ -41,6 +41,8 @@ class TrashWork(
     private val betweenScans: suspend (suspend () -> Unit) -> Unit,
     /** Asks Drive whether a copy still exists; null when the account can't be asked now. */
     private val drive: (() -> DriveApi)? = null,
+    /** Settle's own folder in Drive, which proves the account holds Settle's files. */
+    private val driveRoot: suspend () -> String? = { null },
     private val clock: () -> Long = System::currentTimeMillis,
     private val log: (String) -> Unit = {},
 ) {
@@ -114,11 +116,29 @@ class TrashWork(
      * Forgets items in the trash whose every Drive copy is gone and that the phone no longer has,
      * as after the user empties Drive's trash (ADR-015). Only a 404 counts as gone: offline, signed
      * out or any other answer leaves everything as it is until the next time.
+     *
+     * Another Google account answers 404 for Settle's files too. So Settle first asks for its own
+     * folder: if this account doesn't have it, the files may well exist elsewhere, and nothing is
+     * decided. The same holds when the whole folder was deleted for good; expiry ends those.
      */
     suspend fun forgetGoneFromDrive() = queueLock.withLock {
         val api = drive?.invoke() ?: return@withLock
         val items = store.phoneless()
         if (items.isEmpty()) return@withLock
+        val root = driveRoot() ?: return@withLock
+        val ownFolder =
+            try {
+                api.getFile(root)
+            } catch (e: DriveException) {
+                log("Couldn't ask Drive about the trash's copies now: ${e.failure}")
+                return@withLock
+            }
+        if (ownFolder == null) {
+            log(
+                "This Drive account doesn't hold Settle's folder; the trash's copies stay as they are"
+            )
+            return@withLock
+        }
         val gone = mutableSetOf<String>()
         for (fileId in items.flatMap { it.driveFiles.all }.distinct()) {
             val file =
