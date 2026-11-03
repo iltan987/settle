@@ -114,6 +114,7 @@ class FakeDrive : DriveApi {
         buffer: ByteArray,
         length: Int,
         totalBytes: Long,
+        onSent: () -> Unit,
     ): ChunkResult {
         fault("uploadChunk")
         val session = live(sessionUri)
@@ -124,6 +125,7 @@ class FakeDrive : DriveApi {
         beforeChunk(offset)
         chunkCalls++
         bytesSent += length
+        onSent()
         val keep = keepOfNextChunk?.also { keepOfNextChunk = null }?.coerceAtMost(length) ?: length
         session.received.write(buffer, 0, keep)
         if (session.received.size().toLong() < session.total) {

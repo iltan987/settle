@@ -82,11 +82,13 @@ fun viewerChip(
                 progress = status.fraction,
                 uploading = true,
             )
+        // Sent: Drive is finishing the file and Settle then checks it, a few seconds that move.
         CloudStatus.Checking ->
             ViewerChip(
                 stringResource(R.string.viewer_checking),
-                Tone.INFO,
-                R.drawable.ic_cloud_upload,
+                Tone.OK,
+                icon = null,
+                uploading = true,
             )
         is CloudStatus.Waiting ->
             ViewerChip(

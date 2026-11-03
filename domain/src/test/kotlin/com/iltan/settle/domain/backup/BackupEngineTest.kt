@@ -150,6 +150,21 @@ class BackupEngineTest {
     }
 
     @Test
+    fun theLastChunkShowsAsSentBeforeDriveAnswersIt() = runTest {
+        val id = item(123)
+        val progress = mutableListOf<Long>()
+        val chunks = drive.chunkCalls
+
+        engine().backUp(id) { sent, _ ->
+            // The sent report comes from inside the last chunk's call, before its answer.
+            if (sent == 123L && progress.none { it == 123L }) drive.chunkCalls shouldBe chunks + 1
+            progress += sent
+        }
+
+        progress shouldBe listOf(0L, 123L, 123L)
+    }
+
+    @Test
     fun aLargeFileIsSentInChunksWithEveryByteOnce() = runTest {
         val id = item(4 * chunk + 123)
         val progress = mutableListOf<Long>()

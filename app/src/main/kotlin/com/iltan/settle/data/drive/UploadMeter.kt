@@ -35,8 +35,16 @@ class UploadMeter {
 
     fun onRateLimited() = rateLimited.set(true)
 
-    /** A request body for [length] bytes of [buffer] that obeys the cap and is counted. */
-    fun body(buffer: ByteArray, length: Int, type: MediaType): RequestBody =
+    /**
+     * A request body for [length] bytes of [buffer] that obeys the cap and is counted; [onSent]
+     * runs once all of it is written.
+     */
+    fun body(
+        buffer: ByteArray,
+        length: Int,
+        type: MediaType,
+        onSent: () -> Unit = {},
+    ): RequestBody =
         object : RequestBody() {
             override fun contentType() = type
 
@@ -46,6 +54,7 @@ class UploadMeter {
                 val out = throttler.sink(counting(sink)).buffer()
                 out.write(buffer, 0, length)
                 out.emit()
+                onSent()
             }
         }
 
@@ -60,5 +69,17 @@ class UploadMeter {
     private companion object {
         const val WAIT_BYTES = 8L * 1024
         const val MAX_BURST_BYTES = 256L * 1024
+    }
+}
+
+/** [body], telling [onSent] once all of it is written. */
+class SentBody(private val body: RequestBody, private val onSent: () -> Unit) : RequestBody() {
+    override fun contentType() = body.contentType()
+
+    override fun contentLength() = body.contentLength()
+
+    override fun writeTo(sink: BufferedSink) {
+        body.writeTo(sink)
+        onSent()
     }
 }

@@ -33,7 +33,11 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
 /** Bytes sent so far of one upload. */
-data class UploadProgress(val sentBytes: Long, val totalBytes: Long)
+data class UploadProgress(val sentBytes: Long, val totalBytes: Long) {
+    /** Every byte is on its way and Drive is finishing the file, which takes a few seconds. */
+    val checking: Boolean
+        get() = totalBytes > 0 && sentBytes >= totalBytes
+}
 
 /**
  * A run of uploads so far: what it set out to send (it grows when items become ready during the

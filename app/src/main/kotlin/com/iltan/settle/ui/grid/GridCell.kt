@@ -1,7 +1,12 @@
 package com.iltan.settle.ui.grid
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Canvas
@@ -59,7 +64,13 @@ import com.iltan.settle.ui.theme.settleColors
 const val SPECIAL_FORMAT_MOTION_PHOTO = 2
 
 /** What a cell shows about backup: the status, and how far an upload is. */
-@Immutable data class CellBackup(val status: ItemStatus, val progress: Float? = null)
+@Immutable
+data class CellBackup(
+    val status: ItemStatus,
+    val progress: Float? = null,
+    /** Sent, and Drive is finishing the file: the ring turns instead of sitting full. */
+    val checking: Boolean = false,
+)
 
 /**
  * One photo or video in a grid (GridCell). Each marker has its own corner so they never collide:
@@ -179,7 +190,7 @@ private fun BoxScope.StatusMarker(backup: CellBackup?) {
             Box(Modifier.matchParentSize().border(2.dp, colors.error, SettleShape.Cell))
             Disc(colors.error, colors.onError, R.drawable.ic_priority_high, glyph = 13)
         }
-        ItemStatus.UPLOADING -> UploadRing(backup.progress ?: 0f)
+        ItemStatus.UPLOADING -> UploadRing(backup.progress ?: 0f, backup.checking)
         ItemStatus.WAITING -> Disc(badge, Color.White, R.drawable.ic_schedule)
         ItemStatus.QUEUED -> Disc(badge, Color.White, R.drawable.ic_cloud_upload)
         ItemStatus.NOT_BACKED_UP -> Disc(badge, Color.White, R.drawable.ic_cloud_off)
@@ -208,22 +219,39 @@ private fun BoxScope.Disc(color: Color, tint: Color, icon: Int, glyph: Int = 12)
     }
 }
 
-/** A 20 dp ring that fills as the upload goes, around an arrow. */
+/**
+ * A 20 dp ring that fills as the upload goes, around an arrow; while Drive finishes the file
+ * ([checking]) a quarter of it turns instead.
+ */
 @Composable
-private fun BoxScope.UploadRing(progress: Float) {
+private fun BoxScope.UploadRing(progress: Float, checking: Boolean) {
+    val turn =
+        if (checking) {
+            rememberInfiniteTransition(label = "checking")
+                .animateFloat(
+                    0f,
+                    360f,
+                    infiniteRepeatable(tween(CHECKING_TURN_MILLIS, easing = LinearEasing)),
+                    label = "turn",
+                )
+        } else null
     Box(
         Modifier.align(Alignment.BottomEnd).padding(3.dp).size(20.dp),
         contentAlignment = Alignment.Center,
     ) {
         Canvas(Modifier.matchParentSize()) {
             drawCircle(Color.White.copy(alpha = 0.3f))
-            drawArc(
-                Color.White,
-                -90f,
-                360f * progress.coerceIn(0f, 1f),
-                useCenter = true,
-                topLeft = Offset.Zero,
-            )
+            if (turn != null) {
+                drawArc(Color.White, turn.value - 90f, 90f, useCenter = true, topLeft = Offset.Zero)
+            } else {
+                drawArc(
+                    Color.White,
+                    -90f,
+                    360f * progress.coerceIn(0f, 1f),
+                    useCenter = true,
+                    topLeft = Offset.Zero,
+                )
+            }
         }
         Box(
             Modifier.size(15.dp).background(Color.Black.copy(alpha = 0.6f), CircleShape),
@@ -292,3 +320,6 @@ fun formatDuration(millis: Long): String {
     return if (hours > 0) "%d:%02d:%02d".format(hours, minutes, seconds)
     else "%d:%02d".format(minutes, seconds)
 }
+
+/** One turn of the checking ring. */
+private const val CHECKING_TURN_MILLIS = 1_000

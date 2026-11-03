@@ -97,9 +97,10 @@ class BackupRunnerTest {
             buffer: ByteArray,
             length: Int,
             totalBytes: Long,
+            onSent: () -> Unit,
         ): ChunkResult {
             delay(1_000)
-            return drive.uploadChunk(sessionUri, offset, buffer, length, totalBytes).also {
+            return drive.uploadChunk(sessionUri, offset, buffer, length, totalBytes, onSent).also {
                 if (it is ChunkResult.Done) active--
             }
         }

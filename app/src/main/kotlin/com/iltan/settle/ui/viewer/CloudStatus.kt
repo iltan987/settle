@@ -50,6 +50,7 @@ fun cloudStatus(
     running: Boolean = true,
 ): CloudStatus =
     when {
+        progress?.checking == true -> CloudStatus.Checking
         progress != null ->
             CloudStatus.Uploading(
                 progress.totalBytes.takeIf { it > 0 }?.let { progress.sentBytes.toFloat() / it }

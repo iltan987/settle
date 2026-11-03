@@ -214,9 +214,16 @@ class BackupEngine(
             while (done == null) {
                 val length = minOf(chunkBytes.toLong(), total - offset).toInt()
                 readFully(reader, offset, length)
+                // Drive takes seconds to answer the last chunk; once its bytes are on their way,
+                // the
+                // upload shows as sent and Drive as checking.
+                val last = offset + length == total
+                val sentFrom = offset
                 when (
                     val result =
-                        drive.uploadChunk(record.sessionUri!!, offset, buffer, length, total)
+                        drive.uploadChunk(record.sessionUri!!, offset, buffer, length, total) {
+                            if (last) onProgress(sentFrom + length, total)
+                        }
                 ) {
                     is ChunkResult.Incomplete -> {
                         val accepted = result.confirmedBytes - offset

@@ -40,6 +40,14 @@ class CloudStatusTest {
     }
 
     @Test
+    fun aSentUploadShowsDriveCheckingItUntilDriveAnswers() {
+        assertEquals(
+            CloudStatus.Checking,
+            cloudStatus(true, upload(CloudState.UPLOADING), UploadProgress(100, 100)),
+        )
+    }
+
+    @Test
     fun aVerifiedCopyIsBackedUpEvenWhenDisconnected() {
         assertEquals(
             CloudStatus.BackedUp("drive1"),

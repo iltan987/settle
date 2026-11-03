@@ -66,12 +66,17 @@ interface DriveApi {
     /** Starts a resumable upload and returns its session URI. */
     suspend fun startUpload(file: NewDriveFile, sizeBytes: Long): String
 
+    /**
+     * Sends [length] bytes of [buffer] at [offset]. [onSent] runs once the bytes are on their way,
+     * before Drive answers: Drive may take seconds to answer the last chunk of a file.
+     */
     suspend fun uploadChunk(
         sessionUri: String,
         offset: Long,
         buffer: ByteArray,
         length: Int,
         totalBytes: Long,
+        onSent: () -> Unit = {},
     ): ChunkResult
 
     suspend fun uploadStatus(sessionUri: String, totalBytes: Long): ChunkResult

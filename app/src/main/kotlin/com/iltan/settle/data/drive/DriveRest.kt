@@ -110,12 +110,13 @@ class DriveRest(
         buffer: ByteArray,
         length: Int,
         totalBytes: Long,
+        onSent: () -> Unit,
     ): ChunkResult =
         uploadStep(sessionUri) {
             header("Content-Range", "bytes $offset-${offset + length - 1}/$totalBytes")
                 .put(
-                    meter?.body(buffer, length, OCTET_STREAM)
-                        ?: buffer.toRequestBody(OCTET_STREAM, 0, length)
+                    meter?.body(buffer, length, OCTET_STREAM, onSent)
+                        ?: SentBody(buffer.toRequestBody(OCTET_STREAM, 0, length), onSent)
                 )
         }
 

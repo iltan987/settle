@@ -294,6 +294,7 @@ private fun LazyGridScope.section(
                         upload?.let {
                             if (it.totalBytes > 0) it.sentBytes.toFloat() / it.totalBytes else 0f
                         },
+                        checking = upload?.checking == true,
                     ),
                 showFavorite = true,
                 description = description,

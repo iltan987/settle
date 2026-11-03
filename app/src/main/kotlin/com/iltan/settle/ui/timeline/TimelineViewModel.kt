@@ -111,5 +111,6 @@ fun cellBackup(
     return CellBackup(
         cellStatus(entry.cloudState, decisions[entry.id], uploading = upload != null),
         upload?.let { if (it.totalBytes > 0) it.sentBytes.toFloat() / it.totalBytes else 0f },
+        checking = upload?.checking == true,
     )
 }
