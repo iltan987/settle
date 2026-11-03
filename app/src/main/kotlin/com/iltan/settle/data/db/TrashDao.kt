@@ -155,6 +155,19 @@ interface TrashDao {
     )
     suspend fun pendingElsewhere(): List<TrashItemRow>
 
+    /**
+     * Items in Settle's trash that the phone no longer has and that no restore is under way for:
+     * the ones whose Drive copies may since have gone for good.
+     */
+    @Query(
+        """
+        $TRASH_ITEM_COLUMNS WHERE t.item_id IS NOT NULL AND f.media_store_id IS NULL
+            AND f.local_state NOT IN ('PRESENT', 'TRASHED')
+            AND NOT EXISTS(SELECT 1 FROM restore_request r WHERE r.item_id = m.id)
+        """
+    )
+    suspend fun phonelessTrash(): List<TrashItemRow>
+
     /** Items in Settle's trash whose time is over. */
     @Query("$TRASH_ITEM_COLUMNS WHERE t.expires_at_ms <= :nowMs")
     suspend fun expiredTrash(nowMs: Long): List<TrashItemRow>

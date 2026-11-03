@@ -28,6 +28,9 @@ class TrashStore(private val dao: TrashDao) : DriveOpStore, DownloadStore {
     suspend fun expired(nowMillis: Long): List<TrashItem> =
         withSuperseded(dao.expiredTrash(nowMillis))
 
+    /** Items in Settle's trash the phone no longer has, with no restore under way. */
+    suspend fun phoneless(): List<TrashItem> = withSuperseded(dao.phonelessTrash())
+
     /** Deletions made elsewhere whose Drive copies haven't been trashed yet. */
     suspend fun pendingElsewhere(): List<TrashItem> = withSuperseded(dao.pendingElsewhere())
 

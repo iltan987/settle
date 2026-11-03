@@ -499,6 +499,11 @@ private fun Destinations(
                             }
                         }
                         val galleryTrash = remember { GalleryTrash.intent(context) }
+                        // Drive's trash may have been emptied since: forget what nothing is left
+                        // of.
+                        LaunchedEffect(Unit) {
+                            graph.appScope.launch { graph.trashWork.forgetGoneFromDrive() }
+                        }
                         TrashScreen(
                             state = state,
                             nowMillis = System.currentTimeMillis(),

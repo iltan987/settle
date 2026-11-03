@@ -378,3 +378,24 @@ fun expiredItems(items: List<TrashItem>, nowMillis: Long): List<MediaItemId> =
                 item.pendingOps == 0
         }
         .map { it.itemId }
+
+/**
+ * Items in Settle's trash of which nothing is left before their time is over: the phone has no
+ * file, not even in its trash, no Drive change for them is still queued, and Drive said that every
+ * copy, superseded ones included, is gone ([goneDriveFiles], files that answered 404), as after the
+ * user empties Drive's trash. They can't be restored from anywhere, so Settle forgets them; nothing
+ * is deleted, as nothing is left to delete. An item with no Drive file at all is left to expiry.
+ */
+fun goneFromDrive(items: List<TrashItem>, goneDriveFiles: Set<String>): List<MediaItemId> =
+    items
+        .filter { item ->
+            val files = item.driveFiles.all
+            item.entry != null &&
+                item.localState != LocalState.PRESENT &&
+                item.localState != LocalState.TRASHED &&
+                item.mediaStoreId == null &&
+                item.pendingOps == 0 &&
+                files.isNotEmpty() &&
+                files.all { it in goneDriveFiles }
+        }
+        .map { it.itemId }

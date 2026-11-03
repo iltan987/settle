@@ -6,7 +6,8 @@ import com.iltan.settle.domain.backup.BackupPause
 
 /**
  * The maintenance job (every six hours): forgets items whose trash time is over, runs Drive changes
- * still queued (ADR-015), and lets backup resume once Drive has room again (R6).
+ * still queued, forgets trash items Drive no longer has (ADR-015), and lets backup resume once
+ * Drive has room again (R6).
  */
 class BackupMaintenance(
     private val drive: DriveRest,
@@ -17,6 +18,7 @@ class BackupMaintenance(
     suspend fun run() {
         trashWork?.expire()
         trashWork?.runDriveChanges()
+        trashWork?.forgetGoneFromDrive()
         if (preferences.current().blocked != BackupPause.QUOTA_FULL) return
         val about = drive.about()
         val limit = about.limitBytes ?: Long.MAX_VALUE

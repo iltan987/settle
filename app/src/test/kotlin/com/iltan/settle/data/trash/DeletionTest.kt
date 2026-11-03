@@ -17,6 +17,7 @@ import com.iltan.settle.domain.CloudState
 import com.iltan.settle.domain.LocalState
 import com.iltan.settle.domain.MediaItemId
 import com.iltan.settle.domain.backup.BackupPause
+import com.iltan.settle.domain.backup.DriveFailure
 import com.iltan.settle.domain.backup.FakeDrive
 import com.iltan.settle.domain.backup.FileSnapshot
 import com.iltan.settle.domain.backup.UploadRecord
@@ -166,6 +167,7 @@ class DeletionTest {
             ),
             preferences,
             betweenScans = { sync.betweenScans(it) },
+            drive = { drive },
             clock = { now },
         )
 
@@ -306,6 +308,40 @@ class DeletionTest {
         now += wait
         work.runDriveChanges()
         assertEquals(setOf("drive1"), drive.trashed)
+    }
+
+    @Test
+    fun anItemIsForgottenOnceDrivesTrashNoLongerHasItsCopy() = runTest {
+        val (id) = backedUp(1)
+        source.files.remove(1)
+        sync.scan()
+        now += wait
+        work.runDriveChanges()
+
+        // Still in Drive's trash: restorable, so it stays.
+        work.forgetGoneFromDrive()
+        assertEquals(TrashOrigin.ELSEWHERE, item(id)?.entry?.origin)
+
+        // Offline: nothing is decided.
+        drive.files.remove("drive1")
+        drive.failNext("getFile", DriveFailure.TRANSIENT)
+        work.forgetGoneFromDrive()
+        assertEquals(TrashOrigin.ELSEWHERE, item(id)?.entry?.origin)
+
+        // The user emptied Drive's trash: nothing is left of it anywhere.
+        work.forgetGoneFromDrive()
+        assertNull(item(id))
+    }
+
+    @Test
+    fun anItemStillInThePhonesTrashIsKeptWhenDriveLostItsCopy() = runTest {
+        val (id) = backedUp(1)
+        deletion.delete(listOf(id)).confirm { source.trash(1, true) }
+        drive.files.remove("drive1")
+
+        work.forgetGoneFromDrive()
+
+        assertEquals(TrashOrigin.SETTLE, item(id)?.entry?.origin)
     }
 
     @Test

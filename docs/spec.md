@@ -74,7 +74,9 @@ Play Store release later must stay possible, so Play-policy-forbidden permission
   The first delete explains Android's own confirmation once, while Settle can't manage media; the
   message after deleting says plainly when items weren't backed up. The trash groups items by
   when and how they were deleted and shows the days left; restoring says where items went, and
-  Delete forever's confirmation says when an item exists nowhere else.
+  Delete forever's confirmation says when an item exists nowhere else. An item of which nothing is
+  left, on the phone or in Drive (Drive's trash emptied), leaves the trash. The trash says that
+  photos deleted in Samsung Gallery that weren't backed up are in Gallery's own trash, and opens it.
 - R13. A backed-up item deleted in another app is handled by the external-deletion policy (ADR-006,
   ADR-015). Default: it enters Settle's trash and its Drive copy moves to Drive trash an hour after
   it vanished, unless it comes back first; "Ask me first" waits for the user. Restoring it

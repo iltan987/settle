@@ -240,6 +240,7 @@ class AppGraph(context: Context) {
                 ),
             preferences = backupPreferences,
             betweenScans = { librarySync.betweenScans(it) },
+            drive = { drive },
             log = { Log.i("TrashWork", it) },
         )
     }

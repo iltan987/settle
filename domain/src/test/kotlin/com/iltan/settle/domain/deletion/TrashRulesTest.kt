@@ -430,4 +430,42 @@ class TrashRulesTest {
             now,
         ) shouldContainExactly listOf(done.itemId)
     }
+
+    @Test
+    fun anItemIsForgottenOnlyOnceNoCopyIsLeftOnThePhoneOrInDrive() {
+        val gone = item(local = LocalState.MISSING, entry = TrashOrigin.ELSEWHERE)
+        val stillInPhoneTrash = item(local = LocalState.TRASHED, entry = TrashOrigin.SETTLE)
+        val oneCopyLeft =
+            item(local = LocalState.MISSING, entry = TrashOrigin.SETTLE, superseded = listOf("old"))
+        val changeQueued =
+            item(local = LocalState.MISSING, entry = TrashOrigin.ELSEWHERE, pendingOps = 1)
+        val notAsked = item(local = LocalState.MISSING, entry = TrashOrigin.SETTLE)
+        val waitingForUser = item(local = LocalState.MISSING, vanished = VanishedReason.ASK)
+        val neverBackedUp =
+            item(local = LocalState.MISSING, cloud = CloudState.NONE, entry = TrashOrigin.SETTLE)
+        val answered404 =
+            setOf(
+                    gone,
+                    stillInPhoneTrash,
+                    oneCopyLeft,
+                    changeQueued,
+                    waitingForUser,
+                    neverBackedUp,
+                )
+                .mapNotNull { it.driveFiles.current }
+                .toSet()
+
+        goneFromDrive(
+            listOf(
+                gone,
+                stillInPhoneTrash,
+                oneCopyLeft,
+                changeQueued,
+                notAsked,
+                waitingForUser,
+                neverBackedUp,
+            ),
+            answered404,
+        ) shouldContainExactly listOf(gone.itemId)
+    }
 }

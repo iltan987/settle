@@ -4,6 +4,8 @@ import com.iltan.settle.data.backup.BackupPreferences
 import com.iltan.settle.data.db.TrashDao
 import com.iltan.settle.domain.MediaItemId
 import com.iltan.settle.domain.backup.BackupPause
+import com.iltan.settle.domain.backup.DriveApi
+import com.iltan.settle.domain.backup.DriveException
 import com.iltan.settle.domain.deletion.DriveChanges
 import com.iltan.settle.domain.deletion.DriveChangesResult
 import com.iltan.settle.domain.deletion.RestoreDownload
@@ -11,6 +13,7 @@ import com.iltan.settle.domain.deletion.RestoreProblem
 import com.iltan.settle.domain.deletion.RestoreResult
 import com.iltan.settle.domain.deletion.TrashChanges
 import com.iltan.settle.domain.deletion.expiredItems
+import com.iltan.settle.domain.deletion.goneFromDrive
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -36,6 +39,8 @@ class TrashWork(
     private val restoreDownload: RestoreDownload,
     private val preferences: BackupPreferences,
     private val betweenScans: suspend (suspend () -> Unit) -> Unit,
+    /** Asks Drive whether a copy still exists; null when the account can't be asked now. */
+    private val drive: (() -> DriveApi)? = null,
     private val clock: () -> Long = System::currentTimeMillis,
     private val log: (String) -> Unit = {},
 ) {
@@ -102,6 +107,33 @@ class TrashWork(
                     }
                 }
             }
+        }
+    }
+
+    /**
+     * Forgets items in the trash whose every Drive copy is gone and that the phone no longer has,
+     * as after the user empties Drive's trash (ADR-015). Only a 404 counts as gone: offline, signed
+     * out or any other answer leaves everything as it is until the next time.
+     */
+    suspend fun forgetGoneFromDrive() = queueLock.withLock {
+        val api = drive?.invoke() ?: return@withLock
+        val items = store.phoneless()
+        if (items.isEmpty()) return@withLock
+        val gone = mutableSetOf<String>()
+        for (fileId in items.flatMap { it.driveFiles.all }.distinct()) {
+            val file =
+                try {
+                    api.getFile(fileId)
+                } catch (e: DriveException) {
+                    log("Couldn't ask Drive about the trash's copies now: ${e.failure}")
+                    return@withLock
+                }
+            if (file == null) gone += fileId
+        }
+        val forget = goneFromDrive(items, gone)
+        if (forget.isNotEmpty()) {
+            log("Forgetting ${forget.size} items in the trash that Drive no longer has")
+            betweenScans { dao.applyTrashChanges(TrashChanges(purge = forget)) }
         }
     }
 

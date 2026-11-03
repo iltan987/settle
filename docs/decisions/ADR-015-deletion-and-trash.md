@@ -95,6 +95,12 @@
   `createDeleteRequest` on the phone and `files.delete` in Drive. The item then leaves the library.
 - **Expiry.** 30 days after deletion Settle drops its own records, once the phone no longer has
   the file. Drive and the phone delete the bytes themselves.
+  Amended 2026-11-03: an item can also leave earlier, once nothing of it is left anywhere. That
+  means the phone has no file, not even in its trash, no Drive change is queued, no restore runs,
+  and Drive answers 404 for every copy, as after the user empties Drive's trash. Settle asks when
+  the trash opens and in the maintenance job. Any other answer, offline or signed out, decides
+  nothing. Only Settle's own record goes; there is no file left to delete. On the S24 FE, three
+  test items whose Drive copies were gone still offered a restore that couldn't succeed.
 - **Media management** is offered once in Settings, and deletion works without it.
 
 ## Consequences
