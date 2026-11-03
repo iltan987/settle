@@ -725,6 +725,8 @@ private class TrashLabels(
                 if (entry.kind == MediaKind.VIDEO) R.string.media_video else R.string.media_photo
             )
         )
+        // The name the cell shows when the phone no longer has the file.
+        if (entry.mediaStoreId == null && entry.displayName.isNotEmpty()) add(entry.displayName)
         if (entry.cloudState != CloudState.VERIFIED) {
             add(resources.getString(R.string.cell_not_backed_up))
         }

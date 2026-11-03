@@ -63,6 +63,8 @@ data class TrashedEntry(
      * item may not be in the trash at all, only gone from the phone.
      */
     @ColumnInfo(name = "waiting_reason") val waitingReason: VanishedReason? = null,
+    /** Its file name, shown when the phone no longer has the file. */
+    @ColumnInfo(name = "display_name") val displayName: String = "",
 ) {
     /** In the trash proper: Delete forever and Empty trash act on it. */
     val inTrash: Boolean
@@ -167,6 +169,7 @@ interface TrashDao {
             f.media_store_id, f.date_modified_s, f.local_state, m.cloud_state, t.origin,
             t.trashed_at_ms, t.expires_at_ms, r.requested_at_ms AS restore_requested_at_ms,
             r.problem AS restore_problem, f.relative_path, f.size_bytes, u.drive_file_id,
+            f.display_name,
             CASE WHEN v.kept THEN NULL ELSE v.reason END AS waiting_reason
         FROM media_item m JOIN local_file f ON f.item_id = m.id
         LEFT JOIN trash_entry t ON t.item_id = m.id

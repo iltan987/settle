@@ -18,6 +18,7 @@ import okhttp3.Call
 import okhttp3.Callback
 import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrl
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -142,6 +143,26 @@ class DriveRest(
             limitBytes = about.storageQuota?.limit?.toLongOrNull(),
             usageBytes = about.storageQuota?.usage?.toLongOrNull(),
         )
+    }
+
+    /**
+     * A small preview of a file Settle created, or null when Drive has none (guides/file-metadata,
+     * "Retrieve thumbnails"). The link is short-lived and, the file being private, must be fetched
+     * with the same credentials; the token only ever goes to Google's own hosts.
+     */
+    suspend fun thumbnail(id: String): ByteArray? {
+        val url = api("drive/v3/files/$id").addQueryParameter("fields", "thumbnailLink")
+        val link = decode<ThumbnailInfo>(send { url(url.build()) }).thumbnailLink ?: return null
+        val linkUrl = link.toHttpUrlOrNull()?.takeIf { it.isHttps && it.host.isGoogleHost() }
+        if (linkUrl == null) return null
+        return send { url(linkUrl) }
+            .use { response ->
+                try {
+                    runInterruptible(Dispatchers.IO) { response.body.bytes() }
+                } catch (e: IOException) {
+                    throw DriveException(DriveFailure.TRANSIENT, e.message, e)
+                }
+            }
     }
 
     /** The smallest Drive request there is, for measuring round-trip delay. */
@@ -349,6 +370,14 @@ private class FileMetadata(
     val appProperties: Map<String, String>? = null,
     val description: String? = null,
 )
+
+@Serializable private class ThumbnailInfo(val thumbnailLink: String? = null)
+
+/** Drive serves thumbnails from googleusercontent.com; nothing else gets the token. */
+private fun String.isGoogleHost() =
+    this == "googleusercontent.com" ||
+        endsWith(".googleusercontent.com") ||
+        this == "www.googleapis.com"
 
 @Serializable private class About(val user: User? = null, val storageQuota: Quota? = null)
 

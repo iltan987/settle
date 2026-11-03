@@ -81,7 +81,8 @@ Play Store release later must stay possible, so Play-policy-forbidden permission
   downloads the Drive copy into its folder and publishes it only if its SHA-256 matches; the trash
   shows its progress and, if it stops, why. A restore stopped by being offline or signed out
   continues the next time Settle is open. With "Ask me first", such items wait in the trash without
-  a countdown until the user keeps their Drive copies or moves them to the trash.
+  a countdown until the user keeps their Drive copies or moves them to the trash. An item the phone
+  no longer has shows Drive's preview of its copy and its file name.
 - R14. A mass disappearance of files (circuit breaker, ADR-006) never moves or deletes anything in
   Drive without confirmation, also when it reaches Settle spread over several scans. The question
   stays until it is answered, on one screen reached from the timeline: keep the Drive copies, check

@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -20,6 +21,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.layout.ContentScale
@@ -32,10 +34,12 @@ import androidx.compose.ui.semantics.onClick
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.iltan.settle.R
 import com.iltan.settle.data.db.TrashedEntry
+import com.iltan.settle.data.drive.DriveThumbnail
 import com.iltan.settle.data.media.MediaThumbnail
 import com.iltan.settle.data.mediaContentUri
 import com.iltan.settle.domain.CloudState
@@ -128,14 +132,52 @@ fun TrashCell(
                         .padding(shownInset)
                         .clip(RoundedCornerShape(shownInset * 0.75f)),
             )
-        } else if (mark !is TrashMark.Restoring && mark != TrashMark.Restored) {
-            // The phone no longer has the file; Drive does.
-            Icon(
-                painterResource(R.drawable.ic_cloud),
-                contentDescription = null,
-                tint = colors.onSurfaceVariant,
-                modifier = Modifier.align(Alignment.Center).size(28.dp),
-            )
+        } else {
+            // The phone no longer has the file; Drive does. A cloud until Drive's preview arrives,
+            // and in its place when there is none (offline, or no preview of a video yet).
+            if (mark !is TrashMark.Restoring && mark != TrashMark.Restored) {
+                Icon(
+                    painterResource(R.drawable.ic_cloud),
+                    contentDescription = null,
+                    tint = colors.onSurfaceVariant,
+                    modifier = Modifier.align(Alignment.Center).size(28.dp),
+                )
+            }
+            entry.driveFileId?.let { id ->
+                AsyncImage(
+                    model = DriveThumbnail(id),
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier =
+                        Modifier.fillMaxSize()
+                            .padding(shownInset)
+                            .clip(RoundedCornerShape(shownInset * 0.75f)),
+                )
+            }
+            // Its name, since nothing on the phone shows what it was.
+            if (entry.displayName.isNotEmpty()) {
+                Text(
+                    entry.displayName,
+                    style = SettleType.chipMicro.copy(shadow = MarkerShadow),
+                    color = Color.White,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier =
+                        Modifier.align(Alignment.TopStart)
+                            .fillMaxWidth()
+                            .background(
+                                Brush.verticalGradient(
+                                    listOf(Color.Black.copy(alpha = 0.5f), Color.Transparent)
+                                )
+                            )
+                            .padding(
+                                start = if (selected != null) 34.dp else 6.dp,
+                                end = 6.dp,
+                                top = 6.dp,
+                                bottom = 10.dp,
+                            ),
+                )
+            }
         }
         when {
             // Never backed up: this is the only copy anywhere.

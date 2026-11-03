@@ -52,6 +52,7 @@ class TrashScreenTest {
         restoring: Boolean = false,
         problem: RestoreProblem? = null,
         waiting: Boolean = false,
+        name: String = "",
     ) =
         TrashedEntry(
             id = id,
@@ -72,6 +73,8 @@ class TrashScreenTest {
             relativePath = "DCIM/Camera/",
             sizeBytes = 2_000_000,
             waitingReason = VanishedReason.ASK.takeIf { waiting },
+            driveFileId = "drive-$id".takeIf { backedUp },
+            displayName = name,
         )
 
     private val restored = mutableListOf<List<String>>()
@@ -120,6 +123,21 @@ class TrashScreenTest {
         compose
             .onNodeWithContentDescription("Photo, Not backed up, 30 days left")
             .assertIsDisplayed()
+    }
+
+    @Test
+    fun anItemOnlyInDriveIsNamedSinceThePhoneCantShowIt() {
+        show(
+            state(
+                entry("a", name = "IMG_1.jpg"),
+                entry("b", origin = TrashOrigin.ELSEWHERE, onPhone = false, name = "ph_1.png"),
+            )
+        )
+
+        compose.onNodeWithText("ph_1.png").assertIsDisplayed()
+        compose.onNodeWithContentDescription("Photo, ph_1.png, 30 days left").assertIsDisplayed()
+        // On the phone it shows the photo itself.
+        compose.onNodeWithText("IMG_1.jpg").assertDoesNotExist()
     }
 
     @Test
